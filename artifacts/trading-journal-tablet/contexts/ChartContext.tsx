@@ -26,6 +26,23 @@ import { createContext, useContext } from "react";
 // ── LWC type stubs ────────────────────────────────────────────────────────────
 
 /**
+ * Time-scale coordinate methods exposed to DrawingOverlay and other consumers
+ * that need to map between chart viewport and pixel coordinates.
+ *
+ * The full implementation lives in `SkiaChartApiImpl.timeScale()` inside
+ * CustomChart.tsx — this interface is the public contract those callers use.
+ */
+export interface IChartTimeScale {
+  getVisibleLogicalRange(): { from: number; to: number } | null;
+  subscribeVisibleLogicalRangeChange(
+    fn: (r: { from: number; to: number } | null) => void,
+  ): void;
+  unsubscribeVisibleLogicalRangeChange(
+    fn: (r: { from: number; to: number } | null) => void,
+  ): void;
+}
+
+/**
  * Minimal structural stub for lightweight-charts `IChartApi`.
  *
  * On web this interface is satisfied by the LWC chart object returned by
@@ -34,9 +51,14 @@ import { createContext, useContext } from "react";
  *
  * The `_brand` discriminant prevents accidental structural compatibility with
  * unrelated objects and makes the type easy to search for at refactor time.
+ *
+ * `timeScale()` is included here so DrawingOverlay and other consumers can
+ * subscribe to pan/zoom events without casting.  The full method body lives in
+ * `SkiaChartApiImpl.timeScale()` (CustomChart.tsx).
  */
 export interface IChartApi {
   readonly _brand: "IChartApi";
+  timeScale(): IChartTimeScale;
 }
 
 /**
@@ -44,10 +66,15 @@ export interface IChartApi {
  *
  * The generic type parameter `T` preserves the same slot used by the web
  * version so that `ISeriesApi<"Candlestick">` compiles identically.
+ *
+ * `priceToCoordinate` is included so DrawingOverlay can convert price values
+ * to pixel Y without a cast.  The implementation lives in `SkiaSeriesApiImpl`
+ * (CustomChart.tsx).
  */
 export interface ISeriesApi<T extends string = string> {
   readonly _brand: "ISeriesApi";
   readonly _seriesType: T;
+  priceToCoordinate(price: number): number | null;
 }
 
 // ── Context ───────────────────────────────────────────────────────────────────
