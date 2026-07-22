@@ -98,21 +98,57 @@ function distToSeg(p: Px, a: Px, b: Px): number {
   return Math.hypot(p.x - (a.x + t * dx), p.y - (a.y + t * dy));
 }
 
+/** Distance from p to the infinite line through a→b. */
+function distToLine(p: Px, a: Px, b: Px): number {
+  const dx = b.x - a.x, dy = b.y - a.y;
+  const len2 = dx * dx + dy * dy;
+  if (len2 === 0) return Math.hypot(p.x - a.x, p.y - a.y);
+  const t = ((p.x - a.x) * dx + (p.y - a.y) * dy) / len2;
+  return Math.hypot(p.x - (a.x + t * dx), p.y - (a.y + t * dy));
+}
+
+/** Distance from p to the ray starting at a, directed toward b (t ≥ 0 only). */
+function distToRay(p: Px, a: Px, b: Px): number {
+  const dx = b.x - a.x, dy = b.y - a.y;
+  const len2 = dx * dx + dy * dy;
+  if (len2 === 0) return Math.hypot(p.x - a.x, p.y - a.y);
+  const t = Math.max(0, ((p.x - a.x) * dx + (p.y - a.y) * dy) / len2);
+  return Math.hypot(p.x - (a.x + t * dx), p.y - (a.y + t * dy));
+}
+
+/**
+ * Approximate distance from p to the border of an axis-aligned ellipse.
+ * Projects p onto the unit circle, then scales back to the ellipse — O(1), no
+ * iteration required.
+ */
+function distToEllipseBorder(p: Px, ecx: number, ecy: number, erx: number, ery: number): number {
+  const nx = erx > 0 ? (p.x - ecx) / erx : 0;
+  const ny = ery > 0 ? (p.y - ecy) / ery : 0;
+  const r  = Math.hypot(nx, ny) || 1;
+  const cpx = ecx + (nx / r) * erx;
+  const cpy = ecy + (ny / r) * ery;
+  return Math.hypot(p.x - cpx, p.y - cpy);
+}
+
 // ── Geometric hit-test for unselected drawings ─────────────────────────────────
 // Used by the document-level selection listener. Because unselected drawing hit
 // areas have pointerEvents:"none" (so chart panning is never blocked), we need
 // our own spatial hit-test here rather than relying on SVG hit-testing.
 // (cx, cy) are in overlay-local pixel space.
+// touch=true widens the threshold to 32 px (≈ WCAG 2.5.5 minimum touch target)
+// vs 18 px for mouse/stylus, compensating for finger occlusion on mobile.
 function hitTestDrawingAtPx(
   d: Drawing,
   cx: number,
   cy: number,
   toPx: (pt: DrawingPoint) => Px | null,
   barHalfWidth: number,
+  touch = false,
 ): boolean {
   const pts = d.points.map(toPx).filter(Boolean) as Px[];
   if (pts.length === 0) return false;
-  const T = 18; // hit threshold (px)
+  const T = touch ? 32 : 18;
+  const p = { x: cx, y: cy };
 
   switch (d.toolType) {
     case "position_long":
@@ -130,7 +166,11 @@ function hitTestDrawingAtPx(
       return cx >= ELX && cx <= ERX && cy >= top && cy <= bot;
     }
     case "hline":
+      // Full-width horizontal line — only Y distance matters
       return Math.abs(cy - pts[0].y) < T;
+    case "hray":
+      // Horizontal ray extending right from pts[0]: guard cx ≥ origin
+      return Math.abs(cy - pts[0].y) < T && cx >= pts[0].x - T;
     case "vline":
       return Math.abs(cx - pts[0].x) < T;
     case "rect": {
@@ -143,13 +183,25 @@ function hitTestDrawingAtPx(
         Math.abs(cy - y1) < T || Math.abs(cy - y2) < T
       );
     }
-    case "channel":
+    case "ellipse": {
       if (pts.length < 2) return false;
-      return (
-        distToSeg({ x: cx, y: cy }, pts[0], pts[1]) < T ||
-        (pts.length >= 4 ? distToSeg({ x: cx, y: cy }, pts[2], pts[3]) < T : false) ||
-        (pts.length >= 3 ? distToSeg({ x: cx, y: cy }, pts[1], pts[2]) < T : false)
-      );
+      const ecx = (pts[0].x + pts[1].x) / 2, ecy = (pts[0].y + pts[1].y) / 2;
+      const erx = Math.abs(pts[1].x - pts[0].x) / 2, ery = Math.abs(pts[1].y - pts[0].y) / 2;
+      return distToEllipseBorder(p, ecx, ecy, erx, ery) < T;
+    }
+    case "extended":
+      // Infinite line through both anchor points
+      if (pts.length < 2) return false;
+      return distToLine(p, pts[0], pts[1]) < T;
+    case "ray":
+      // Ray from pts[0] directed through pts[1], extends rightward beyond pts[1]
+      if (pts.length < 2) return false;
+      return distToRay(p, pts[0], pts[1]) < T;
+    case "channel":
+    case "fib_channel":
+      // Both tools store two anchor points; the rendered lines are infinite extensions
+      if (pts.length < 2) return false;
+      return distToLine(p, pts[0], pts[1]) < T;
     case "fib": {
       if (pts.length < 2) return false;
       for (const lv of [0, 0.236, 0.382, 0.5, 0.618, 0.786, 1, 1.618]) {
@@ -157,9 +209,28 @@ function hitTestDrawingAtPx(
       }
       return false;
     }
+    case "fib_ext": {
+      if (pts.length < 2) return false;
+      for (const lv of [0, 0.618, 1, 1.272, 1.618, 2, 2.618]) {
+        if (Math.abs(cy - (pts[0].y + (pts[1].y - pts[0].y) * lv)) < T) return true;
+      }
+      return false;
+    }
+    case "brush":
+    case "highlighter": {
+      // Freehand strokes are multi-segment — test every consecutive pair.
+      // Falling through to the default (endpoint-to-endpoint) misses any curved
+      // portion of the stroke between the two endpoints.
+      if (pts.length < 2) return false;
+      const strokeT = d.toolType === "highlighter" ? T + 10 : T;
+      for (let i = 0; i < pts.length - 1; i++) {
+        if (distToSeg(p, pts[i], pts[i + 1]) < strokeT) return true;
+      }
+      return false;
+    }
     default:
       if (pts.length === 1) return Math.hypot(cx - pts[0].x, cy - pts[0].y) < T;
-      if (pts.length >= 2) return distToSeg({ x: cx, y: cy }, pts[0], pts[pts.length - 1]) < T;
+      if (pts.length >= 2) return distToSeg(p, pts[0], pts[pts.length - 1]) < T;
       return false;
   }
 }
@@ -3941,9 +4012,10 @@ const DrawingOverlay = memo(function DrawingOverlay({ symbol, timeframe, onDrawi
         const cy = e.clientY - rect.top;
         const bHW = barHalfWidth;
         const toPxHit1 = toPxRef.current ?? (() => null);
+        const isTouch  = e.pointerType === "touch";
         const overDrawing = drawings.some(d =>
           !d.isLocked && d.isVisible !== false &&
-          hitTestDrawingAtPx(d, cx, cy, toPxHit1, bHW)
+          hitTestDrawingAtPx(d, cx, cy, toPxHit1, bHW, isTouch)
         );
         if (overDrawing) return;
       }
@@ -3966,16 +4038,21 @@ const DrawingOverlay = memo(function DrawingOverlay({ symbol, timeframe, onDrawi
       const rect = overlayRef.current.getBoundingClientRect();
       const cx = e.clientX - rect.left;
       const cy = e.clientY - rect.top;
-      const bHW = barHalfWidth;
-      // Find first unselected, unlocked, visible drawing under the pointer
+      const bHW    = barHalfWidth;
+      const isTouch = e.pointerType === "touch";
       const toPxHit2 = toPxRef.current ?? (() => null);
-      const hit = drawings.find(d =>
+      // Collect all unselected, unlocked, visible drawings under the pointer.
+      // Sort by descending id so the most recently drawn element wins when
+      // multiple drawings overlap — matching the visual "paint order" expectation.
+      const hits = drawings.filter(d =>
         d.id !== selectedId &&
         !d.isLocked &&
         d.isVisible !== false &&
-        hitTestDrawingAtPx(d, cx, cy, toPxHit2, bHW)
+        hitTestDrawingAtPx(d, cx, cy, toPxHit2, bHW, isTouch)
       );
-      if (!hit) return;
+      if (hits.length === 0) return;
+      const hit = hits.reduce((best, d) => d.id > best.id ? d : best);
+
       // Arm a pointerup listener — select only on a clean tap (< 6 px movement)
       const startX = e.clientX, startY = e.clientY;
       const pid = e.pointerId;
