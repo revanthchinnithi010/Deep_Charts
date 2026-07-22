@@ -622,8 +622,7 @@ const RightToolbar = memo(function RightToolbar({
       <SlidePanel open={openPanel === "watchlist"} width={300} onClose={() => setOpenPanel(null)}>
         <BrokerWatchlist
           activeSymbol={activeSymbol}
-          onSelect={s => { onSelectSymbol(s); setOpenPanel(null); }}
-          onClose={() => setOpenPanel(null)}
+          onSelectSymbol={(s: string) => { onSelectSymbol(s); setOpenPanel(null); }}
         />
       </SlidePanel>
 
