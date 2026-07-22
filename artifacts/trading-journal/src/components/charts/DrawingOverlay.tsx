@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, useCallback, memo, useMemo, useContext, us
 import { usePopup } from "@/hooks/usePopup";
 import { createPortal } from "react-dom";
 import type { Time, Logical } from "lightweight-charts";
+import { useAnimate } from "framer-motion";
 import { ColorPickerGlass } from "@/components/ColorPickerGlass";
 import { useChartContext } from "@/contexts/ChartContext";
 import { ChartBarsContext } from "@/contexts/ChartBarsContext";
@@ -12,6 +13,7 @@ import { DrawingSettingsModal } from "@/components/charts/DrawingSettingsModal";
 import { PositionToolbar } from "@/components/charts/PositionToolbar";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { renderDrawingsToCanvas } from "@/components/charts/drawingCanvasRenderer";
+import { useDrawingGestures } from "@/hooks/useDrawingGestures";
 const BASE = import.meta.env.BASE_URL.replace(/\/$/, "");
 
 import icoLockUrl    from "@assets/lockicon1_1780335267097.svg";
@@ -2605,6 +2607,17 @@ const DrawingOverlay = memo(function DrawingOverlay({ symbol, timeframe, onDrawi
   //   • price-scale autoScale shift → pollPrice interval below
   const isMobile = useIsMobile();
 
+  // ── Gesture handler — tap / pan / long-press abstraction ──────────────────
+  // Single hook instance; startGesture() is called per pointer-down event.
+  // Replaces the manual document.addEventListener("pointerup", onUp, true)
+  // pattern with a self-contained, cancellable state machine.
+  const { startGesture, cancelActive: cancelGesture } = useDrawingGestures();
+
+  // ── Reanimated integration — long-press ripple (framer-motion) ────────────
+  // A 40×40 circle that expands + fades at the long-press point to confirm the
+  // gesture to the user.  Driven by useAnimate so it never triggers React state.
+  const [rippleScope, animateRipple] = useAnimate();
+
   // barsRef: always-current bar buffer from CustomChart (mutated in-place by the
   // WS handler on every live tick). Reading barsRef.current at render time is the
   // TradingView-correct approach — no snapshot race with series teardown, no stale
@@ -2921,6 +2934,7 @@ const DrawingOverlay = memo(function DrawingOverlay({ symbol, timeframe, onDrawi
   useEffect(() => {
     const h = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
+        cancelGesture();
         setPhase("idle"); setAnchor(null); setMousePoint(null); setIsDrawing(false);
         isDragging.current = false; clickPhaseRef.current = 0; selectDrawing(null); dragRef.current = null;
         setEphemeralRuler(null);
@@ -3237,6 +3251,48 @@ const DrawingOverlay = memo(function DrawingOverlay({ symbol, timeframe, onDrawi
     removeDrawing(id);
   }, [removeDrawing]);
 
+  // ── Shared toolbar positioning ─────────────────────────────────────────────
+  // Positions the FloatingMiniToolbar adjacent to a drawing.
+  // edgeY="minY" → toolbar above the drawing (used on first-select via body tap).
+  // edgeY="maxY" → toolbar below the drawing (used on tap-to-select from empty chart).
+  const positionToolbarFor = useCallback((id: number, edgeY: "minY" | "maxY") => {
+    if (!overlayRef.current) return;
+    const d = useDrawingStore.getState().drawings.find(x => x.id === id);
+    if (!d) return;
+    const toPxSnap = toPxRef.current;
+    if (!toPxSnap) return;
+    const pts = d.points.map(p => toPxSnap(p)).filter(Boolean) as Px[];
+    if (pts.length === 0) return;
+    const W2     = overlayRef.current.clientWidth;
+    const cR     = Math.max(W2 - 72, W2 * 0.85);
+    const avgX   = pts.reduce((s, pt) => s + pt.x, 0) / pts.length;
+    const edgePx = edgeY === "minY"
+      ? Math.min(...pts.map(pt => pt.y))
+      : Math.max(...pts.map(pt => pt.y));
+    const bRect = overlayRef.current.getBoundingClientRect();
+    (setToolbarPos as (v: { x: number; y: number }) => void)(
+      { x: bRect.left + Math.min(avgX, cR - 20), y: bRect.top + edgePx }
+    );
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // ── Reanimated: long-press ripple trigger ─────────────────────────────────
+  // Positions the ripple element at the press point and runs a framer-motion
+  // spring animation (scale + opacity) for tactile gesture confirmation.
+  const fireRipple = useCallback((clientX: number, clientY: number) => {
+    const el = rippleScope.current as HTMLElement | null;
+    if (!el || !overlayRef.current) return;
+    const rect = overlayRef.current.getBoundingClientRect();
+    const x = clientX - rect.left - 20; // center the 40×40 ripple div on the press point
+    const y = clientY - rect.top  - 20;
+    el.style.transform = `translate(${x}px,${y}px) scale(0)`;
+    el.style.opacity   = "0.4";
+    void animateRipple(el,
+      { scale: [0, 2.5], opacity: [0.4, 0] },
+      { duration: 0.45, ease: "easeOut" },
+    );
+  }, [animateRipple]);
+
   // ── Patch drawing points to server ────────────────────────────────────────
   const patchDrawing = useCallback(async (id: number, pts: DrawingPoint[]) => {
     try {
@@ -3537,37 +3593,24 @@ const DrawingOverlay = memo(function DrawingOverlay({ symbol, timeframe, onDrawi
     if (!drawing || drawing.isLocked) return;
 
     if (!wasSelected) {
-      // Unselected: defer selection to pointerup so drag gestures (which pan the
-      // chart) never auto-select the drawing. A document-level capture-phase
-      // pointerup listener is used so we fire even if LWC captured the pointer.
-      const startX = e.clientX, startY = e.clientY;
-      const pid    = e.pointerId;
-      const onUp   = (upEv: PointerEvent) => {
-        if (upEv.pointerId !== pid) return;
-        document.removeEventListener("pointerup", onUp, true);
-        // Only select on a clean tap — ignore drags (≥ 6 px movement)
-        if (Math.hypot(upEv.clientX - startX, upEv.clientY - startY) >= 6) return;
-        selectDrawing(id);
-        if (overlayRef.current) {
-          const d2 = useDrawingStore.getState().drawings.find(x => x.id === id);
-          if (d2) {
-            const toPxSnap = toPxRef.current;
-            if (!toPxSnap) return;
-            const pts = d2.points.map(p => toPxSnap(p)).filter(Boolean) as Px[];
-            if (pts.length > 0) {
-              const W2   = overlayRef.current.clientWidth;
-              const cR   = Math.max(W2 - 72, W2 * 0.85);
-              const avgX = pts.reduce((s, p) => s + p.x, 0) / pts.length;
-              const minY = Math.min(...pts.map(p => p.y));
-              const bRect = overlayRef.current.getBoundingClientRect();
-              (setToolbarPos as (v: { x: number; y: number }) => void)(
-                { x: bRect.left + Math.min(avgX, cR - 20), y: bRect.top + minY }
-              );
-            }
-          }
-        }
-      };
-      document.addEventListener("pointerup", onUp, true);
+      // Unselected: defer selection to pointer-up so drag gestures (chart pan)
+      // never auto-select the drawing.  Long press also selects + shows the
+      // style panel on mobile — the primary toolbar-reveal gesture on touch.
+      startGesture(e.nativeEvent ?? (e as unknown as PointerEvent), {
+        onTap: () => {
+          selectDrawing(id);
+          positionToolbarFor(id, "minY");
+        },
+        onLongPress: (le) => {
+          selectDrawing(id);
+          positionToolbarFor(id, "minY");
+          // On mobile, long press is the primary way to reach the style panel
+          // (the floating toolbar is desktop-only).
+          if (isMobile) setShowStylePanel(true);
+          fireRipple(le.clientX, le.clientY);
+        },
+        // onPanStart: chart owns the pan — no action needed here
+      });
       return;
     }
 
@@ -4053,35 +4096,20 @@ const DrawingOverlay = memo(function DrawingOverlay({ symbol, timeframe, onDrawi
       if (hits.length === 0) return;
       const hit = hits.reduce((best, d) => d.id > best.id ? d : best);
 
-      // Arm a pointerup listener — select only on a clean tap (< 6 px movement)
-      const startX = e.clientX, startY = e.clientY;
-      const pid = e.pointerId;
-      const onUp = (upEv: PointerEvent) => {
-        if (upEv.pointerId !== pid) return;
-        document.removeEventListener("pointerup", onUp, true);
-        if (Math.hypot(upEv.clientX - startX, upEv.clientY - startY) >= 6) return;
-        selectDrawing(hit.id);
-        // Position the floating toolbar above the drawing
-        if (overlayRef.current) {
-          const d2 = useDrawingStore.getState().drawings.find(x => x.id === hit.id);
-          if (d2) {
-            const toPxSnap3 = toPxRef.current;
-            if (!toPxSnap3) return;
-            const pts = d2.points.map(p => toPxSnap3(p)).filter(Boolean) as Px[];
-            if (pts.length > 0) {
-              const W2   = overlayRef.current.clientWidth;
-              const cR   = Math.max(W2 - 72, W2 * 0.85);
-              const avgX = pts.reduce((s, p) => s + p.x, 0) / pts.length;
-              const maxY = Math.max(...pts.map(p => p.y));
-              const bRect2 = overlayRef.current.getBoundingClientRect();
-              (setToolbarPos as (v: { x: number; y: number }) => void)(
-                { x: bRect2.left + Math.min(avgX, cR - 20), y: bRect2.top + maxY }
-              );
-            }
-          }
-        }
-      };
-      document.addEventListener("pointerup", onUp, true);
+      // Delegate tap / long-press detection to the gesture handler.
+      // Pan suppresses tap automatically (state machine: pressed → pan → no tap).
+      startGesture(e, {
+        onTap: () => {
+          selectDrawing(hit.id);
+          positionToolbarFor(hit.id, "maxY");
+        },
+        onLongPress: (le) => {
+          selectDrawing(hit.id);
+          positionToolbarFor(hit.id, "maxY");
+          if (isMobile) setShowStylePanel(true);
+          fireRipple(le.clientX, le.clientY);
+        },
+      });
     };
     document.addEventListener("pointerdown", onDocDown, true);
     return () => document.removeEventListener("pointerdown", onDocDown, true);
@@ -4679,6 +4707,28 @@ const DrawingOverlay = memo(function DrawingOverlay({ symbol, timeframe, onDrawi
           />
         );
       })()}
+
+      {/* ── Long-press ripple — framer-motion animated gesture confirmation ──
+          Positioned absolutely; translate is set imperatively in fireRipple()
+          so there are zero React state updates on long press.
+          pointerEvents:none ensures it never intercepts drawing hit tests.    */}
+      <div
+        ref={rippleScope}
+        style={{
+          position:        "absolute",
+          top:             0,
+          left:            0,
+          width:           40,
+          height:          40,
+          borderRadius:    "50%",
+          background:      "rgba(147, 197, 253, 0.55)",
+          pointerEvents:   "none",
+          opacity:         0,
+          transformOrigin: "center",
+          willChange:      "transform, opacity",
+          zIndex:          10,
+        }}
+      />
     </div>
   );
 });
