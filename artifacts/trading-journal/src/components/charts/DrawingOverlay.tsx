@@ -282,11 +282,11 @@ const DrawingShape = memo(function DrawingShape({
           className="tj-anchor-body"
           fill="#0d1117" stroke="#3b82f6" strokeWidth={2.5}
           style={{ pointerEvents: "none" }} />
-        {/* White core dot */}
-        <circle cx={vp.x} cy={vp.y} r={3}
-          className="tj-anchor-core"
-          fill="#ffffff"
-          style={{ pointerEvents: "none" }} />
+        {/* White core dot — wrapped in <g> so CSS transform:scale works cross-browser
+            (animating SVG `r` via CSS has poor Firefox support; transform on a <g> works everywhere) */}
+        <g className="tj-anchor-core-g" style={{ pointerEvents: "none" }}>
+          <circle cx={vp.x} cy={vp.y} r={3} fill="#ffffff" />
+        </g>
         {/* Transparent hit-circle — sole event receiver, sits on top.
             r=20 gives a 40px touch target (WCAG minimum 44px guidance, well above 32px). */}
         <circle
@@ -568,8 +568,30 @@ const DrawingShape = memo(function DrawingShape({
           </g>
         );
       }
+      case "curve": {
+        // canvasOnly curve: bezier path as hit area + control-point diamond + anchors.
+        // Canvas2D draws the visible stroke; SVG provides the interactive layer.
+        if (px.length < 2) return null;
+        const cMidX = (px[0].x + px[1].x) / 2;
+        const cMidY = (px[0].y + px[1].y) / 2;
+        const cDxL  = px[1].x - px[0].x, cDyL = px[1].y - px[0].y;
+        const cLen  = Math.hypot(cDxL, cDyL) || 1;
+        const cCtrlX = cMidX - (cDyL / cLen) * cLen * 0.25;
+        const cCtrlY = cMidY + (cDxL / cLen) * cLen * 0.25;
+        const cD = `M ${px[0].x.toFixed(1)} ${px[0].y.toFixed(1)} Q ${cCtrlX.toFixed(1)} ${cCtrlY.toFixed(1)} ${px[1].x.toFixed(1)} ${px[1].y.toFixed(1)}`;
+        return (
+          <g opacity={op}>
+            {/* Bezier hit-area — wider than the visible stroke so the curve arc is hittable */}
+            <path d={cD} stroke="transparent" strokeWidth={HIT} fill="none" {...hitProps} />
+            {/* Control-point diamond + tangent stems (visual only, same as non-canvasOnly curve) */}
+            <ControlPoint p={{ x: cCtrlX, y: cCtrlY }} from={px[0]} to={px[1]} />
+            <Anchor i={0} p={px[0]} />
+            <Anchor i={1} p={px[1]} />
+          </g>
+        );
+      }
       default: {
-        // Line-based: trendline, ray, extended, arrow, channel, ruler, curve, path, fib_channel…
+        // Line-based: trendline, ray, extended, arrow, channel, ruler, path, fib_channel…
         if (px.length < 2) return null;
         let lx1 = px[0].x, ly1 = px[0].y, lx2 = px[1].x, ly2 = px[1].y;
         const linM = Math.abs(px[1].x - px[0].x) > 0.1
@@ -4087,10 +4109,18 @@ const DrawingOverlay = memo(function DrawingOverlay({ symbol, timeframe, onDrawi
               .tj-anchor-body  — inner ring: stroke lightens on hover
               .tj-anchor-core  — white dot: pops slightly on hover              */}
           <style>{`
-            .tj-anchor .tj-anchor-glow  { transition: opacity 0.12s ease; }
-            .tj-anchor:hover .tj-anchor-glow  { opacity: 0.30; }
-            .tj-anchor:hover .tj-anchor-body  { stroke: #60a5fa; stroke-width: 3; }
-            .tj-anchor:hover .tj-anchor-core  { r: 4; }
+            /* ── Base (default, selected but not hovered) ── */
+            .tj-anchor .tj-anchor-glow   { opacity: 0; transition: opacity 0.12s ease; }
+            .tj-anchor .tj-anchor-body   { transition: stroke 0.10s ease, stroke-width 0.10s ease, fill 0.10s ease; }
+            .tj-anchor .tj-anchor-core-g { transition: transform 0.10s ease; transform-origin: center; transform-box: fill-box; }
+            /* ── Hover ── */
+            .tj-anchor:hover .tj-anchor-glow   { opacity: 0.30; }
+            .tj-anchor:hover .tj-anchor-body   { stroke: #60a5fa; stroke-width: 3; }
+            .tj-anchor:hover .tj-anchor-core-g { transform: scale(1.45); }
+            /* ── Active / pressed (before drag starts) ── */
+            .tj-anchor:active .tj-anchor-glow   { opacity: 0.55; }
+            .tj-anchor:active .tj-anchor-body   { stroke: #93c5fd; stroke-width: 3.5; fill: rgba(30,40,80,0.95); }
+            .tj-anchor:active .tj-anchor-core-g { transform: scale(1.65); }
           `}</style>
           <clipPath id="drawing-clip">
             {/* Inset 4px on the left so endpoint circles (r≤3.5) never form a
