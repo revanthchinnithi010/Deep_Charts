@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, useCallback, memo, useMemo, useContext, useLayoutEffect } from "react";
+import { useEffect, useRef, useState, useCallback, memo, useMemo, useContext } from "react";
 import { usePopup } from "@/hooks/usePopup";
 import { createPortal } from "react-dom";
 import type { Time, Logical } from "lightweight-charts";
@@ -18,12 +18,9 @@ const BASE = import.meta.env.BASE_URL.replace(/\/$/, "");
 
 import icoLockUrl    from "@assets/lockicon1_1780335267097.svg";
 import ico3DotsUrl   from "@assets/3dots1_1780335267063.svg";
-import icoMomentUrl  from "@assets/moment1_1780335267132.svg";
 import icoSettingUrl from "@assets/setting1_1780335267166.svg";
-import icoPencilUrl  from "@assets/pencil_1780335267014.svg";
 import icoAlertUrl   from "@assets/alert1_1780335285769.svg";
 import icoBinUrl     from "@assets/bin1_1780335362774.svg";
-import icoTextUrl    from "@assets/text1_1780334568624.svg";
 
 function hexToRgba(hex: string, alpha: number): string {
   const h = (hex || "#089981").replace("#", "").slice(0, 6).padEnd(6, "0");

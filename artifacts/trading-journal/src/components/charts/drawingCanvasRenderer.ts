@@ -720,11 +720,11 @@ export function renderDrawingsToCanvas(
         ctx.strokeStyle = col; ctx.lineWidth = 1.2; ctx.setLineDash([]);
         ctx.fillStyle = hexToRgba(col, 0.13);
         ctx.beginPath();
-        (ctx as any).roundRect?.(bx, by, bW, bH, 6) ?? ctx.rect(bx, by, bW, bH);
+        if (ctx.roundRect) ctx.roundRect(bx, by, bW, bH, 6); else ctx.rect(bx, by, bW, bH);
         ctx.fill(); ctx.stroke();
         ctx.fillStyle = hexToRgba(col, 0.18);
         ctx.beginPath();
-        (ctx as any).roundRect?.(bx, by, bW, tailH + 2, 6) ?? ctx.rect(bx, by, bW, tailH + 2);
+        if (ctx.roundRect) ctx.roundRect(bx, by, bW, tailH + 2, 6); else ctx.rect(bx, by, bW, tailH + 2);
         ctx.fill();
         ctx.font = `${tSt} ${tWt} ${tSize}px 'Inter','SF Pro Display',system-ui,sans-serif`;
         ctx.fillStyle = tCol;
@@ -749,7 +749,7 @@ export function renderDrawingsToCanvas(
         const lbl    = `${pDiffR.toFixed(2)} (${pctR}%)`;
         ctx.fillStyle = "rgba(9,18,14,0.9)"; ctx.strokeStyle = col; ctx.lineWidth = 1;
         ctx.beginPath();
-        (ctx as any).roundRect?.(midX - 48, midY - 13, 96, 24, 5) ?? ctx.rect(midX - 48, midY - 13, 96, 24);
+        if (ctx.roundRect) ctx.roundRect(midX - 48, midY - 13, 96, 24, 5); else ctx.rect(midX - 48, midY - 13, 96, 24);
         ctx.fill(); ctx.stroke();
         ctx.font = '700 11px "JetBrains Mono","Fira Code",monospace';
         ctx.fillStyle = col; ctx.textAlign = "center"; ctx.textBaseline = "middle";
