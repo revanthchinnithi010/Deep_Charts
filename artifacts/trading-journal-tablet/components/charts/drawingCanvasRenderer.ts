@@ -401,6 +401,31 @@ function dot(ctx: SkiaCtx, x: number, y: number, r: number, fill: string): void 
   ctx.fill();
 }
 
+// ─── Selection bounding-box helpers ───────────────────────────────────────────
+
+/**
+ * Draws a dashed 1px selection bounding-box rect at 55% opacity.
+ * Used for area / multi-point tools (fib, brush, channel …) to show the
+ * axis-aligned extent of the selected drawing.
+ * Purposely separate from the shape-glow so complex tools get both:
+ *   • the shadow glow applied to their stroke lines (set by the outer save/restore), AND
+ *   • this clean AABB outline that shows the selectable region.
+ */
+function drawSelectionRect(
+  ctx: SkiaCtx,
+  x: number, y: number, w: number, h: number,
+  col: string,
+): void {
+  if (w < 1 || h < 1) return;
+  ctx.save();
+  ctx.shadowBlur  = 0;
+  ctx.strokeStyle = hexToRgba(col, 0.55);
+  ctx.lineWidth   = 1;
+  ctx.setLineDash([5, 3]);
+  ctx.strokeRect(x, y, w, h);
+  ctx.restore();
+}
+
 // ─── renderLineLabelCanvas (algorithms unchanged) ─────────────────────────────
 
 function renderLineLabelCanvas(
@@ -809,6 +834,16 @@ export function renderDrawingsToCanvas(
         if (px.length < 2) break;
         const rx = Math.min(px[0].x, px[1].x), ry = Math.min(px[0].y, px[1].y);
         const rw = Math.abs(px[1].x - px[0].x), rh = Math.abs(px[1].y - px[0].y);
+        // Shape glow — mirrors web Glow component for rect: wider stroke at 22% opacity.
+        if (isSelected) {
+          ctx.save();
+          ctx.shadowBlur  = 0;
+          ctx.strokeStyle = hexToRgba(col, 0.22);
+          ctx.lineWidth   = sw + 7;
+          ctx.setLineDash([]);
+          ctx.strokeRect(rx, ry, rw, rh);
+          ctx.restore();
+        }
         if ((style.fillOpacity ?? 0) > 0) {
           ctx.save();
           ctx.shadowBlur = 0;
@@ -824,6 +859,18 @@ export function renderDrawingsToCanvas(
         if (px.length < 2) break;
         const cx = (px[0].x + px[1].x) / 2, cy = (px[0].y + px[1].y) / 2;
         const erx = Math.abs(px[1].x - px[0].x) / 2, ery = Math.abs(px[1].y - px[0].y) / 2;
+        // Shape glow — mirrors web Glow component for ellipse: wider stroke at 22% opacity.
+        if (isSelected) {
+          ctx.save();
+          ctx.shadowBlur  = 0;
+          ctx.strokeStyle = hexToRgba(col, 0.22);
+          ctx.lineWidth   = sw + 7;
+          ctx.setLineDash([]);
+          ctx.beginPath();
+          ctx.ellipse(cx, cy, Math.max(erx, 0.1), Math.max(ery, 0.1), 0, 0, Math.PI * 2);
+          ctx.stroke();
+          ctx.restore();
+        }
         ctx.beginPath();
         ctx.ellipse(cx, cy, Math.max(erx, 0.1), Math.max(ery, 0.1), 0, 0, Math.PI * 2);
         if ((style.fillOpacity ?? 0) > 0) {
@@ -858,6 +905,14 @@ export function renderDrawingsToCanvas(
         ctx.moveTo(bPts[0].x, bPts[0].y);
         for (let i = 1; i < bPts.length; i++) ctx.lineTo(bPts[i].x, bPts[i].y);
         ctx.stroke();
+        // Selection bounding box — AABB around all sampled stroke points + 4 px padding.
+        if (isSelected) {
+          const bMinX = Math.min(...bPts.map(p => p.x));
+          const bMaxX = Math.max(...bPts.map(p => p.x));
+          const bMinY = Math.min(...bPts.map(p => p.y));
+          const bMaxY = Math.max(...bPts.map(p => p.y));
+          drawSelectionRect(ctx, bMinX - 4, bMinY - 4, bMaxX - bMinX + 8, bMaxY - bMinY + 8, col);
+        }
         break;
       }
 
@@ -874,6 +929,14 @@ export function renderDrawingsToCanvas(
         for (let i = 1; i < hPts.length; i++) ctx.lineTo(hPts[i].x, hPts[i].y);
         ctx.stroke();
         ctx.restore();
+        // Selection bounding box — AABB around all sampled highlight points + 4 px padding.
+        if (isSelected) {
+          const hMinX = Math.min(...hPts.map(p => p.x));
+          const hMaxX = Math.max(...hPts.map(p => p.x));
+          const hMinY = Math.min(...hPts.map(p => p.y));
+          const hMaxY = Math.max(...hPts.map(p => p.y));
+          drawSelectionRect(ctx, hMinX - 4, hMinY - 4, hMaxX - hMinX + 8, hMaxY - hMinY + 8, col);
+        }
         break;
       }
 
@@ -918,6 +981,16 @@ export function renderDrawingsToCanvas(
         ctx.save(); ctx.shadowBlur = 0; ctx.globalAlpha *= 0.6; drawLine(ctx, a2, b2); ctx.restore();
         dot(ctx, px[0].x, px[0].y, 3.5, col);
         dot(ctx, px[1].x, px[1].y, 3.5, col);
+        // Selection bounding box — AABB of the two anchor points plus the channel-offset
+        // line (c0, c1), which sits cW pixels away from the main line.
+        if (isSelected) {
+          const chYs = [px[0].y, px[1].y, c0.y, c1.y];
+          const chMinY = Math.min(...chYs) - 2;
+          const chMaxY = Math.max(...chYs) + 2;
+          const chMinX = Math.min(px[0].x, px[1].x) - 2;
+          const chMaxX = Math.max(px[0].x, px[1].x) + 2;
+          drawSelectionRect(ctx, chMinX, chMinY, chMaxX - chMinX, chMaxY - chMinY, col);
+        }
         break;
       }
 
@@ -946,6 +1019,14 @@ export function renderDrawingsToCanvas(
         }
         dot(ctx, px[0].x, px[0].y, 3, col);
         dot(ctx, px[1].x, px[1].y, 3, col);
+        // Selection bounding box — spans anchor x-range and 0%→100% price levels.
+        // Fib levels all fall within [pts[0].price … pts[1].price], so the anchor
+        // pixel positions already define the full vertical extent.
+        if (isSelected) {
+          const fibMinY = Math.min(px[0].y, px[1].y);
+          const fibMaxY = Math.max(px[0].y, px[1].y);
+          drawSelectionRect(ctx, x0 - 2, fibMinY - 2, x1 - x0 + 4, fibMaxY - fibMinY + 4, col);
+        }
         break;
       }
 
@@ -971,6 +1052,18 @@ export function renderDrawingsToCanvas(
         }
         dot(ctx, px[0].x, px[0].y, 3, col);
         dot(ctx, px[1].x, px[1].y, 3, col);
+        // Selection bounding box — x-range from anchors; y-range includes the 261.8%
+        // extreme level which extends beyond the second anchor point.
+        if (isSelected) {
+          const extPriceExtreme = pts[0].price + pDiff2 * 2.618;
+          const extYExtreme = toPx({ time: pts[0].time, price: extPriceExtreme });
+          const extYAnchor0 = toPx({ time: pts[0].time, price: pts[0].price });
+          if (extYExtreme && extYAnchor0) {
+            const extMinY = Math.min(extYExtreme.y, extYAnchor0.y, px[0].y, px[1].y);
+            const extMaxY = Math.max(extYExtreme.y, extYAnchor0.y, px[0].y, px[1].y);
+            drawSelectionRect(ctx, x0e - 2, extMinY - 2, x1e - x0e + 4, extMaxY - extMinY + 4, col);
+          }
+        }
         break;
       }
 
@@ -1002,6 +1095,17 @@ export function renderDrawingsToCanvas(
         }
         dot(ctx, px[0].x, px[0].y, 3.5, col);
         dot(ctx, px[1].x, px[1].y, 3.5, col);
+        // Selection bounding box — AABB of anchor points extended to the 1.618× offset
+        // line (the highest fib_channel level rendered).
+        if (isSelected) {
+          const [fcHigh0, fcHigh1] = parallelOffset(px[0], px[1], chH * 1.618);
+          const fcYs = [px[0].y, px[1].y, fcHigh0.y, fcHigh1.y];
+          const fcMinY = Math.min(...fcYs) - 2;
+          const fcMaxY = Math.max(...fcYs) + 2;
+          const fcMinX = Math.min(px[0].x, px[1].x) - 2;
+          const fcMaxX = Math.max(px[0].x, px[1].x) + 2;
+          drawSelectionRect(ctx, fcMinX, fcMinY, fcMaxX - fcMinX, fcMaxY - fcMinY, col);
+        }
         break;
       }
 
