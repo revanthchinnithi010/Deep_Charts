@@ -3480,7 +3480,9 @@ const DrawingOverlay = memo(function DrawingOverlay({ symbol, timeframe, onDrawi
         if (overlayRef.current) {
           const d2 = useDrawingStore.getState().drawings.find(x => x.id === id);
           if (d2) {
-            const pts = d2.points.map(p => toPxRef.current(p)).filter(Boolean) as Px[];
+            const toPxSnap = toPxRef.current;
+            if (!toPxSnap) return;
+            const pts = d2.points.map(p => toPxSnap(p)).filter(Boolean) as Px[];
             if (pts.length > 0) {
               const W2   = overlayRef.current.clientWidth;
               const cR   = Math.max(W2 - 72, W2 * 0.85);
@@ -3503,7 +3505,10 @@ const DrawingOverlay = memo(function DrawingOverlay({ symbol, timeframe, onDrawi
     selectDrawing(id);
     // Compute toolbar position synchronously so it appears the same frame as the click
     if (overlayRef.current) {
-      const pts = drawing.points.map(p => toPxRef.current(p)).filter(Boolean) as Px[];
+      const toPxSnap2 = toPxRef.current;
+      const pts = toPxSnap2
+        ? drawing.points.map(p => toPxSnap2(p)).filter(Boolean) as Px[]
+        : [];
       if (pts.length > 0) {
         const W2   = overlayRef.current.clientWidth;
         const cR   = Math.max(W2 - 72, W2 * 0.85);
@@ -3519,7 +3524,7 @@ const DrawingOverlay = memo(function DrawingOverlay({ symbol, timeframe, onDrawi
     // Cache rect + pixel positions ONCE at drag start — never call getBCR again during drag
     const overlayRect   = overlayRef.current?.getBoundingClientRect() ?? new DOMRect();
     const startPts      = [...drawing.points];
-    const startPxPoints = startPts.map(p => toPxRef.current(p));
+    const startPxPoints = startPts.map(p => toPxRef.current?.(p) ?? null);
     dragRef.current = {
       id, kind: "move", anchorIdx: -1,
       startPoints:   startPts,
@@ -3552,7 +3557,7 @@ const DrawingOverlay = memo(function DrawingOverlay({ symbol, timeframe, onDrawi
     // Cache rect + pixel positions ONCE at drag start — never call getBCR again during drag
     const overlayRect   = overlayRef.current?.getBoundingClientRect() ?? new DOMRect();
     const startPts      = [...drawing.points];
-    const startPxPoints = startPts.map(p => toPxRef.current(p));
+    const startPxPoints = startPts.map(p => toPxRef.current?.(p) ?? null);
     dragRef.current = {
       id, kind: "anchor", anchorIdx,
       startPoints:   startPts,
@@ -3935,9 +3940,10 @@ const DrawingOverlay = memo(function DrawingOverlay({ symbol, timeframe, onDrawi
         const cx = e.clientX - rect.left;
         const cy = e.clientY - rect.top;
         const bHW = barHalfWidth;
+        const toPxHit1 = toPxRef.current ?? (() => null);
         const overDrawing = drawings.some(d =>
           !d.isLocked && d.isVisible !== false &&
-          hitTestDrawingAtPx(d, cx, cy, toPxRef.current, bHW)
+          hitTestDrawingAtPx(d, cx, cy, toPxHit1, bHW)
         );
         if (overDrawing) return;
       }
@@ -3962,11 +3968,12 @@ const DrawingOverlay = memo(function DrawingOverlay({ symbol, timeframe, onDrawi
       const cy = e.clientY - rect.top;
       const bHW = barHalfWidth;
       // Find first unselected, unlocked, visible drawing under the pointer
+      const toPxHit2 = toPxRef.current ?? (() => null);
       const hit = drawings.find(d =>
         d.id !== selectedId &&
         !d.isLocked &&
         d.isVisible !== false &&
-        hitTestDrawingAtPx(d, cx, cy, toPxRef.current, bHW)
+        hitTestDrawingAtPx(d, cx, cy, toPxHit2, bHW)
       );
       if (!hit) return;
       // Arm a pointerup listener — select only on a clean tap (< 6 px movement)
@@ -3981,7 +3988,9 @@ const DrawingOverlay = memo(function DrawingOverlay({ symbol, timeframe, onDrawi
         if (overlayRef.current) {
           const d2 = useDrawingStore.getState().drawings.find(x => x.id === hit.id);
           if (d2) {
-            const pts = d2.points.map(p => toPxRef.current(p)).filter(Boolean) as Px[];
+            const toPxSnap3 = toPxRef.current;
+            if (!toPxSnap3) return;
+            const pts = d2.points.map(p => toPxSnap3(p)).filter(Boolean) as Px[];
             if (pts.length > 0) {
               const W2   = overlayRef.current.clientWidth;
               const cR   = Math.max(W2 - 72, W2 * 0.85);
