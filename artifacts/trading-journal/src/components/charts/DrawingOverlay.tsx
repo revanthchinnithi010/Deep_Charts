@@ -249,7 +249,16 @@ const DrawingShape = memo(function DrawingShape({
   // Anchor handle — TradingView-style: outer glow + dark fill + blue ring + white core.
   // Uses a transparent top circle as the explicit hit target (reliable across all browsers).
   // Visual circles are pointer-events:none so only the top transparent circle receives events.
-  const Anchor = ({ i, p }: { i: number; p: Px }) => {
+  //
+  // `display` — optional visual-position override for tools where the logical anchor
+  // position differs from the ideal render position (e.g. hline anchors centred
+  // horizontally, vline anchors centred vertically). Drag logic always receives the
+  // logical position via onAnchorDown; only the rendered circles move.
+  //
+  // CSS hover state is driven by the `.tj-anchor` / `.tj-anchor-*` class system
+  // declared in the SVG <style> element in DrawingOverlay's <defs>. Hover handling
+  // lives entirely in CSS to avoid re-renders inside a nested component-function.
+  const Anchor = ({ i, p, display }: { i: number; p: Px; display?: Px }) => {
     if (!isSelected || !cursorMode || isPreview || !onAnchorDown) return null;
     const handleDown = (e: React.PointerEvent) => {
       e.stopPropagation();
@@ -259,22 +268,69 @@ const DrawingShape = memo(function DrawingShape({
       // the capture. Capture is done instead on the stable overlayRef in onAnchorDown.
       onAnchorDown(e, drawing.id, i);
     };
+    // Visual position may differ from logical (hline / vline centering).
+    const vp = display ?? p;
     return (
-      <>
-        {/* Visual layers — no pointer events */}
-        <circle cx={p.x} cy={p.y} r={13} fill="rgba(37,99,235,0.10)" style={{ pointerEvents: "none" }} />
-        <circle cx={p.x} cy={p.y} r={9}  fill="#0d1117" stroke="#3b82f6" strokeWidth={2.5} style={{ pointerEvents: "none" }} />
-        <circle cx={p.x} cy={p.y} r={3}  fill="#ffffff" style={{ pointerEvents: "none" }} />
+      <g className="tj-anchor">
+        {/* Glow ring — opacity driven by .tj-anchor:hover in SVG <style> */}
+        <circle cx={vp.x} cy={vp.y} r={13}
+          className="tj-anchor-glow"
+          fill="rgba(37,99,235,0.12)"
+          style={{ pointerEvents: "none" }} />
+        {/* Body ring — stroke brightens on hover */}
+        <circle cx={vp.x} cy={vp.y} r={9}
+          className="tj-anchor-body"
+          fill="#0d1117" stroke="#3b82f6" strokeWidth={2.5}
+          style={{ pointerEvents: "none" }} />
+        {/* White core dot */}
+        <circle cx={vp.x} cy={vp.y} r={3}
+          className="tj-anchor-core"
+          fill="#ffffff"
+          style={{ pointerEvents: "none" }} />
         {/* Transparent hit-circle — sole event receiver, sits on top.
             r=20 gives a 40px touch target (WCAG minimum 44px guidance, well above 32px). */}
         <circle
-          cx={p.x} cy={p.y} r={20}
+          cx={vp.x} cy={vp.y} r={20}
           fill="transparent" stroke="none"
           style={{ cursor: "grab", pointerEvents: "all", touchAction: "none" }}
           onPointerDown={handleDown}
           onClick={(e) => e.stopPropagation()}
         />
-      </>
+      </g>
+    );
+  };
+
+  // ── Control-point handle (curve / bezier shapes) ────────────────────────────
+  // Renders a diamond-shaped handle at the computed control point, with dashed
+  // tangent stems connecting to both endpoints. Visual-only — no pointer events.
+  // Shown only when the drawing is selected and not in preview mode.
+  const ControlPoint = ({ p, from, to }: { p: Px; from: Px; to: Px }) => {
+    if (!isSelected || isPreview) return null;
+    const S = 5; // half-size of diamond (full extent = 10 px)
+    return (
+      <g style={{ pointerEvents: "none" }}>
+        {/* Tangent stems — thin dashed lines from each endpoint to the ctrl pt */}
+        <line
+          x1={from.x} y1={from.y} x2={p.x} y2={p.y}
+          stroke="#3b82f6" strokeWidth={1} strokeDasharray="3 3" strokeOpacity={0.45}
+        />
+        <line
+          x1={p.x} y1={p.y} x2={to.x} y2={to.y}
+          stroke="#3b82f6" strokeWidth={1} strokeDasharray="3 3" strokeOpacity={0.45}
+        />
+        {/* Outer glow */}
+        <path
+          d={`M ${p.x} ${p.y - S - 3} L ${p.x + S + 3} ${p.y} L ${p.x} ${p.y + S + 3} L ${p.x - S - 3} ${p.y} Z`}
+          fill="rgba(37,99,235,0.10)"
+        />
+        {/* Diamond body */}
+        <path
+          d={`M ${p.x} ${p.y - S} L ${p.x + S} ${p.y} L ${p.x} ${p.y + S} L ${p.x - S} ${p.y} Z`}
+          fill="rgba(5,13,35,0.92)" stroke="#3b82f6" strokeWidth={1.8}
+        />
+        {/* White centre dot */}
+        <circle cx={p.x} cy={p.y} r={1.8} fill="#ffffff" fillOpacity={0.75} />
+      </g>
     );
   };
 
@@ -425,7 +481,9 @@ const DrawingShape = memo(function DrawingShape({
       case "hline": return (
         <g opacity={op}>
           <line x1={0} y1={px[0].y} x2={W} y2={px[0].y} stroke="transparent" strokeWidth={HIT} {...hitProps} />
-          <Anchor i={0} p={px[0]} />
+          {/* Display anchor at horizontal midpoint — hline spans full width so the
+              user's original click-X is arbitrary; W/2 gives a stable visual target. */}
+          <Anchor i={0} p={px[0]} display={{ x: W / 2, y: px[0].y }} />
         </g>
       );
       case "hray": return (
@@ -437,7 +495,9 @@ const DrawingShape = memo(function DrawingShape({
       case "vline": return (
         <g opacity={op}>
           <line x1={px[0].x} y1={0} x2={px[0].x} y2={H} stroke="transparent" strokeWidth={HIT} {...hitProps} />
-          <Anchor i={0} p={px[0]} />
+          {/* Display anchor at vertical midpoint — vline spans full height so the
+              user's original click-Y is arbitrary; H/2 gives a stable visual target. */}
+          <Anchor i={0} p={px[0]} display={{ x: px[0].x, y: H / 2 }} />
         </g>
       );
       case "rect": {
@@ -722,7 +782,9 @@ const DrawingShape = memo(function DrawingShape({
             fontFamily="'JetBrains Mono','Fira Code',monospace" textAnchor="end">
             {points[0].price.toFixed(points[0].price > 1000 ? 2 : 5)}
           </text>
-          <Anchor i={0} p={px[0]} />
+          {/* Anchor centred horizontally — hline spans full width so the
+              user's original click-X is arbitrary; W/2 gives a stable visual target. */}
+          <Anchor i={0} p={px[0]} display={{ x: W / 2, y: px[0].y }} />
         </g>
       );
     }
@@ -734,7 +796,9 @@ const DrawingShape = memo(function DrawingShape({
           <Glow d={d} />
           <path d={d} stroke="transparent" strokeWidth={HIT} fill="none" {...hitProps} />
           <path d={d} stroke={col} strokeWidth={sw} strokeDasharray={dash} fill="none" />
-          <Anchor i={0} p={px[0]} />
+          {/* Anchor centred vertically — vline spans full height so the
+              user's original click-Y is arbitrary; H/2 gives a stable visual target. */}
+          <Anchor i={0} p={px[0]} display={{ x: px[0].x, y: H / 2 }} />
         </g>
       );
     }
@@ -857,6 +921,8 @@ const DrawingShape = memo(function DrawingShape({
           <path d={d} stroke={col} strokeWidth={sw} fill="none" strokeLinecap="round" strokeDasharray={dash} />
           <circle cx={px[0].x} cy={px[0].y} r={3} fill={col} opacity={isSelected ? 0 : 0.8} />
           <circle cx={px[1].x} cy={px[1].y} r={3} fill={col} opacity={isSelected ? 0 : 0.8} />
+          {/* Bezier control-point: diamond handle + dashed tangent stems (visual only) */}
+          <ControlPoint p={{ x: ctrlX, y: ctrlY }} from={px[0]} to={px[1]} />
           <Anchor i={0} p={px[0]} />
           <Anchor i={1} p={px[1]} />
         </g>
@@ -4015,6 +4081,17 @@ const DrawingOverlay = memo(function DrawingOverlay({ symbol, timeframe, onDrawi
       />
       <svg width="100%" height="100%" style={{ overflow: "hidden", display: "block", willChange: "transform", transform: "translate3d(0,0,0)", touchAction: "none", position: "relative" }}>
         <defs>
+          {/* ── Anchor hover / visual-state CSS ─────────────────────────────────
+              Hover effects are pure CSS so they cost zero React renders.
+              .tj-anchor-glow  — outer ring: brightens on hover
+              .tj-anchor-body  — inner ring: stroke lightens on hover
+              .tj-anchor-core  — white dot: pops slightly on hover              */}
+          <style>{`
+            .tj-anchor .tj-anchor-glow  { transition: opacity 0.12s ease; }
+            .tj-anchor:hover .tj-anchor-glow  { opacity: 0.30; }
+            .tj-anchor:hover .tj-anchor-body  { stroke: #60a5fa; stroke-width: 3; }
+            .tj-anchor:hover .tj-anchor-core  { r: 4; }
+          `}</style>
           <clipPath id="drawing-clip">
             {/* Inset 4px on the left so endpoint circles (r≤3.5) never form a
                 partial arc on the panel border line. 4px is invisible on lines.
