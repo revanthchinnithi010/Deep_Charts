@@ -278,6 +278,146 @@ const DrawingShape = memo(function DrawingShape({
     );
   };
 
+  // ── Bounding-box resize handles + rotation handle (rect / ellipse) ───────────
+  // Renders 8 square resize handles (4 corners + 4 edge midpoints) and a rotation
+  // handle above the shape. Only the two corners that coincide with px[0] / px[1]
+  // are interactive (anchorIdx 0 or 1); the other corners and all edge midpoints
+  // are visual-only — drag logic for those variants is handled by later phases.
+  // The rotation handle is visual-only; rotation drag is wired in a later phase.
+  //
+  // Handle size: 10×10 px square, 28×28 transparent hit-rect on interactive ones.
+  // Rotation stem: vertical line from top-edge midpoint to circle center.
+  const BBoxHandles = ({ x1, y1, x2, y2 }: { x1: number; y1: number; x2: number; y2: number }) => {
+    if (!isSelected || !cursorMode || isPreview) return null;
+    const midX = (x1 + x2) / 2;
+    const midY = (y1 + y2) / 2;
+    const SH  = 10;  // visual square size
+    const SH2 = SH / 2;
+    const ROT_STEM = 22; // px between top-edge midpoint and rotation circle center
+
+    // Map pixel corner position back to anchorIdx (0 or 1) — only the two
+    // stored corners are interactive. Tolerance 1 px to handle float rounding.
+    const anchorIdxAt = (hx: number, hy: number): number | null => {
+      if (Math.abs(hx - px[0].x) < 1.5 && Math.abs(hy - px[0].y) < 1.5) return 0;
+      if (Math.abs(hx - px[1].x) < 1.5 && Math.abs(hy - px[1].y) < 1.5) return 1;
+      return null; // virtual — visual only
+    };
+
+    const squareHandle = (
+      hx: number, hy: number,
+      cursor: string,
+      key: string,
+    ) => {
+      const aidx = anchorIdxAt(hx, hy);
+      const interactive = aidx !== null && !!onAnchorDown;
+      return (
+        <g key={key}>
+          {/* Transparent hit zone — only on interactive (stored) corners */}
+          {interactive && (
+            <rect
+              x={hx - 14} y={hy - 14} width={28} height={28}
+              fill="transparent"
+              style={{ cursor, pointerEvents: "all", touchAction: "none" }}
+              onPointerDown={(e) => {
+                e.stopPropagation();
+                e.preventDefault();
+                onAnchorDown!(e, drawing.id, aidx!);
+              }}
+              onClick={(e) => e.stopPropagation()}
+            />
+          )}
+          {/* Outer glow ring — matches Anchor glow but square */}
+          <rect
+            x={hx - SH2 - 3} y={hy - SH2 - 3}
+            width={SH + 6} height={SH + 6}
+            fill="rgba(37,99,235,0.10)"
+            rx={3}
+            style={{ pointerEvents: "none" }}
+          />
+          {/* Filled square body */}
+          <rect
+            x={hx - SH2} y={hy - SH2}
+            width={SH} height={SH}
+            fill="rgba(5,13,35,0.92)"
+            stroke="#3b82f6"
+            strokeWidth={interactive ? 2 : 1.5}
+            strokeOpacity={interactive ? 1 : 0.50}
+            fillOpacity={interactive ? 1 : 0.70}
+            rx={2}
+            style={{ pointerEvents: "none" }}
+          />
+          {/* White center dot — only on interactive corners */}
+          {interactive && (
+            <circle
+              cx={hx} cy={hy} r={1.8}
+              fill="#ffffff" fillOpacity={0.85}
+              style={{ pointerEvents: "none" }}
+            />
+          )}
+        </g>
+      );
+    };
+
+    // 8 handle positions: corners first (clockwise TL→TR→BR→BL),
+    // then edge midpoints (T→R→B→L).
+    const handles: Array<{ hx: number; hy: number; cursor: string; key: string }> = [
+      { hx: x1,   hy: y1,   cursor: "nwse-resize", key: "tl" },
+      { hx: x2,   hy: y1,   cursor: "nesw-resize", key: "tr" },
+      { hx: x2,   hy: y2,   cursor: "nwse-resize", key: "br" },
+      { hx: x1,   hy: y2,   cursor: "nesw-resize", key: "bl" },
+      { hx: midX, hy: y1,   cursor: "ns-resize",   key: "tm" },
+      { hx: x2,   hy: midY, cursor: "ew-resize",   key: "mr" },
+      { hx: midX, hy: y2,   cursor: "ns-resize",   key: "bm" },
+      { hx: x1,   hy: midY, cursor: "ew-resize",   key: "ml" },
+    ];
+
+    // Rotation handle — positioned above the top-edge midpoint.
+    const rotCY = y1 - ROT_STEM;
+    const rotHandle = (
+      <g key="rot">
+        {/* Stem connecting top-edge midpoint to rotation circle */}
+        <line
+          x1={midX} y1={y1}
+          x2={midX} y2={rotCY + 6}
+          stroke="#3b82f6" strokeWidth={1.5} strokeOpacity={0.60}
+          style={{ pointerEvents: "none" }}
+        />
+        {/* Outer glow */}
+        <circle
+          cx={midX} cy={rotCY} r={9}
+          fill="rgba(37,99,235,0.10)"
+          style={{ pointerEvents: "none" }}
+        />
+        {/* Circle body */}
+        <circle
+          cx={midX} cy={rotCY} r={6}
+          fill="rgba(5,13,35,0.92)"
+          stroke="#3b82f6" strokeWidth={2}
+          style={{ pointerEvents: "none" }}
+        />
+        {/* Rotation arc indicator inside circle */}
+        <path
+          d={`M ${midX - 2.8} ${rotCY - 3.5} A 4 4 0 1 1 ${(midX + 2.8).toFixed(2)} ${(rotCY - 3.5).toFixed(2)}`}
+          fill="none" stroke="#ffffff" strokeWidth={1.2} strokeLinecap="round"
+          style={{ pointerEvents: "none" }}
+        />
+        {/* Arrow tip of the arc */}
+        <path
+          d={`M ${midX + 2.8} ${rotCY - 3.5} l 1.6 1.6 M ${midX + 2.8} ${rotCY - 3.5} l -1.6 0.4`}
+          fill="none" stroke="#ffffff" strokeWidth={1.2} strokeLinecap="round"
+          style={{ pointerEvents: "none" }}
+        />
+      </g>
+    );
+
+    return (
+      <>
+        {rotHandle}
+        {handles.map(h => squareHandle(h.hx, h.hy, h.cursor, h.key))}
+      </>
+    );
+  };
+
   // ── Canvas-only mode: render only interactive SVG elements for selected drawings ──
   // Canvas2D layer handles all visual strokes/fills. SVG just provides hit area + anchor handles.
   if (canvasOnly && toolType !== "position_long" && toolType !== "position_short") {
@@ -307,7 +447,7 @@ const DrawingShape = memo(function DrawingShape({
         return (
           <g opacity={op}>
             <rect x={rxc} y={ryc} width={Math.max(1, rwc)} height={Math.max(1, rhc)} stroke="transparent" strokeWidth={HIT} fill="transparent" {...hitProps} />
-            <Anchor i={0} p={px[0]} /><Anchor i={1} p={px[1]} />
+            <BBoxHandles x1={rxc} y1={ryc} x2={rxc + rwc} y2={ryc + rhc} />
           </g>
         );
       }
@@ -318,7 +458,7 @@ const DrawingShape = memo(function DrawingShape({
         return (
           <g opacity={op}>
             <ellipse cx={ecx} cy={ecy} rx={Math.max(1, erx + HIT / 2)} ry={Math.max(1, ery + HIT / 2)} stroke="transparent" strokeWidth={1} fill="transparent" {...hitProps} />
-            <Anchor i={0} p={px[0]} /><Anchor i={1} p={px[1]} />
+            <BBoxHandles x1={ecx - erx} y1={ecy - ery} x2={ecx + erx} y2={ecy + ery} />
           </g>
         );
       }
@@ -631,8 +771,7 @@ const DrawingShape = memo(function DrawingShape({
           <Glow shape x={rx} y={ry} w={rw} h={rh} />
           <rect x={rx - HIT / 2} y={ry - HIT / 2} width={rw + HIT} height={rh + HIT} fill="transparent" {...hitProps} />
           <rect x={rx} y={ry} width={rw} height={rh} fill={col} fillOpacity={style.fillOpacity} stroke={col} strokeWidth={sw} strokeDasharray={dash} />
-          <Anchor i={0} p={px[0]} />
-          <Anchor i={1} p={px[1]} />
+          <BBoxHandles x1={rx} y1={ry} x2={rx + rw} y2={ry + rh} />
         </g>
       );
     }
@@ -646,8 +785,7 @@ const DrawingShape = memo(function DrawingShape({
           <Glow shape cx={cx} cy={cy} rx={erx} ry={ery} />
           <ellipse cx={cx} cy={cy} rx={erx + HIT / 2} ry={ery + HIT / 2} fill="transparent" {...hitProps} />
           <ellipse cx={cx} cy={cy} rx={erx} ry={ery} fill={col} fillOpacity={style.fillOpacity} stroke={col} strokeWidth={sw} strokeDasharray={dash} />
-          <Anchor i={0} p={px[0]} />
-          <Anchor i={1} p={px[1]} />
+          <BBoxHandles x1={cx - erx} y1={cy - ery} x2={cx + erx} y2={cy + ery} />
         </g>
       );
     }
