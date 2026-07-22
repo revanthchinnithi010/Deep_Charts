@@ -134,6 +134,19 @@ interface DrawingStore {
   selectedDrawingId:    number | null;
   setSelectedDrawingId: (id: number | null) => void;
 
+  /**
+   * Multi-selection set — IDs of all currently-selected drawings.
+   * `selectedDrawingId` remains the PRIMARY (most-recently activated) selection;
+   * `selectedDrawingIds` is the full set used for visual rendering.
+   *
+   * Gesture / editing logic (how items enter the set) is out of scope for
+   * Phase 9.18.1.  The set is updated here so the visual layer can consume it.
+   */
+  selectedDrawingIds:    Set<number>;
+  setSelectedDrawingIds: (ids: Set<number>) => void;
+  addToSelection:        (id: number) => void;
+  removeFromSelection:   (id: number) => void;
+
   isDrawing:    boolean;
   setIsDrawing: (v: boolean) => void;
 }
@@ -236,7 +249,41 @@ export const useDrawingStore = create<DrawingStore>((set, get) => ({
   syncActiveStyle: (style) => set({ activeStyle: style }),
 
   selectedDrawingId:    null,
-  setSelectedDrawingId: (id) => set({ selectedDrawingId: id }),
+  setSelectedDrawingId: (id) => set({
+    selectedDrawingId:  id,
+    // Replacing the entire set so that single-click selection never accumulates.
+    selectedDrawingIds: id !== null ? new Set([id]) : new Set<number>(),
+  }),
+
+  // ── Multi-selection state ──────────────────────────────────────────────────
+
+  selectedDrawingIds: new Set<number>(),
+
+  setSelectedDrawingIds: (ids) => set(s => {
+    // Keep primary consistent: if it is still in the new set, leave it;
+    // otherwise promote the last item in the set (or null).
+    const primaryStillIn = s.selectedDrawingId !== null && ids.has(s.selectedDrawingId);
+    const newPrimary = primaryStillIn
+      ? s.selectedDrawingId
+      : ids.size > 0 ? [...ids][ids.size - 1] : null;
+    return { selectedDrawingIds: new Set(ids), selectedDrawingId: newPrimary };
+  }),
+
+  addToSelection: (id) => set(s => {
+    const ids = new Set(s.selectedDrawingIds);
+    ids.add(id);
+    // The newly added item becomes the primary selected drawing.
+    return { selectedDrawingIds: ids, selectedDrawingId: id };
+  }),
+
+  removeFromSelection: (id) => set(s => {
+    const ids = new Set(s.selectedDrawingIds);
+    ids.delete(id);
+    const newPrimary = s.selectedDrawingId === id
+      ? (ids.size > 0 ? [...ids][ids.size - 1] : null)
+      : s.selectedDrawingId;
+    return { selectedDrawingIds: ids, selectedDrawingId: newPrimary };
+  }),
 
   isDrawing:    false,
   setIsDrawing: (v) => set({ isDrawing: v }),

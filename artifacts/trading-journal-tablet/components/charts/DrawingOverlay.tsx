@@ -93,6 +93,7 @@ const DrawingOverlay = memo(function DrawingOverlay({
   const { barsRef }              = useContext(ChartBarsContext);
   const drawings                 = useDrawingStore(s => s.drawings);
   const selectedDrawingId        = useDrawingStore(s => s.selectedDrawingId);
+  const selectedDrawingIds       = useDrawingStore(s => s.selectedDrawingIds);
   const { resetDrawings }        = useDrawingStore.getState();
 
   // ── Canvas layout ──────────────────────────────────────────────────────────
@@ -113,13 +114,17 @@ const DrawingOverlay = memo(function DrawingOverlay({
   // Avoids stale closures in render/interval callbacks without restarting them.
   const drawingsRef        = useRef<Drawing[]>(drawings);
   const selectedIdRef      = useRef<number | null>(selectedDrawingId);
+  // Always-current multi-selection set — read synchronously by doRender so
+  // selection changes trigger a re-record without restarting any effect.
+  const selectedIdsRef     = useRef<Set<number>>(selectedDrawingIds);
   const candleRef          = useRef(candle);
   const chartRef           = useRef(chart);
 
-  drawingsRef.current   = drawings;
-  selectedIdRef.current = selectedDrawingId;
-  candleRef.current     = candle;
-  chartRef.current      = chart;
+  drawingsRef.current      = drawings;
+  selectedIdRef.current    = selectedDrawingId;
+  selectedIdsRef.current   = selectedDrawingIds;
+  candleRef.current        = candle;
+  chartRef.current         = chart;
 
   // ── Visible logical range ──────────────────────────────────────────────────
   // Updated by subscribeVisibleLogicalRangeChange; read synchronously by toPx.
@@ -232,6 +237,7 @@ const DrawingOverlay = memo(function DrawingOverlay({
       drawingsRef.current,
       toPx,
       selectedIdRef.current,
+      selectedIdsRef.current,  // multi-selection set — secondary glow for non-primary selections
       null,   // dragLive — no drag in Pass A
       bhw,
       bars,
@@ -295,9 +301,12 @@ const DrawingOverlay = memo(function DrawingOverlay({
   }, [candle, scheduleRender]);
 
   // ── Re-render when drawings or selection changes ───────────────────────────
+  // selectedDrawingIds is a Set — React won't detect internal mutations, but
+  // the store always produces a new Set reference when the selection changes,
+  // so this dep is reliable.
   useEffect(() => {
     scheduleRender();
-  }, [drawings, selectedDrawingId, scheduleRender]);
+  }, [drawings, selectedDrawingId, selectedDrawingIds, scheduleRender]);
 
   // ── Re-render when canvas size changes ────────────────────────────────────
   useEffect(() => {

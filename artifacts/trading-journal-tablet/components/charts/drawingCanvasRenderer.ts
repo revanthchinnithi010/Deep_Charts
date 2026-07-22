@@ -635,6 +635,10 @@ export function renderDrawingsToCanvas(
   drawings: Drawing[],
   toPx: ToPxFn,
   selectedId: number | null,
+  /** Full multi-selection set.  PRIMARY is `selectedId`; others get a lighter
+   *  secondary glow to indicate they are also selected.  Pass `null` to opt
+   *  out of secondary-selection rendering (same as an empty set). */
+  selectedIds: Set<number> | null,
   dragLive: { id: number; points: DrawingPoint[] } | null,
   barHalfWidth: number,
   bars: OhlcBar[],
@@ -666,8 +670,10 @@ export function renderDrawingsToCanvas(
     if (drawing.id === moveDragId)   continue;
     if (drawing.id === anchorDragId) continue;
 
-    const isSelected = drawing.id === selectedId;
-    const pts        = drawing.points;
+    const isSelected          = drawing.id === selectedId;
+    // Secondary selection: in the multi-select set but not the primary.
+    const isSecondarySelected = !isSelected && (selectedIds?.has(drawing.id) ?? false);
+    const pts                 = drawing.points;
     const { style, toolType } = drawing;
     const col = style.color || "#B7FF5A";
     const sw  = style.thickness || 1;
@@ -685,13 +691,21 @@ export function renderDrawingsToCanvas(
     ctx.lineJoin    = "round";
     setDash(ctx, style.lineStyle || "solid");
 
-    // Selection glow via shadow
-    if (isSelected && toolType !== "position_long" && toolType !== "position_short") {
+    // ── Selection glow via shadow ─────────────────────────────────────────
+    // Primary: full glow (shadowBlur 8).
+    // Secondary (multi-selected but not primary): lighter glow (shadowBlur 4,
+    //   alpha dimmed 10%) so the user can distinguish primary from secondary.
+    const isPositionTool = toolType === "position_long" || toolType === "position_short";
+    if (isSelected && !isPositionTool) {
       ctx.shadowColor = col;
       ctx.shadowBlur  = 8;
+    } else if (isSecondarySelected && !isPositionTool) {
+      ctx.shadowColor = col;
+      ctx.shadowBlur  = 4;
+      ctx.globalAlpha *= 0.9;
     }
 
-    if (toolType === "position_long" || toolType === "position_short") {
+    if (isPositionTool) {
       renderPositionTool(ctx, { ...drawing, points: pts }, toPx, bars, barHalfWidth, W, isSelected);
       ctx.restore();
       continue;
@@ -712,6 +726,15 @@ export function renderDrawingsToCanvas(
           ctx.strokeStyle = col;
           ctx.lineWidth   = sw + 7;
           ctx.globalAlpha *= 0.2;
+          drawLine(ctx, a, b);
+          ctx.restore();
+        } else if (isSecondarySelected) {
+          // Secondary selection: narrower highlight at lower opacity.
+          ctx.save();
+          ctx.shadowBlur  = 0;
+          ctx.strokeStyle = col;
+          ctx.lineWidth   = sw + 4;
+          ctx.globalAlpha *= 0.15;
           drawLine(ctx, a, b);
           ctx.restore();
         }
@@ -735,7 +758,8 @@ export function renderDrawingsToCanvas(
       case "extended": {
         if (px.length < 2) break;
         const [a, b] = extendBothEnds(px[0], px[1], W, H);
-        if (isSelected) { ctx.save(); ctx.shadowBlur = 0; ctx.lineWidth = sw + 7; ctx.globalAlpha *= 0.2; drawLine(ctx, a, b); ctx.restore(); }
+        if (isSelected)          { ctx.save(); ctx.shadowBlur = 0; ctx.lineWidth = sw + 7; ctx.globalAlpha *= 0.20; drawLine(ctx, a, b); ctx.restore(); }
+        else if (isSecondarySelected) { ctx.save(); ctx.shadowBlur = 0; ctx.lineWidth = sw + 4; ctx.globalAlpha *= 0.15; drawLine(ctx, a, b); ctx.restore(); }
         drawLine(ctx, a, b);
         dot(ctx, px[0].x, px[0].y, 3, col);
         dot(ctx, px[1].x, px[1].y, 3, col);
@@ -746,7 +770,8 @@ export function renderDrawingsToCanvas(
       case "ray": {
         if (px.length < 2) break;
         const [a, b] = extendRight(px[0], px[1], W);
-        if (isSelected) { ctx.save(); ctx.shadowBlur = 0; ctx.lineWidth = sw + 7; ctx.globalAlpha *= 0.2; drawLine(ctx, a, b); ctx.restore(); }
+        if (isSelected)               { ctx.save(); ctx.shadowBlur = 0; ctx.lineWidth = sw + 7; ctx.globalAlpha *= 0.20; drawLine(ctx, a, b); ctx.restore(); }
+        else if (isSecondarySelected) { ctx.save(); ctx.shadowBlur = 0; ctx.lineWidth = sw + 4; ctx.globalAlpha *= 0.15; drawLine(ctx, a, b); ctx.restore(); }
         drawLine(ctx, a, b);
         dot(ctx, px[0].x, px[0].y, 3.5, col);
         if (style.text?.trim()) renderLineLabelCanvas(ctx, px[0], px[1], style, col, sw);
