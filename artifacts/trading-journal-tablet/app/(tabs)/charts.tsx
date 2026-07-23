@@ -29,6 +29,7 @@ import React, {
   useRef,
   useState,
   useEffect,
+  useMemo,
 } from "react";
 import { View, StyleSheet } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -39,8 +40,9 @@ import {
   type ChartSettings,
 } from "@/components/charts/chartSettingsTypes";
 import { type ChartLayoutType, type NamedLayout } from "@/components/charts/RightToolbar";
-import { useChartStore } from "@/store/chartStore";
+import { useChartStore, type OHLCBar } from "@/store/chartStore";
 import type { Drawing } from "@/types/drawing";
+import { getApiBase } from "@/lib/apiBase";
 
 // ── ChartsScreen ────────────────────────────────────────────────────────────
 //
@@ -56,6 +58,9 @@ import type { Drawing } from "@/types/drawing";
 // semantics matching the web's keep-alive opacity toggle). State persists
 // across tab switches without re-mounting.
 
+// ── Replay phase type (module-level so it can be referenced outside the component) ──
+type ReplayPhase = "off" | "selecting" | "active";
+
 export default function ChartsScreen() {
   const insets = useSafeAreaInsets();
 
@@ -64,8 +69,8 @@ export default function ChartsScreen() {
   // re-rendering the whole screen on unrelated store changes.
   const symbol         = useChartStore(s => s.symbol);
   const interval       = useChartStore(s => s.interval);
-  const setSymbol      = useChartStore(s => s.setSymbol);
-  const setInterval    = useChartStore(s => s.setInterval);
+  const setSymbol        = useChartStore(s => s.setSymbol);
+  const selectInterval   = useChartStore(s => s.setInterval);
 
   // ── Chart settings ────────────────────────────────────────────────────────
   // Seeded from DEFAULT_CHART_SETTINGS on mount.
@@ -141,11 +146,94 @@ export default function ChartsScreen() {
     // Pass B implementation
   }, []);
 
-  // ── Bar replay (Pass B) ──────────────────────────────────────────────────
-  // replayBarSlice is null in Pass A; replay mode is driven from MoreOptionsSheet.
-  const onBarReplay = useCallback(() => {
-    // Pass B implementation
+  // ── Bar Replay (Pass C) ────────────────────────────────────────────────────
+  // Mirrors web charts.tsx replay state machine. On mobile there is no
+  // ReplaySelector drag step — we skip straight to "active" starting
+  // MIN_REPLAY_START bars before the end of the series.
+  const MIN_REPLAY_START = 100;
+
+  const [replayPhase,   setReplayPhase]   = useState<ReplayPhase>("off");
+  const [replayAllBars, setReplayAllBars] = useState<OHLCBar[]>([]);
+  const [replayIdx,     setReplayIdx]     = useState(0);
+  const [replayPlaying, setReplayPlaying] = useState(false);
+  const [replaySpeed,   setReplaySpeed]   = useState(1);
+  const [_replayLoading, setReplayLoading] = useState(false);
+  const replayIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  const exitReplay = useCallback(() => {
+    if (replayIntervalRef.current) {
+      clearInterval(replayIntervalRef.current);
+      replayIntervalRef.current = null;
+    }
+    setReplayPhase("off");
+    setReplayAllBars([]);
+    setReplayIdx(0);
+    setReplayPlaying(false);
   }, []);
+
+  const enterReplay = useCallback(async () => {
+    if (replayPhase !== "off") { exitReplay(); return; }
+    setReplayLoading(true);
+    try {
+      const BASE = getApiBase();
+      const resp = await fetch(`${BASE}/api/candles/${symbol}/${interval}`);
+      if (!resp.ok) throw new Error("fetch failed");
+      const raw = (await resp.json()) as OHLCBar[];
+      const bars = [...new Map(raw.map(b => [b.time, b])).values()]
+        .sort((a, b) => a.time - b.time);
+      if (bars.length === 0) return;
+      const startIdx = Math.max(0, bars.length - MIN_REPLAY_START);
+      setReplayAllBars(bars);
+      setReplayIdx(startIdx);
+      setReplayPhase("active");
+      setReplayPlaying(false);
+    } catch {
+      // silent — no toast library available yet
+    } finally {
+      setReplayLoading(false);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [replayPhase, exitReplay, symbol, interval]);
+
+  // Auto-play timer
+  useEffect(() => {
+    if (!replayPlaying || replayPhase !== "active") return;
+    const ms = Math.round(1000 / replaySpeed);
+    replayIntervalRef.current = setInterval(() => {
+      setReplayIdx(prev => {
+        if (prev >= replayAllBars.length - 1) {
+          setReplayPlaying(false);
+          return prev;
+        }
+        return prev + 1;
+      });
+    }, ms);
+    return () => {
+      if (replayIntervalRef.current) {
+        clearInterval(replayIntervalRef.current);
+        replayIntervalRef.current = null;
+      }
+    };
+  }, [replayPlaying, replaySpeed, replayPhase, replayAllBars.length]);
+
+  // The bar slice passed to CustomChart during active replay
+  const replayBarSlice = useMemo<OHLCBar[] | null>(() => {
+    if (replayPhase !== "active") return null;
+    return replayAllBars.slice(0, replayIdx + 1);
+  }, [replayPhase, replayAllBars, replayIdx]);
+
+  // ── Stable replay control callbacks ───────────────────────────────────────
+  const onReplayPlay = useCallback(() => setReplayPlaying(true), []);
+  const onReplayPause = useCallback(() => setReplayPlaying(false), []);
+  const onReplayStepBack = useCallback(() => {
+    setReplayPlaying(false);
+    setReplayIdx(prev => Math.max(prev - 1, 0));
+  }, []);
+  const onReplayStepForward = useCallback(() => {
+    setReplayPlaying(false);
+    setReplayIdx(prev => Math.min(prev + 1, replayAllBars.length - 1));
+  }, [replayAllBars.length]);
+  const onReplaySpeedChange = useCallback((s: number) => setReplaySpeed(s), []);
 
   // ── Sidebar (no-op on mobile — desktop-only concept) ────────────────────
   const openSidebar = useCallback(() => {}, []);
@@ -158,7 +246,7 @@ export default function ChartsScreen() {
         activeKey={symbol}
         interval={interval}
         selectSymbol={setSymbol}
-        selectInterval={setInterval}
+        selectInterval={selectInterval}
 
         // ── Chart settings ──
         chartSettings={chartSettings}
@@ -166,8 +254,20 @@ export default function ChartsScreen() {
         handleSaveAsDefault={handleSaveAsDefault}
 
         // ── Replay ──
-        replayBarSlice={null}
-        onBarReplay={onBarReplay}
+        replayBarSlice={replayBarSlice}
+        onBarReplay={enterReplay}
+        replayPhase={replayPhase}
+        replayCurrentBar={replayAllBars[replayIdx] ?? null}
+        replayPlaying={replayPlaying}
+        replaySpeed={replaySpeed}
+        replayIdx={replayIdx}
+        replayTotalBars={replayAllBars.length}
+        onReplayPlay={onReplayPlay}
+        onReplayPause={onReplayPause}
+        onReplayStepBack={onReplayStepBack}
+        onReplayStepForward={onReplayStepForward}
+        onReplaySpeedChange={onReplaySpeedChange}
+        onExitReplay={exitReplay}
 
         // ── Alerts ──
         alertDrawingIds={alertDrawingIds}

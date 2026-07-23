@@ -97,6 +97,13 @@ import {
   type ChartLayoutType,
   type NamedLayout,
 } from "@/components/charts/RightToolbar";
+import { ReplayControls } from "./ReplayControls";
+import { ConnectionStatus } from "./ConnectionStatus";
+import { BrokerTabs } from "./BrokerTabs";
+import { PositionsList } from "@/components/broker/PositionsList";
+import { OrdersList } from "@/components/broker/OrdersList";
+import { PlaceOrderPanel } from "@/components/broker/PlaceOrderPanel";
+import { BrokerStatusBar } from "@/components/broker/BrokerStatusBar";
 
 // ── Palette constants ────────────────────────────────────────────────────────
 const SHEET_BG      = "rgba(10,12,16,0.98)";
@@ -921,6 +928,17 @@ const MoreOptionsSheet = memo(function MoreOptionsSheet({
 
         <View style={mo.divider} />
 
+        {/* Market feed broker tabs (Pass C) */}
+        <View style={mo.feedRow}>
+          <Ionicons name="pulse-outline" size={15} color={TEXT_DIM} style={{ marginRight: 8 }} />
+          <Text style={mo.feedLabel}>Market Feed</Text>
+          <View style={{ marginLeft: "auto" as any }}>
+            <BrokerTabs />
+          </View>
+        </View>
+
+        <View style={mo.divider} />
+
         {/* Options grid */}
         <View style={mo.grid}>
           {options.map(opt => (
@@ -984,6 +1002,20 @@ const mo = StyleSheet.create({
     fontWeight: "500",
     color: TEXT_MED,
     textAlign: "center",
+  },
+
+  // Market Feed row in MoreOptionsSheet (Pass C)
+  feedRow: {
+    flexDirection:  "row",
+    alignItems:     "center",
+    paddingHorizontal: 4,
+    paddingVertical:   6,
+    marginBottom:   4,
+  },
+  feedLabel: {
+    fontSize:   13,
+    fontWeight: "500",
+    color:      TEXT_MED,
   },
 });
 
@@ -1377,6 +1409,9 @@ const ts = StyleSheet.create({
   },
 });
 
+// ── Replay phase ─────────────────────────────────────────────────────────────
+export type ReplayPhase = "off" | "selecting" | "active";
+
 // ─────────────────────────────────────────────────────────────────────────────
 // Props interface
 // ─────────────────────────────────────────────────────────────────────────────
@@ -1416,6 +1451,19 @@ export interface MobileChartLayoutProps {
   onRenameNamedLayout: (id: string, name: string) => void;
   onDeleteNamedLayout: (id: string) => void;
   activeLayoutId:      string | null;
+  // ── Replay controls (Pass C) ───────────────────────────────────────────────
+  replayPhase?:          ReplayPhase;
+  replayCurrentBar?:     OHLCBar | null;
+  replayPlaying?:        boolean;
+  replaySpeed?:          number;
+  replayIdx?:            number;
+  replayTotalBars?:      number;
+  onReplayPlay?:         () => void;
+  onReplayPause?:        () => void;
+  onReplayStepBack?:     () => void;
+  onReplayStepForward?:  () => void;
+  onReplaySpeedChange?:  (s: number) => void;
+  onExitReplay?:         () => void;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -1438,6 +1486,19 @@ export const MobileChartLayout = memo(function MobileChartLayout(
     layoutCount, onLayoutChange, syncTF, onSyncTFChange,
     namedLayouts, defaultLayoutName, onSaveNamedLayout, onLoadNamedLayout,
     onRenameNamedLayout, onDeleteNamedLayout, activeLayoutId,
+    // ── Replay controls (Pass C) ──────────────────────────────────────────────
+    replayPhase      = "off" as ReplayPhase,
+    replayCurrentBar = null,
+    replayPlaying    = false,
+    replaySpeed      = 1,
+    replayIdx        = 0,
+    replayTotalBars  = 0,
+    onReplayPlay,
+    onReplayPause,
+    onReplayStepBack,
+    onReplayStepForward,
+    onReplaySpeedChange,
+    onExitReplay,
   } = props;
 
   // ── Responsive / orientation ───────────────────────────────────────────────
@@ -1468,10 +1529,17 @@ export const MobileChartLayout = memo(function MobileChartLayout(
     [drawings, selectedDrawingId],
   );
 
-  // Broker store
+  // Broker store — account + connection
   const activeAccount    = useBrokerStore(s => s.activeAccount);
   const connectionStatus = useBrokerStore(s => s.connectionStatus);
   const brokerConnected  = !!activeAccount && connectionStatus === "connected";
+  // Broker store — panel visibility (Pass C)
+  const showPositions    = useBrokerStore(s => s.showPositions);
+  const showOrders       = useBrokerStore(s => s.showOrders);
+  const showPlaceOrder   = useBrokerStore(s => s.showPlaceOrder);
+  const setShowPositions = useBrokerStore(s => s.setShowPositions);
+  const setShowOrders    = useBrokerStore(s => s.setShowOrders);
+  const setShowPlaceOrder = useBrokerStore(s => s.setShowPlaceOrder);
 
   // ── Sheet / overlay visibility state ──────────────────────────────────────
   const [showDrawingSheet,      setShowDrawingSheet]      = useState(false);
@@ -1853,6 +1921,32 @@ export const MobileChartLayout = memo(function MobileChartLayout(
             onOpenTools={handleOpenDrawingSheet}
           />
         )}
+
+        {/* ConnectionStatus — compact overlay top-right of chart area (Pass C) */}
+        {!isFullscreen && (
+          <View style={styles.connectionStatusOverlay} pointerEvents="none">
+            <ConnectionStatus compact wsStatus={wsStatus} />
+          </View>
+        )}
+
+        {/* ReplayControls — centred above bottom toolbar (Pass C) */}
+        {/* Uses its own position:absolute styles (bottom:28, alignSelf:center) */}
+        {replayPhase === "active" && (
+          <ReplayControls
+            currentBar={replayCurrentBar ?? null}
+            playing={replayPlaying}
+            speed={replaySpeed}
+            currentIdx={replayIdx}
+            totalBars={replayTotalBars}
+            interval={interval}
+            onPlay={onReplayPlay      ?? (() => {})}
+            onPause={onReplayPause    ?? (() => {})}
+            onStepBack={onReplayStepBack    ?? (() => {})}
+            onStepForward={onReplayStepForward ?? (() => {})}
+            onSpeedChange={onReplaySpeedChange ?? (() => {})}
+            onExit={onExitReplay      ?? (() => {})}
+          />
+        )}
       </View>
 
       {/* ── Bottom toolbar ──────────────────────────────────────────────── */}
@@ -1991,6 +2085,35 @@ export const MobileChartLayout = memo(function MobileChartLayout(
         />
       )}
 
+      {/* ── Broker positions / orders — mobile bottom sheet (Pass C) ──────── */}
+      {/* Mirrors web charts.tsx: (showPositions || showOrders) && activeAccount */}
+      {(showPositions || showOrders) && activeAccount && (
+        <BottomSheet
+          visible
+          onClose={() => {
+            setShowPositions(false);
+            setShowOrders(false);
+          }}
+          title="Broker"
+          height="full"
+        >
+          {showPositions && <PositionsList />}
+          {showOrders    && <OrdersList />}
+        </BottomSheet>
+      )}
+
+      {/* ── Place order panel — bottom sheet (Pass C) ───────────────────────── */}
+      {showPlaceOrder && activeAccount && (
+        <BottomSheet
+          visible
+          onClose={() => setShowPlaceOrder(false)}
+          title="Place Order"
+          height="full"
+        >
+          <PlaceOrderPanel symbol={activeSlotSymbol} />
+        </BottomSheet>
+      )}
+
       {/* ── Watchlist overlay ────────────────────────────────────────────── */}
       <MobileWatchlistOverlay
         visible={showWatchlist}
@@ -1999,6 +2122,10 @@ export const MobileChartLayout = memo(function MobileChartLayout(
         onSelect={handleSelectSymbol}
         onOpenChart={() => setShowWatchlist(false)}
       />
+
+      {/* ── Broker status bar (Pass C) ───────────────────────────────────────── */}
+      {/* Mirrors web layout: rendered at bottom of charts layout, always mounted */}
+      <BrokerStatusBar />
     </View>
   );
 });
@@ -2043,5 +2170,13 @@ const styles = StyleSheet.create({
   slotIdle: {
     borderWidth: 1,
     borderColor: SLOT_IDLE_BORDER,
+  },
+
+  // ConnectionStatus — top-right overlay inside chart area (Pass C)
+  connectionStatusOverlay: {
+    position:   "absolute",
+    top:        8,
+    right:      8,
+    zIndex:     20,
   },
 });
