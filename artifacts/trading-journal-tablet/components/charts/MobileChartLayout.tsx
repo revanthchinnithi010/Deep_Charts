@@ -1,42 +1,42 @@
 /**
- * MobileChartLayout.tsx — React Native port (Phase 9.25.1 Pass A)
+ * MobileChartLayout.tsx — React Native port
  *
- * Pass A scope:
- *   ✅ Root layout shell
- *   ✅ SafeArea handling
- *   ✅ Screen container
- *   ✅ Main chart container
+ * Pass A (Phase 9.25.1):
+ *   ✅ Root layout shell, SafeArea, screen container
  *   ✅ Landscape / portrait layout switching
- *   ✅ Responsive sizing
- *   ✅ React Navigation integration
- *   ✅ Expo Router screen integration
- *   ✅ Layout composition (single + multi-chart grid)
- *   ✅ Initial component mounting
+ *   ✅ Multi-chart grid (single / 2-pane / 3-pane / 4-pane)
+ *   ✅ All sheet visibility state and stable callbacks
+ *   ✅ Symbol / interval slot routing + prev / next
  *
- * NOT in Pass A (Pass B+):
- *   ❌ MiniControlBar / DrawingMiniBar toolbars
- *   ❌ Bottom sheets (TF, trade, drawing tools, settings, more options, layout)
- *   ❌ Broker panels / BrokerIntegrationModal
- *   ❌ Replay controls
- *   ❌ Drawing interaction / FloatingDrawingPill
- *   ❌ Settings panel sheets
+ * Pass B (Phase 9.25.2):
+ *   ✅ BottomSheet — Modal-based, animated slide-up, HALF/FULL heights
+ *   ✅ FloatingDrawingPill — active-tool indicator, anchored left on chart area
+ *   ✅ DrawingMiniBar — toolbar shown when a drawing is selected
+ *   ✅ MiniControlBar — main bottom toolbar (symbol | TF | prev/next | draw | type | broker | more)
+ *   ✅ TFSheet, ChartTypeSheet, DrawingToolsSheet, MoreOptionsSheet
+ *   ✅ LayoutBottomSheet — named layouts + layout count + sync-TF
+ *   ✅ ObjectTreeSheet — DrawingsList wrapped in BottomSheet
+ *   ✅ ChartSettingsSheet — full-screen Modal with SettingsPanel
+ *   ✅ TradeSheet — full-screen Modal with BuySellPanel
+ *   ✅ BrokerIntegrationModal wired to showBrokerIntegration state
+ *   ✅ DrawingSettingsModal wired to selected drawing
  *
- * Web source: src/components/charts/MobileChartLayout.tsx
+ * NOT in Pass B (Pass C+):
+ *   ❌ Gesture conflict resolution / inter-layer touch arbitration
+ *   ❌ BottomSheet drag-to-snap (PanResponder / Reanimated)
+ *   ❌ Pinch / pan gesture handling
+ *   ❌ FloatingDrawingPill drag-to-move
  *
- * Web → RN changes (Pass A):
- *   div / HTMLDivElement         → View
- *   button / onPointerDownCapture → Pressable / onPressIn
- *   position:absolute+inset:0   → StyleSheet.absoluteFillObject
- *   display:grid                → flex-based equivalents
- *   overflow:hidden             → overflow:'hidden'
- *   background:                 → backgroundColor:
- *   touchAction:'none'          → removed (not applicable in RN)
- *   document.createElement/body → removed
- *   createPortal                → removed (RN Modal if needed in Pass B)
- *   wouter useLocation          → useFocusEffect (screen-level focus)
- *   window.dispatchEvent        → no-op stub (chart reset via Pass B)
- *   localStorage                → AsyncStorage (handled in charts.tsx)
- *   chartAreaRef type           → RefObject<View | null>
+ * Web → RN changes (Pass B):
+ *   createPortal(…, document.body)  → Modal (transparent, animationType="slide")
+ *   position:fixed / translateY CSS → Animated + absolute View
+ *   backdropFilter                  → dropped (not supported in RN)
+ *   window.innerHeight              → useWindowDimensions().height
+ *   lucide-react icons              → @expo/vector-icons Ionicons
+ *   <img src={svgUrl}>              → Ionicons equivalents
+ *   HTML <input>                    → TextInput
+ *   hover events                    → dropped
+ *   useLiveMarketContext (Phase 6+) → wsStatus stub, replaced when context lands
  */
 
 import React, {
@@ -49,12 +49,20 @@ import React, {
 } from "react";
 import {
   View,
+  Text,
   StyleSheet,
   Pressable,
+  Modal,
+  ScrollView,
+  TextInput,
   useWindowDimensions,
+  Animated,
+  Platform,
+  Switch,
 } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { useFocusEffect } from "expo-router";
+import { Ionicons } from "@expo/vector-icons";
 
 import CustomChart from "./CustomChart";
 import MiniChart from "./MiniChart";
@@ -62,6 +70,13 @@ import DrawingOverlay from "./DrawingOverlay";
 import IndicatorRenderer from "./IndicatorRenderer";
 import CustomIndicatorRenderer from "./CustomIndicatorRenderer";
 import { MobileWatchlistOverlay } from "./MobileWatchlistOverlay";
+import DrawingToolbar from "./DrawingToolbar";
+import { DrawingsList } from "./DrawingsList";
+import { DrawingSettingsModal } from "./DrawingSettingsModal";
+import SettingsPanel from "./SettingsPanel";
+import BuySellPanel from "./BuySellPanel";
+import { BrokerIntegrationModal } from "./BrokerIntegrationModal";
+import { tfLabel } from "./TFDropdown";
 
 import type { ChartSettings } from "./chartSettingsTypes";
 import {
@@ -73,20 +88,17 @@ import {
   useWatchlist,
   SYMBOL_CATALOG,
 } from "@/contexts/WatchlistContext";
-import type { Drawing, ToolType, DrawingStyle } from "@/types/drawing";
+import type { Drawing, ToolType, DrawingStyle, DrawingPoint } from "@/types/drawing";
 import { useDrawingStore } from "@/store/drawingStore";
 import { useBrokerStore } from "@/store/brokerStore";
 import { getSymbolTick } from "@/store/tickStore";
-// useLiveMarketContext is a Pass B dependency (wsStatus drives toolbar
-// connected-indicator). The LiveMarketContext tablet implementation is
-// pending Phase 6.x — imported as type-only stub for now.
 import type { WsStatus } from "@/contexts/LiveMarketContext";
 import {
   type ChartLayoutType,
   type NamedLayout,
 } from "@/components/charts/RightToolbar";
 
-// ── Shared palette constants (preserved from web) ──────────────────────────
+// ── Palette constants ────────────────────────────────────────────────────────
 const SHEET_BG      = "rgba(10,12,16,0.98)";
 const ACCENT        = "#60A5FA";
 const ACCENT_BG     = "rgba(96,165,250,0.10)";
@@ -97,24 +109,1277 @@ const TEXT_MED      = "rgba(255,255,255,0.70)";
 const TEXT_HI       = "rgba(255,255,255,0.92)";
 const BTN_BG        = "rgba(255,255,255,0.06)";
 const BTN_BORDER    = "rgba(255,255,255,0.10)";
-const NEON          = "rgba(255,255,255,0.55)";
-const GL_TEAL       = "rgba(255,255,255,0.82)";
-const GL_BG         = "rgba(8,9,16,0.97)";
-const GL_BORDER     = "rgba(255,255,255,0.12)";
-
-// Active-slot selection border — matches the web's outline:#38bdf8
+const NEON          = "#B7FF5A";
 const SLOT_ACTIVE_BORDER = "#38bdf8";
 const SLOT_IDLE_BORDER   = "rgba(255,255,255,0.06)";
+const CTRL_BAR_BG   = "rgba(8,9,16,0.97)";
+const CTRL_BAR_BORDER = "rgba(255,255,255,0.08)";
+const DANGER        = "#f87171";
+const SUCCESS       = "#22c55e";
 
-// ── Layout options (preserved from web) ───────────────────────────────────
+// ── Layout count options ─────────────────────────────────────────────────────
 const LAYOUT_OPTIONS = [
-  { cols: 1, rows: 1, label: "Single",  icon: [[1,1]] },
-  { cols: 2, rows: 1, label: "2 Left",  icon: [[1,2]] },
-  { cols: 1, rows: 2, label: "2 Top",   icon: [[2,1]] },
-  { cols: 2, rows: 2, label: "4-Grid",  icon: [[2,2]] },
+  { cols: 1, rows: 1, label: "Single",  count: 1 as ChartLayoutType },
+  { cols: 2, rows: 1, label: "2 Left",  count: 2 as ChartLayoutType },
+  { cols: 1, rows: 2, label: "2 Top",   count: 3 as ChartLayoutType },
+  { cols: 2, rows: 2, label: "4-Grid",  count: 4 as ChartLayoutType },
 ];
 
-// ── Props (exported — preserved from web, chartAreaRef updated to View) ────
+// ── Chart type options ───────────────────────────────────────────────────────
+const CHART_TYPE_OPTIONS: { type: ChartType; label: string; icon: string }[] = [
+  { type: "candles",           label: "Candlestick",    icon: "bar-chart-outline"  },
+  { type: "line",              label: "Line",           icon: "trending-up-outline" },
+  { type: "bars",              label: "Bars",           icon: "stats-chart-outline" },
+  { type: "area",              label: "Area",           icon: "analytics-outline"  },
+  { type: "heikin_ashi",       label: "Heikin Ashi",   icon: "albums-outline"     },
+  { type: "line_with_markers", label: "Line + Markers", icon: "ellipse-outline"   },
+];
+
+// ── Timeframe list ───────────────────────────────────────────────────────────
+const TF_LIST = ["1","3","5","15","30","60","120","240","D","W","M"];
+
+// ── Tool type → human-readable name ─────────────────────────────────────────
+function toolTypeName(t: ToolType | undefined): string {
+  if (!t || t === "cursor") return "Drawing";
+  const map: Partial<Record<ToolType, string>> = {
+    trendline: "Trend Line", ray: "Ray", extended: "Extended", hline: "Horiz. Line",
+    hray: "Horiz. Ray", vline: "Vert. Line", channel: "Channel", fib: "Fibonacci",
+    fib_channel: "Fib Channel", rect: "Rectangle", ellipse: "Ellipse", text: "Text",
+    note: "Note", arrow: "Arrow", position_long: "Long Position", position_short: "Short Position",
+  };
+  return map[t] ?? t;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// BottomSheet — Modal-based sheet with animated slide-up entry
+// ─────────────────────────────────────────────────────────────────────────────
+interface BottomSheetProps {
+  visible:     boolean;
+  onClose:     () => void;
+  title?:      string;
+  height?:     "half" | "full";
+  showHandle?: boolean;
+  children:    React.ReactNode;
+}
+
+const BottomSheet = memo(function BottomSheet({
+  visible, onClose, title, height = "half", showHandle = true, children,
+}: BottomSheetProps) {
+  const { height: screenH } = useWindowDimensions();
+  const insets = useSafeAreaInsets();
+  const sheetH = height === "full" ? Math.round(screenH * 0.90) : Math.round(screenH * 0.46);
+
+  // Slide animation — starts off-screen, springs to zero on open
+  const slideY = useRef(new Animated.Value(sheetH)).current;
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    if (visible) {
+      setMounted(true);
+      slideY.setValue(sheetH);
+      Animated.spring(slideY, {
+        toValue: 0,
+        damping: 22,
+        stiffness: 200,
+        mass: 0.9,
+        useNativeDriver: true,
+      }).start();
+    } else if (mounted) {
+      Animated.timing(slideY, {
+        toValue: sheetH,
+        duration: 210,
+        useNativeDriver: true,
+      }).start(() => setMounted(false));
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [visible]);
+
+  if (!mounted) return null;
+
+  return (
+    <Modal
+      visible={mounted}
+      transparent
+      animationType="none"
+      onRequestClose={onClose}
+      statusBarTranslucent
+    >
+      <View style={bs.root}>
+        {/* Backdrop */}
+        <Pressable style={StyleSheet.absoluteFillObject} onPress={onClose}>
+          <Animated.View style={[StyleSheet.absoluteFillObject, bs.backdrop]} />
+        </Pressable>
+
+        {/* Sheet */}
+        <Animated.View
+          style={[
+            bs.sheet,
+            { height: sheetH, paddingBottom: insets.bottom + 8 },
+            { transform: [{ translateY: slideY }] },
+          ]}
+        >
+          {showHandle && <View style={bs.handle} />}
+
+          {title !== undefined && (
+            <View style={bs.titleRow}>
+              <Text style={bs.titleText}>{title}</Text>
+              <Pressable onPress={onClose} hitSlop={12} style={bs.closeBtn}>
+                <Ionicons name="close" size={20} color={TEXT_MED} />
+              </Pressable>
+            </View>
+          )}
+
+          {children}
+        </Animated.View>
+      </View>
+    </Modal>
+  );
+});
+
+const bs = StyleSheet.create({
+  root: {
+    flex: 1, justifyContent: "flex-end",
+  },
+  backdrop: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: "rgba(0,0,0,0.55)",
+  },
+  sheet: {
+    backgroundColor: SHEET_BG,
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    borderTopWidth: 1,
+    borderColor: "rgba(255,255,255,0.09)",
+    overflow: "hidden",
+  },
+  handle: {
+    alignSelf: "center",
+    width: 38, height: 4,
+    borderRadius: 2,
+    backgroundColor: "rgba(255,255,255,0.20)",
+    marginTop: 10,
+    marginBottom: 4,
+  },
+  titleRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 18,
+    paddingTop: 10,
+    paddingBottom: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: DIVIDER,
+  },
+  titleText: {
+    flex: 1,
+    fontSize: 15,
+    fontWeight: "600",
+    color: TEXT_HI,
+    letterSpacing: 0.2,
+  },
+  closeBtn: {
+    padding: 4,
+  },
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// FloatingDrawingPill — left-side indicator of the active drawing tool
+// ─────────────────────────────────────────────────────────────────────────────
+interface FloatingDrawingPillProps {
+  activeTool:   ToolType;
+  onClear:      () => void;
+  onOpenTools:  () => void;
+}
+
+const FloatingDrawingPill = memo(function FloatingDrawingPill({
+  activeTool, onClear, onOpenTools,
+}: FloatingDrawingPillProps) {
+  return (
+    <View style={fp.pill} pointerEvents="box-none">
+      <Pressable style={fp.toolBtn} onPress={onOpenTools}>
+        <Ionicons name="pencil" size={14} color={NEON} />
+        <Text style={fp.toolName} numberOfLines={1}>{toolTypeName(activeTool)}</Text>
+      </Pressable>
+      <View style={fp.divider} />
+      <Pressable style={fp.clearBtn} onPress={onClear} hitSlop={8}>
+        <Ionicons name="close" size={14} color={TEXT_MED} />
+      </Pressable>
+    </View>
+  );
+});
+
+const fp = StyleSheet.create({
+  pill: {
+    position: "absolute",
+    left: 8,
+    top: "50%",
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "rgba(20,22,30,0.92)",
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: "rgba(183,255,90,0.25)",
+    paddingLeft: 8,
+    paddingRight: 2,
+    paddingVertical: 6,
+    zIndex: 50,
+    gap: 4,
+  },
+  toolBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 5,
+    paddingRight: 4,
+  },
+  toolName: {
+    fontSize: 11,
+    fontWeight: "600",
+    color: NEON,
+    maxWidth: 80,
+  },
+  divider: {
+    width: 1,
+    height: 16,
+    backgroundColor: "rgba(255,255,255,0.12)",
+    marginHorizontal: 2,
+  },
+  clearBtn: {
+    padding: 4,
+    borderRadius: 6,
+  },
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// DrawingMiniBar — bottom bar shown when a drawing is selected
+// ─────────────────────────────────────────────────────────────────────────────
+interface DrawingMiniBarProps {
+  drawing:          Drawing;
+  canUndo:          boolean;
+  onUndo:           () => void;
+  onOpenSettings:   () => void;
+  onDelete:         () => void;
+  onDone:           () => void;
+  bottomInset:      number;
+}
+
+const DrawingMiniBar = memo(function DrawingMiniBar({
+  drawing, canUndo, onUndo, onOpenSettings, onDelete, onDone, bottomInset,
+}: DrawingMiniBarProps) {
+  return (
+    <View style={[dm.bar, { paddingBottom: bottomInset + 4 }]}>
+      <View style={dm.toolInfo}>
+        <Ionicons name="pencil" size={14} color={NEON} />
+        <Text style={dm.toolLabel}>{toolTypeName(drawing.toolType)}</Text>
+      </View>
+
+      <View style={dm.spacer} />
+
+      {/* Undo */}
+      <Pressable
+        style={[dm.iconBtn, !canUndo && dm.iconBtnDisabled]}
+        onPress={onUndo}
+        disabled={!canUndo}
+        hitSlop={8}
+      >
+        <Ionicons name="arrow-undo-outline" size={19} color={canUndo ? TEXT_HI : TEXT_DIM} />
+      </Pressable>
+
+      {/* Settings */}
+      <Pressable style={dm.iconBtn} onPress={onOpenSettings} hitSlop={8}>
+        <Ionicons name="options-outline" size={19} color={TEXT_MED} />
+      </Pressable>
+
+      {/* Delete */}
+      <Pressable style={dm.iconBtn} onPress={onDelete} hitSlop={8}>
+        <Ionicons name="trash-outline" size={19} color={DANGER} />
+      </Pressable>
+
+      {/* Done */}
+      <Pressable style={[dm.iconBtn, dm.doneBtn]} onPress={onDone} hitSlop={8}>
+        <Ionicons name="checkmark" size={19} color={ACCENT} />
+        <Text style={dm.doneText}>Done</Text>
+      </Pressable>
+    </View>
+  );
+});
+
+const dm = StyleSheet.create({
+  bar: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: CTRL_BAR_BG,
+    borderTopWidth: 1,
+    borderTopColor: "rgba(183,255,90,0.22)",
+    paddingHorizontal: 12,
+    paddingTop: 8,
+    minHeight: 52,
+    gap: 4,
+  },
+  toolInfo: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    paddingHorizontal: 8,
+    paddingVertical: 5,
+    backgroundColor: "rgba(183,255,90,0.08)",
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: "rgba(183,255,90,0.18)",
+  },
+  toolLabel: {
+    fontSize: 12,
+    fontWeight: "600",
+    color: NEON,
+  },
+  spacer: { flex: 1 },
+  iconBtn: {
+    width: 38,
+    height: 38,
+    alignItems: "center",
+    justifyContent: "center",
+    borderRadius: 9,
+  },
+  iconBtnDisabled: { opacity: 0.35 },
+  doneBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+    paddingHorizontal: 10,
+    width: "auto",
+    backgroundColor: ACCENT_BG,
+    borderWidth: 1,
+    borderColor: ACCENT_BORDER,
+    borderRadius: 9,
+  },
+  doneText: {
+    fontSize: 13,
+    fontWeight: "600",
+    color: ACCENT,
+  },
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// MiniControlBar — main bottom toolbar
+// ─────────────────────────────────────────────────────────────────────────────
+interface MiniControlBarProps {
+  symbol:         string;
+  badge:          string;
+  interval:       string;
+  livePrice:      number | null;
+  changePct:      number;
+  isUp:           boolean;
+  activeTool:     ToolType;
+  chartType:      ChartType;
+  brokerConnected: boolean;
+  isFullscreen:   boolean;
+  bottomInset:    number;
+  onSymbolPress:  () => void;
+  onTFPress:      () => void;
+  onPrev:         () => void;
+  onNext:         () => void;
+  onDrawPress:    () => void;
+  onChartType:    () => void;
+  onTrade:        () => void;
+  onBroker:       () => void;
+  onMore:         () => void;
+  onFullscreen:   () => void;
+}
+
+const MiniControlBar = memo(function MiniControlBar({
+  symbol, badge, interval, livePrice, changePct, isUp,
+  activeTool, chartType, brokerConnected, isFullscreen,
+  bottomInset,
+  onSymbolPress, onTFPress, onPrev, onNext,
+  onDrawPress, onChartType, onTrade, onBroker, onMore, onFullscreen,
+}: MiniControlBarProps) {
+  const isDrawingActive = activeTool !== "cursor";
+
+  const priceStr = livePrice != null
+    ? livePrice >= 1000
+      ? livePrice.toLocaleString("en-US", { maximumFractionDigits: 2 })
+      : livePrice.toFixed(livePrice >= 10 ? 2 : 4)
+    : null;
+
+  return (
+    <View style={[mc.bar, { paddingBottom: bottomInset + 4 }]}>
+      {/* Symbol pill */}
+      <Pressable style={mc.symbolPill} onPress={onSymbolPress}>
+        <View style={mc.badgeDot}>
+          <Text style={mc.badgeText}>{badge.slice(0, 2)}</Text>
+        </View>
+        <Text style={mc.symbolText} numberOfLines={1}>{symbol}</Text>
+        {priceStr != null && (
+          <Text style={[mc.priceText, { color: isUp ? SUCCESS : DANGER }]}>
+            {priceStr}
+          </Text>
+        )}
+      </Pressable>
+
+      <View style={mc.spacer} />
+
+      {/* Prev */}
+      <Pressable style={mc.iconBtn} onPress={onPrev} hitSlop={6}>
+        <Ionicons name="chevron-back" size={18} color={TEXT_MED} />
+      </Pressable>
+
+      {/* Next */}
+      <Pressable style={mc.iconBtn} onPress={onNext} hitSlop={6}>
+        <Ionicons name="chevron-forward" size={18} color={TEXT_MED} />
+      </Pressable>
+
+      {/* Timeframe pill */}
+      <Pressable style={mc.tfPill} onPress={onTFPress}>
+        <Text style={mc.tfText}>{tfLabel(interval)}</Text>
+        <Ionicons name="chevron-up" size={10} color={TEXT_DIM} />
+      </Pressable>
+
+      {/* Separator */}
+      <View style={mc.sep} />
+
+      {/* Drawing tool */}
+      <Pressable
+        style={[mc.iconBtn, isDrawingActive && mc.iconBtnActive]}
+        onPress={onDrawPress}
+        hitSlop={6}
+      >
+        <Ionicons
+          name={isDrawingActive ? "pencil" : "pencil-outline"}
+          size={18}
+          color={isDrawingActive ? NEON : TEXT_MED}
+        />
+      </Pressable>
+
+      {/* Chart type */}
+      <Pressable style={mc.iconBtn} onPress={onChartType} hitSlop={6}>
+        <Ionicons name="bar-chart-outline" size={18} color={TEXT_MED} />
+      </Pressable>
+
+      {/* Separator */}
+      <View style={mc.sep} />
+
+      {/* Trade button (broker connected) */}
+      {brokerConnected && (
+        <Pressable style={mc.tradeBtn} onPress={onTrade}>
+          <Text style={mc.tradeBtnText}>Trade</Text>
+        </Pressable>
+      )}
+
+      {/* Broker status dot + icon */}
+      <Pressable style={mc.iconBtn} onPress={onBroker} hitSlop={6}>
+        <View style={mc.brokerWrap}>
+          <Ionicons name="server-outline" size={18} color={TEXT_MED} />
+          <View style={[mc.brokerDot, { backgroundColor: brokerConnected ? SUCCESS : "#6b7280" }]} />
+        </View>
+      </Pressable>
+
+      {/* Fullscreen */}
+      <Pressable style={mc.iconBtn} onPress={onFullscreen} hitSlop={6}>
+        <Ionicons
+          name={isFullscreen ? "contract-outline" : "expand-outline"}
+          size={18}
+          color={TEXT_MED}
+        />
+      </Pressable>
+
+      {/* More */}
+      <Pressable style={mc.iconBtn} onPress={onMore} hitSlop={6}>
+        <Ionicons name="ellipsis-horizontal" size={18} color={TEXT_MED} />
+      </Pressable>
+    </View>
+  );
+});
+
+const mc = StyleSheet.create({
+  bar: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: CTRL_BAR_BG,
+    borderTopWidth: 1,
+    borderTopColor: CTRL_BAR_BORDER,
+    paddingHorizontal: 8,
+    paddingTop: 7,
+    minHeight: 52,
+    gap: 2,
+  },
+  symbolPill: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 5,
+    paddingHorizontal: 8,
+    paddingVertical: 5,
+    backgroundColor: BTN_BG,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: BTN_BORDER,
+    maxWidth: 180,
+  },
+  badgeDot: {
+    width: 22, height: 22,
+    borderRadius: 11,
+    backgroundColor: "rgba(96,165,250,0.18)",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  badgeText: {
+    fontSize: 9,
+    fontWeight: "700",
+    color: ACCENT,
+    letterSpacing: 0.3,
+  },
+  symbolText: {
+    fontSize: 13,
+    fontWeight: "600",
+    color: TEXT_HI,
+    letterSpacing: 0.2,
+  },
+  priceText: {
+    fontSize: 12,
+    fontWeight: "500",
+    letterSpacing: 0.1,
+  },
+  spacer: { flex: 1 },
+  iconBtn: {
+    width: 36,
+    height: 36,
+    alignItems: "center",
+    justifyContent: "center",
+    borderRadius: 8,
+  },
+  iconBtnActive: {
+    backgroundColor: "rgba(183,255,90,0.10)",
+    borderWidth: 1,
+    borderColor: "rgba(183,255,90,0.25)",
+  },
+  tfPill: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 3,
+    paddingHorizontal: 9,
+    paddingVertical: 5,
+    backgroundColor: BTN_BG,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: BTN_BORDER,
+  },
+  tfText: {
+    fontSize: 13,
+    fontWeight: "600",
+    color: TEXT_HI,
+    letterSpacing: 0.2,
+  },
+  sep: {
+    width: 1,
+    height: 22,
+    backgroundColor: "rgba(255,255,255,0.08)",
+    marginHorizontal: 2,
+  },
+  tradeBtn: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    backgroundColor: "rgba(96,165,250,0.15)",
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: ACCENT_BORDER,
+  },
+  tradeBtnText: {
+    fontSize: 13,
+    fontWeight: "600",
+    color: ACCENT,
+  },
+  brokerWrap: {
+    position: "relative",
+    width: 20,
+    height: 20,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  brokerDot: {
+    position: "absolute",
+    top: -1,
+    right: -1,
+    width: 7,
+    height: 7,
+    borderRadius: 3.5,
+    borderWidth: 1,
+    borderColor: CTRL_BAR_BG,
+  },
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// TFSheet — timeframe picker
+// ─────────────────────────────────────────────────────────────────────────────
+interface TFSheetProps {
+  visible:   boolean;
+  onClose:   () => void;
+  current:   string;
+  onSelect:  (tf: string) => void;
+}
+
+const TFSheet = memo(function TFSheet({ visible, onClose, current, onSelect }: TFSheetProps) {
+  return (
+    <BottomSheet visible={visible} onClose={onClose} title="Timeframe" height="half">
+      <ScrollView
+        contentContainerStyle={tf.grid}
+        keyboardShouldPersistTaps="handled"
+      >
+        {TF_LIST.map(t => {
+          const active = t === current;
+          return (
+            <Pressable
+              key={t}
+              style={[tf.item, active && tf.itemActive]}
+              onPress={() => { onSelect(t); onClose(); }}
+            >
+              <Text style={[tf.itemText, active && tf.itemTextActive]}>
+                {tfLabel(t)}
+              </Text>
+            </Pressable>
+          );
+        })}
+      </ScrollView>
+    </BottomSheet>
+  );
+});
+
+const tf = StyleSheet.create({
+  grid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    padding: 16,
+    gap: 10,
+  },
+  item: {
+    paddingHorizontal: 18,
+    paddingVertical: 10,
+    borderRadius: 10,
+    backgroundColor: BTN_BG,
+    borderWidth: 1,
+    borderColor: BTN_BORDER,
+    minWidth: 60,
+    alignItems: "center",
+  },
+  itemActive: {
+    backgroundColor: ACCENT_BG,
+    borderColor: ACCENT_BORDER,
+  },
+  itemText: {
+    fontSize: 14,
+    fontWeight: "500",
+    color: TEXT_MED,
+  },
+  itemTextActive: {
+    color: ACCENT,
+    fontWeight: "700",
+  },
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// ChartTypeSheet — chart type picker
+// ─────────────────────────────────────────────────────────────────────────────
+interface ChartTypeSheetProps {
+  visible:   boolean;
+  onClose:   () => void;
+  current:   ChartType;
+  onSelect:  (t: ChartType) => void;
+}
+
+const ChartTypeSheet = memo(function ChartTypeSheet({
+  visible, onClose, current, onSelect,
+}: ChartTypeSheetProps) {
+  return (
+    <BottomSheet visible={visible} onClose={onClose} title="Chart Type" height="half">
+      <View style={ct.list}>
+        {CHART_TYPE_OPTIONS.map(opt => {
+          const active = opt.type === current;
+          return (
+            <Pressable
+              key={opt.type}
+              style={[ct.row, active && ct.rowActive]}
+              onPress={() => { onSelect(opt.type); onClose(); }}
+            >
+              <Ionicons
+                name={opt.icon as never}
+                size={20}
+                color={active ? ACCENT : TEXT_MED}
+              />
+              <Text style={[ct.label, active && ct.labelActive]}>{opt.label}</Text>
+              {active && <Ionicons name="checkmark" size={16} color={ACCENT} style={ct.check} />}
+            </Pressable>
+          );
+        })}
+      </View>
+    </BottomSheet>
+  );
+});
+
+const ct = StyleSheet.create({
+  list: {
+    paddingHorizontal: 16,
+    paddingTop: 12,
+    gap: 4,
+  },
+  row: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 14,
+    paddingVertical: 13,
+    borderRadius: 10,
+    gap: 12,
+  },
+  rowActive: {
+    backgroundColor: ACCENT_BG,
+  },
+  label: {
+    flex: 1,
+    fontSize: 15,
+    fontWeight: "500",
+    color: TEXT_MED,
+  },
+  labelActive: {
+    color: ACCENT,
+    fontWeight: "600",
+  },
+  check: {
+    marginLeft: "auto",
+  },
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// DrawingToolsSheet — wraps DrawingToolbar in a full-height sheet
+// ─────────────────────────────────────────────────────────────────────────────
+const DrawingToolsSheet = memo(function DrawingToolsSheet({
+  visible, onClose,
+}: { visible: boolean; onClose: () => void }) {
+  return (
+    <BottomSheet visible={visible} onClose={onClose} title="Drawing Tools" height="full">
+      <DrawingToolbar />
+    </BottomSheet>
+  );
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// MoreOptionsSheet — grid of secondary actions
+// ─────────────────────────────────────────────────────────────────────────────
+interface MoreOptionsSheetProps {
+  visible:         boolean;
+  onClose:         () => void;
+  isFullscreen:    boolean;
+  syncTF:          boolean;
+  onSyncTFChange:  (v: boolean) => void;
+  onIndicators:    () => void;
+  onAlerts:        () => void;
+  onLayout:        () => void;
+  onObjects:       () => void;
+  onScreenshot:    () => void;
+  onReplay:        () => void;
+  onReset:         () => void;
+  onFullscreen:    () => void;
+}
+
+const MoreOptionsSheet = memo(function MoreOptionsSheet({
+  visible, onClose, isFullscreen, syncTF, onSyncTFChange,
+  onIndicators, onAlerts, onLayout, onObjects,
+  onScreenshot, onReplay, onReset, onFullscreen,
+}: MoreOptionsSheetProps) {
+  type Option = {
+    id: string;
+    label: string;
+    icon: string;
+    color?: string;
+    onPress: () => void;
+  };
+
+  const options: Option[] = [
+    { id: "indicators", label: "Indicators",   icon: "trending-up-outline",      onPress: () => { onClose(); onIndicators(); } },
+    { id: "alerts",     label: "Alerts",        icon: "notifications-outline",    onPress: () => { onClose(); onAlerts(); } },
+    { id: "layout",     label: "Layout",        icon: "grid-outline",             onPress: () => { onClose(); onLayout(); } },
+    { id: "objects",    label: "Objects",       icon: "shapes-outline",           onPress: () => { onClose(); onObjects(); } },
+    { id: "screenshot", label: "Screenshot",   icon: "camera-outline",           onPress: () => { onClose(); onScreenshot(); } },
+    { id: "replay",     label: "Bar Replay",   icon: "play-circle-outline",      onPress: () => { onClose(); onReplay(); } },
+    { id: "reset",      label: "Reset Chart",  icon: "refresh-outline",          onPress: () => { onClose(); onReset(); } },
+    {
+      id: "fullscreen",
+      label: isFullscreen ? "Exit Fullscreen" : "Fullscreen",
+      icon: isFullscreen ? "contract-outline" : "expand-outline",
+      onPress: () => { onClose(); onFullscreen(); },
+    },
+  ];
+
+  return (
+    <BottomSheet visible={visible} onClose={onClose} title="More" height="half">
+      <ScrollView contentContainerStyle={mo.container} keyboardShouldPersistTaps="handled">
+        {/* Sync TF toggle row */}
+        <View style={mo.toggleRow}>
+          <Ionicons name="sync-outline" size={18} color={syncTF ? ACCENT : TEXT_MED} style={{ marginRight: 10 }} />
+          <Text style={[mo.toggleLabel, syncTF && { color: TEXT_HI }]}>Sync Timeframe</Text>
+          <Switch
+            value={syncTF}
+            onValueChange={onSyncTFChange}
+            thumbColor={syncTF ? ACCENT : "#6b7280"}
+            trackColor={{ false: "rgba(255,255,255,0.12)", true: ACCENT_BG }}
+          />
+        </View>
+
+        <View style={mo.divider} />
+
+        {/* Options grid */}
+        <View style={mo.grid}>
+          {options.map(opt => (
+            <Pressable key={opt.id} style={mo.cell} onPress={opt.onPress}>
+              <View style={mo.cellIcon}>
+                <Ionicons name={opt.icon as never} size={22} color={opt.color ?? TEXT_MED} />
+              </View>
+              <Text style={mo.cellLabel} numberOfLines={1}>{opt.label}</Text>
+            </Pressable>
+          ))}
+        </View>
+      </ScrollView>
+    </BottomSheet>
+  );
+});
+
+const mo = StyleSheet.create({
+  container: { padding: 16 },
+  toggleRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 4,
+    paddingVertical: 6,
+    marginBottom: 4,
+  },
+  toggleLabel: {
+    flex: 1,
+    fontSize: 14,
+    fontWeight: "500",
+    color: TEXT_MED,
+  },
+  divider: {
+    height: 1,
+    backgroundColor: DIVIDER,
+    marginVertical: 12,
+  },
+  grid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 10,
+  },
+  cell: {
+    width: "22%",
+    minWidth: 72,
+    alignItems: "center",
+    gap: 6,
+    paddingVertical: 12,
+  },
+  cellIcon: {
+    width: 44,
+    height: 44,
+    borderRadius: 12,
+    backgroundColor: BTN_BG,
+    borderWidth: 1,
+    borderColor: BTN_BORDER,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  cellLabel: {
+    fontSize: 11,
+    fontWeight: "500",
+    color: TEXT_MED,
+    textAlign: "center",
+  },
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// LayoutBottomSheet — named layouts + layout count + sync-TF
+// ─────────────────────────────────────────────────────────────────────────────
+interface LayoutBottomSheetProps {
+  visible:             boolean;
+  onClose:             () => void;
+  layoutCount:         ChartLayoutType;
+  onLayoutChange:      (n: ChartLayoutType) => void;
+  syncTF:              boolean;
+  onSyncTFChange:      (v: boolean) => void;
+  namedLayouts:        NamedLayout[];
+  defaultLayoutName:   string;
+  onSaveNamedLayout:   (name: string) => void;
+  onLoadNamedLayout:   (layout: NamedLayout) => void;
+  onRenameNamedLayout: (id: string, name: string) => void;
+  onDeleteNamedLayout: (id: string) => void;
+  activeLayoutId:      string | null;
+}
+
+const LayoutBottomSheet = memo(function LayoutBottomSheet({
+  visible, onClose,
+  layoutCount, onLayoutChange,
+  syncTF, onSyncTFChange,
+  namedLayouts, defaultLayoutName,
+  onSaveNamedLayout, onLoadNamedLayout,
+  onRenameNamedLayout, onDeleteNamedLayout, activeLayoutId,
+}: LayoutBottomSheetProps) {
+  const [saveName,     setSaveName]     = useState(defaultLayoutName);
+  const [renamingId,   setRenamingId]   = useState<string | null>(null);
+  const [renameText,   setRenameText]   = useState("");
+
+  // Sync saveName with defaultLayoutName prop
+  useEffect(() => { setSaveName(defaultLayoutName); }, [defaultLayoutName]);
+
+  const handleSave = useCallback(() => {
+    if (saveName.trim()) {
+      onSaveNamedLayout(saveName.trim());
+      setSaveName("");
+    }
+  }, [saveName, onSaveNamedLayout]);
+
+  const handleStartRename = useCallback((layout: NamedLayout) => {
+    setRenamingId(layout.id);
+    setRenameText(layout.name);
+  }, []);
+
+  const handleCommitRename = useCallback(() => {
+    if (renamingId && renameText.trim()) {
+      onRenameNamedLayout(renamingId, renameText.trim());
+    }
+    setRenamingId(null);
+    setRenameText("");
+  }, [renamingId, renameText, onRenameNamedLayout]);
+
+  return (
+    <BottomSheet visible={visible} onClose={onClose} title="Layouts" height="full">
+      <ScrollView
+        contentContainerStyle={lb.container}
+        keyboardShouldPersistTaps="handled"
+      >
+        {/* Layout count section */}
+        <Text style={lb.sectionTitle}>Chart Layout</Text>
+        <View style={lb.layoutGrid}>
+          {LAYOUT_OPTIONS.map(opt => {
+            const active = opt.count === layoutCount;
+            return (
+              <Pressable
+                key={opt.count}
+                style={[lb.layoutCell, active && lb.layoutCellActive]}
+                onPress={() => onLayoutChange(opt.count)}
+              >
+                {/* Mini grid preview */}
+                <View style={lb.miniGrid}>
+                  {Array.from({ length: opt.count }).map((_, i) => (
+                    <View key={i} style={lb.miniCell} />
+                  ))}
+                </View>
+                <Text style={[lb.layoutLabel, active && lb.layoutLabelActive]}>
+                  {opt.label}
+                </Text>
+              </Pressable>
+            );
+          })}
+        </View>
+
+        {/* Sync TF toggle */}
+        <View style={lb.toggleRow}>
+          <Ionicons name="sync-outline" size={16} color={syncTF ? ACCENT : TEXT_MED} style={{ marginRight: 10 }} />
+          <Text style={[lb.toggleLabel, syncTF && { color: TEXT_HI }]}>Sync Timeframe across charts</Text>
+          <Switch
+            value={syncTF}
+            onValueChange={onSyncTFChange}
+            thumbColor={syncTF ? ACCENT : "#6b7280"}
+            trackColor={{ false: "rgba(255,255,255,0.12)", true: ACCENT_BG }}
+          />
+        </View>
+
+        <View style={lb.divider} />
+
+        {/* Save layout */}
+        <Text style={lb.sectionTitle}>Save Current Layout</Text>
+        <View style={lb.saveRow}>
+          <TextInput
+            style={lb.nameInput}
+            value={saveName}
+            onChangeText={setSaveName}
+            placeholder="Layout name…"
+            placeholderTextColor={TEXT_DIM}
+            returnKeyType="done"
+            onSubmitEditing={handleSave}
+          />
+          <Pressable style={lb.saveBtn} onPress={handleSave}>
+            <Text style={lb.saveBtnText}>Save</Text>
+          </Pressable>
+        </View>
+
+        {/* Named layouts list */}
+        {namedLayouts.length > 0 && (
+          <>
+            <View style={lb.divider} />
+            <Text style={lb.sectionTitle}>Saved Layouts</Text>
+            {namedLayouts.map(layout => (
+              <View key={layout.id} style={lb.layoutRow}>
+                {renamingId === layout.id ? (
+                  <TextInput
+                    style={[lb.nameInput, { flex: 1 }]}
+                    value={renameText}
+                    onChangeText={setRenameText}
+                    autoFocus
+                    returnKeyType="done"
+                    onSubmitEditing={handleCommitRename}
+                    onBlur={handleCommitRename}
+                  />
+                ) : (
+                  <Pressable
+                    style={lb.layoutRowInfo}
+                    onPress={() => { onLoadNamedLayout(layout); onClose(); }}
+                  >
+                    <Text style={[lb.layoutRowName, layout.id === activeLayoutId && lb.layoutRowNameActive]}>
+                      {layout.name}
+                    </Text>
+                    <Text style={lb.layoutRowMeta}>
+                      {layout.symbol} · {layout.interval}
+                    </Text>
+                  </Pressable>
+                )}
+
+                <View style={lb.layoutRowActions}>
+                  {renamingId === layout.id ? (
+                    <Pressable onPress={handleCommitRename} hitSlop={8}>
+                      <Ionicons name="checkmark" size={18} color={ACCENT} />
+                    </Pressable>
+                  ) : (
+                    <Pressable onPress={() => handleStartRename(layout)} hitSlop={8}>
+                      <Ionicons name="pencil-outline" size={17} color={TEXT_DIM} />
+                    </Pressable>
+                  )}
+                  <Pressable onPress={() => onDeleteNamedLayout(layout.id)} hitSlop={8}>
+                    <Ionicons name="trash-outline" size={17} color={DANGER} />
+                  </Pressable>
+                </View>
+              </View>
+            ))}
+          </>
+        )}
+      </ScrollView>
+    </BottomSheet>
+  );
+});
+
+const lb = StyleSheet.create({
+  container: { padding: 16, gap: 0 },
+  sectionTitle: {
+    fontSize: 11,
+    fontWeight: "600",
+    color: TEXT_DIM,
+    textTransform: "uppercase",
+    letterSpacing: 0.8,
+    marginBottom: 10,
+    marginTop: 4,
+  },
+  layoutGrid: {
+    flexDirection: "row",
+    gap: 10,
+    marginBottom: 16,
+    flexWrap: "wrap",
+  },
+  layoutCell: {
+    flex: 1,
+    minWidth: 72,
+    alignItems: "center",
+    paddingVertical: 12,
+    paddingHorizontal: 6,
+    borderRadius: 10,
+    backgroundColor: BTN_BG,
+    borderWidth: 1,
+    borderColor: BTN_BORDER,
+    gap: 8,
+  },
+  layoutCellActive: {
+    backgroundColor: ACCENT_BG,
+    borderColor: ACCENT_BORDER,
+  },
+  miniGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    width: 30, height: 30,
+    gap: 2,
+  },
+  miniCell: {
+    backgroundColor: "rgba(255,255,255,0.25)",
+    borderRadius: 2,
+    flex: 1,
+    minWidth: 12, minHeight: 12,
+  },
+  layoutLabel: {
+    fontSize: 11,
+    fontWeight: "500",
+    color: TEXT_MED,
+  },
+  layoutLabelActive: {
+    color: ACCENT,
+    fontWeight: "600",
+  },
+  toggleRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: 6,
+    marginBottom: 4,
+  },
+  toggleLabel: {
+    flex: 1,
+    fontSize: 13,
+    fontWeight: "500",
+    color: TEXT_MED,
+  },
+  divider: {
+    height: 1,
+    backgroundColor: DIVIDER,
+    marginVertical: 14,
+  },
+  saveRow: {
+    flexDirection: "row",
+    gap: 10,
+    marginBottom: 4,
+  },
+  nameInput: {
+    flex: 1,
+    height: 40,
+    backgroundColor: BTN_BG,
+    borderRadius: 9,
+    borderWidth: 1,
+    borderColor: BTN_BORDER,
+    paddingHorizontal: 12,
+    color: TEXT_HI,
+    fontSize: 14,
+  },
+  saveBtn: {
+    paddingHorizontal: 16,
+    height: 40,
+    borderRadius: 9,
+    backgroundColor: ACCENT_BG,
+    borderWidth: 1,
+    borderColor: ACCENT_BORDER,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  saveBtnText: {
+    fontSize: 13,
+    fontWeight: "600",
+    color: ACCENT,
+  },
+  layoutRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: DIVIDER,
+    gap: 10,
+  },
+  layoutRowInfo: {
+    flex: 1,
+    gap: 2,
+  },
+  layoutRowName: {
+    fontSize: 14,
+    fontWeight: "500",
+    color: TEXT_HI,
+  },
+  layoutRowNameActive: {
+    color: ACCENT,
+  },
+  layoutRowMeta: {
+    fontSize: 11,
+    color: TEXT_DIM,
+  },
+  layoutRowActions: {
+    flexDirection: "row",
+    gap: 14,
+    alignItems: "center",
+  },
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// ObjectTreeSheet — drawings list
+// ─────────────────────────────────────────────────────────────────────────────
+const ObjectTreeSheet = memo(function ObjectTreeSheet({
+  visible, onClose, symbol, timeframe,
+}: { visible: boolean; onClose: () => void; symbol: string; timeframe: string }) {
+  return (
+    <BottomSheet visible={visible} onClose={onClose} title="Objects" height="full">
+      <DrawingsList symbol={symbol} timeframe={timeframe} />
+    </BottomSheet>
+  );
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// ChartSettingsSheet — full-screen settings modal
+// ─────────────────────────────────────────────────────────────────────────────
+interface ChartSettingsSheetProps {
+  visible:          boolean;
+  settings:         ChartSettings;
+  onChange:         (s: ChartSettings) => void;
+  onSaveAsDefault?: (s: ChartSettings) => void;
+  onClose:          () => void;
+}
+
+const ChartSettingsSheet = memo(function ChartSettingsSheet({
+  visible, settings, onChange, onSaveAsDefault, onClose,
+}: ChartSettingsSheetProps) {
+  return (
+    <Modal
+      visible={visible}
+      animationType="slide"
+      onRequestClose={onClose}
+      statusBarTranslucent
+    >
+      <SafeAreaView style={css.root}>
+        <SettingsPanel
+          settings={settings}
+          onChange={onChange}
+          onSaveAsDefault={onSaveAsDefault}
+          onClose={onClose}
+        />
+      </SafeAreaView>
+    </Modal>
+  );
+});
+
+const css = StyleSheet.create({
+  root: {
+    flex: 1,
+    backgroundColor: SHEET_BG,
+  },
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// TradeSheet — full-screen order entry modal
+// ─────────────────────────────────────────────────────────────────────────────
+interface TradeSheetProps {
+  visible:      boolean;
+  symbol:       string;
+  currentPrice: number | null;
+  onClose:      () => void;
+}
+
+const TradeSheet = memo(function TradeSheet({
+  visible, symbol, currentPrice, onClose,
+}: TradeSheetProps) {
+  return (
+    <Modal
+      visible={visible}
+      animationType="slide"
+      onRequestClose={onClose}
+      statusBarTranslucent
+    >
+      <SafeAreaView style={ts.root}>
+        <BuySellPanel symbol={symbol} currentPrice={currentPrice} onClose={onClose} />
+      </SafeAreaView>
+    </Modal>
+  );
+});
+
+const ts = StyleSheet.create({
+  root: {
+    flex: 1,
+    backgroundColor: SHEET_BG,
+  },
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Props interface
+// ─────────────────────────────────────────────────────────────────────────────
 export interface MobileChartLayoutProps {
   activeKey:           string;
   interval:            string;
@@ -153,7 +1418,9 @@ export interface MobileChartLayoutProps {
   activeLayoutId:      string | null;
 }
 
-// ── Main Component ─────────────────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────────────────────
+// MobileChartLayout — main export
+// ─────────────────────────────────────────────────────────────────────────────
 export const MobileChartLayout = memo(function MobileChartLayout(
   props: MobileChartLayoutProps,
 ) {
@@ -163,45 +1430,50 @@ export const MobileChartLayout = memo(function MobileChartLayout(
     replayBarSlice, alertDrawingIds, handleDrawingAlert, addAlertDrawingId,
     showIndicators, setShowIndicators,
     showAlertCenter, setShowAlertCenter,
-    showQuickAlert, setShowQuickAlert, alertDrawing, closeAlertModal,
-    openSidebar, handleScreenshot, chartAreaRef,
+    showQuickAlert: _showQuickAlert, setShowQuickAlert: _setShowQuickAlert,
+    alertDrawing: _alertDrawing, closeAlertModal: _closeAlertModal,
+    openSidebar: _openSidebar,
+    handleScreenshot, chartAreaRef,
     onBarReplay,
     layoutCount, onLayoutChange, syncTF, onSyncTFChange,
     namedLayouts, defaultLayoutName, onSaveNamedLayout, onLoadNamedLayout,
     onRenameNamedLayout, onDeleteNamedLayout, activeLayoutId,
   } = props;
 
-  // ── Responsive / orientation ─────────────────────────────────────────────
+  // ── Responsive / orientation ───────────────────────────────────────────────
   const { width: screenW, height: screenH } = useWindowDimensions();
   const isLandscape = screenW > screenH;
   const insets = useSafeAreaInsets();
 
-  // ── Store subscriptions (narrow — avoid broad re-renders on every tick) ──
+  // ── Store subscriptions ────────────────────────────────────────────────────
   const chartType           = useChartStore(s => s.chartType);
   const setChartType        = useChartStore(s => s.setChartType);
   const setMobileFullscreen = useChartStore(s => s.setMobileChartFullscreen);
-  // wsStatus: Pass B — useLiveMarketContext full implementation pending Phase 6.x.
-  // The value is consumed only by MiniControlBar (Pass B toolbar).
-  // Cast prevents TS narrowing the literal "disconnected" to a non-"connected"
-  // type, which would make the downstream === "connected" check a type error.
-  const wsStatus = ("disconnected" as WsStatus); // stub; replaced in Pass B
+  // wsStatus: Phase 6.x — livemarketcontext tablet port pending
+  const wsStatus = ("disconnected" as WsStatus);
   const { items: watchlistItems } = useWatchlist();
 
   // Drawing store — narrow selectors
-  const selectedDrawingId = useDrawingStore(s => s.selectedDrawingId);
-  const drawings          = useDrawingStore(s => s.drawings);
-  const activeTool        = useDrawingStore(s => s.activeTool);
-  const setActiveTool     = useDrawingStore(s => s.setActiveTool);
-  const selectedDrawing   = drawings.find(d => d.id === selectedDrawingId) ?? null;
+  const selectedDrawingId    = useDrawingStore(s => s.selectedDrawingId);
+  const setSelectedDrawingId = useDrawingStore(s => s.setSelectedDrawingId);
+  const drawings             = useDrawingStore(s => s.drawings);
+  const activeTool           = useDrawingStore(s => s.activeTool);
+  const setActiveTool        = useDrawingStore(s => s.setActiveTool);
+  const updateDrawing        = useDrawingStore(s => s.updateDrawing);
+  const removeDrawing        = useDrawingStore(s => s.removeDrawing);
+  const undo                 = useDrawingStore(s => s.undo);
+  const canUndo              = useDrawingStore(s => s.canUndo);
+  const selectedDrawing      = useMemo(
+    () => drawings.find(d => d.id === selectedDrawingId) ?? null,
+    [drawings, selectedDrawingId],
+  );
 
   // Broker store
-  const {
-    openSelectModal, showSelectModal, showAuthModal,
-    activeAccount, connectionStatus,
-  } = useBrokerStore();
-  const brokerConnected = !!activeAccount && connectionStatus === "connected";
+  const activeAccount    = useBrokerStore(s => s.activeAccount);
+  const connectionStatus = useBrokerStore(s => s.connectionStatus);
+  const brokerConnected  = !!activeAccount && connectionStatus === "connected";
 
-  // ── Sheet / overlay visibility state ────────────────────────────────────
+  // ── Sheet / overlay visibility state ──────────────────────────────────────
   const [showDrawingSheet,      setShowDrawingSheet]      = useState(false);
   const [showSettings,          setShowSettings]          = useState(false);
   const [showBrokerIntegration, setShowBrokerIntegration] = useState(false);
@@ -213,8 +1485,9 @@ export const MobileChartLayout = memo(function MobileChartLayout(
   const [isFullscreen,          setIsFullscreen]          = useState(false);
   const [showLayoutSheet,       setShowLayoutSheet]       = useState(false);
   const [showTradeSheet,        setShowTradeSheet]        = useState(false);
+  const [showDrawingSettings,   setShowDrawingSettings]   = useState(false);
 
-  // ── Multi-chart slot state ────────────────────────────────────────────────
+  // ── Multi-chart slot state ─────────────────────────────────────────────────
   const [activeChartSlot, setActiveChartSlot] = useState(0);
   const [slotSymbols,     setSlotSymbols]     = useState<string[]>([
     "ETHUSD", "SOLUSD", "DOGEUSD",
@@ -224,20 +1497,16 @@ export const MobileChartLayout = memo(function MobileChartLayout(
   ]);
   const slotInitRef = useRef(false);
 
-  // ── Close watchlist overlay when screen loses focus ──────────────────────
-  // Mirrors the wouter useLocation effect from the web version: when the
-  // user navigates away from the charts tab, dismiss any open overlays.
+  // ── Close overlays when screen loses focus ─────────────────────────────────
   useFocusEffect(
     useCallback(() => {
-      // On focus: no-op (overlays open on demand)
       return () => {
-        // On blur: close watchlist overlay
         setShowWatchlist(false);
       };
     }, []),
   );
 
-  // ── One-time init: seed slot symbols from watchlist ───────────────────────
+  // ── Seed slot symbols from watchlist ──────────────────────────────────────
   useEffect(() => {
     if (slotInitRef.current || watchlistItems.length === 0) return;
     slotInitRef.current = true;
@@ -250,26 +1519,27 @@ export const MobileChartLayout = memo(function MobileChartLayout(
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [watchlistItems.length]);
 
-  // ── Reset store fullscreen flag when layout unmounts ─────────────────────
+  // ── Reset fullscreen on unmount ────────────────────────────────────────────
   useEffect(() => {
     return () => { setMobileFullscreen(false); };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // ── Non-reactive live price read (avoids re-renders on every tick) ───────
+  // ── Live price ─────────────────────────────────────────────────────────────
   const connected     = wsStatus === "connected";
+  void connected; // available for future use
   const livePrice     = getSymbolTick(activeKey)?.price ?? null;
   const liveChangePct = getSymbolTick(activeKey)?.changePct ?? 0;
   const isUp          = liveChangePct >= 0;
 
-  // ── Symbol metadata ──────────────────────────────────────────────────────
+  // ── Symbol metadata ────────────────────────────────────────────────────────
   const catEntry = SYMBOL_CATALOG[activeKey];
   const wlEntry  = watchlistItems.find(i => i.symbol === activeKey);
   const badge    = wlEntry?.badge
     ?? catEntry?.badge
     ?? activeKey.slice(0, 4).toUpperCase();
 
-  // ── Active slot derived values ────────────────────────────────────────────
+  // ── Active slot derived values ─────────────────────────────────────────────
   const activeSlotSymbol = (activeChartSlot === 0 || layoutCount <= 1)
     ? activeKey
     : (slotSymbols[activeChartSlot - 1] ?? activeKey);
@@ -284,7 +1554,7 @@ export const MobileChartLayout = memo(function MobileChartLayout(
         ?? SYMBOL_CATALOG[activeSlotSymbol]?.badge
         ?? activeSlotSymbol.slice(0, 4).toUpperCase());
 
-  // ── Symbol / interval routing — routes to active slot ───────────────────
+  // ── Symbol / interval routing ──────────────────────────────────────────────
   const handleSelectSymbol = useCallback((sym: string) => {
     if (activeChartSlot === 0 || layoutCount <= 1) {
       selectSymbol(sym);
@@ -297,19 +1567,19 @@ export const MobileChartLayout = memo(function MobileChartLayout(
     }
   }, [activeChartSlot, layoutCount, selectSymbol]);
 
-  const handleSelectInterval = useCallback((tf: string) => {
+  const handleSelectInterval = useCallback((tfVal: string) => {
     if (activeChartSlot === 0 || layoutCount <= 1) {
-      selectInterval(tf);
+      selectInterval(tfVal);
     } else {
       setSlotIntervals(prev => {
         const next = [...prev];
-        next[activeChartSlot - 1] = tf;
+        next[activeChartSlot - 1] = tfVal;
         return next;
       });
     }
   }, [activeChartSlot, layoutCount, selectInterval]);
 
-  // ── Prev / Next symbol (routes to active slot) ───────────────────────────
+  // ── Prev / Next symbol ─────────────────────────────────────────────────────
   const handlePrev = useCallback(() => {
     if (activeChartSlot > 0 && layoutCount > 1) {
       const curSym = slotSymbols[activeChartSlot - 1] ?? activeKey;
@@ -336,25 +1606,25 @@ export const MobileChartLayout = memo(function MobileChartLayout(
     }
   }, [watchlistItems, activeKey, activeChartSlot, layoutCount, slotSymbols, handleSelectSymbol, selectSymbol]);
 
-  // ── Stable sheet-open handlers (useCallback keeps memo'd children stable) ─
+  // ── Stable sheet-open handlers ─────────────────────────────────────────────
   const handleCloseDrawingSheet = useCallback(() => setShowDrawingSheet(false), []);
-  const handleCloseSettings     = useCallback(() => setShowSettings(false),    []);
-  const handleCloseObjectTree   = useCallback(() => setShowObjectTree(false),  []);
-  const handleOpenSettings      = useCallback(() => setShowSettings(true),     []);
-  const handleOpenTFSheet       = useCallback(() => setShowTFSheet(true),      []);
-  const handleOpenDrawingSheet  = useCallback(() => setShowDrawingSheet(true), []);
+  const handleCloseSettings     = useCallback(() => setShowSettings(false),     []);
+  const handleCloseObjectTree   = useCallback(() => setShowObjectTree(false),   []);
+  const handleOpenSettings      = useCallback(() => setShowSettings(true),      []);
+  const handleOpenTFSheet       = useCallback(() => setShowTFSheet(true),       []);
+  const handleOpenDrawingSheet  = useCallback(() => setShowDrawingSheet(true),  []);
   const handleOpenBrokerSheet   = useCallback(() => setShowBrokerIntegration(true), []);
-  const handleOpenMoreSheet     = useCallback(() => setShowMoreSheet(true),    []);
-  const handleOpenTradeSheet    = useCallback(() => setShowTradeSheet(true),   []);
+  const handleOpenMoreSheet     = useCallback(() => setShowMoreSheet(true),     []);
+  const handleOpenTradeSheet    = useCallback(() => setShowTradeSheet(true),    []);
 
-  // ── Chart reset (Pass B: will emit event to CustomChart) ─────────────────
+  // ── Chart reset ────────────────────────────────────────────────────────────
   // Web: window.dispatchEvent(new CustomEvent("tj:chart-reset"))
-  // RN:  no window — Pass B will wire a module-level emitter.
+  // RN:  Pass C will wire a module-level emitter.
   const handleResetChart = useCallback(() => {
-    // Pass B implementation
+    // Pass C implementation
   }, []);
 
-  // ── Fullscreen (syncs to chartStore for nav hide) ────────────────────────
+  // ── Fullscreen ─────────────────────────────────────────────────────────────
   const handleFullscreen = useCallback(() => {
     setIsFullscreen(prev => {
       const next = !prev;
@@ -363,9 +1633,59 @@ export const MobileChartLayout = memo(function MobileChartLayout(
     });
   }, [setMobileFullscreen]);
 
-  // ── Multi-chart grid helpers ──────────────────────────────────────────────
+  // ── Drawing store actions ──────────────────────────────────────────────────
+  const handleUpdateDrawingStyle = useCallback((patch: Partial<DrawingStyle>) => {
+    if (selectedDrawingId == null || !selectedDrawing) return;
+    updateDrawing(selectedDrawingId, {
+      style: { ...selectedDrawing.style, ...patch } as DrawingStyle,
+    });
+  }, [selectedDrawingId, selectedDrawing, updateDrawing]);
 
-  /** Border style applied to a slot pane based on whether it is active */
+  const handleUpdateDrawingPoints = useCallback((points: DrawingPoint[]) => {
+    if (selectedDrawingId == null) return;
+    updateDrawing(selectedDrawingId, { points });
+  }, [selectedDrawingId, updateDrawing]);
+
+  const handleDeleteSelectedDrawing = useCallback(() => {
+    if (selectedDrawingId == null) return;
+    removeDrawing(selectedDrawingId);
+    setSelectedDrawingId(null);
+  }, [selectedDrawingId, removeDrawing, setSelectedDrawingId]);
+
+  const handleDoneDrawing = useCallback(() => {
+    setSelectedDrawingId(null);
+  }, [setSelectedDrawingId]);
+
+  const handleClearActiveTool = useCallback(() => {
+    setActiveTool("cursor");
+  }, [setActiveTool]);
+
+  // ── More options handlers ──────────────────────────────────────────────────
+  const handleMoreIndicators = useCallback(() => {
+    setShowIndicators(true);
+  }, [setShowIndicators]);
+
+  const handleMoreAlerts = useCallback(() => {
+    setShowAlertCenter(true);
+  }, [setShowAlertCenter]);
+
+  const handleMoreLayout = useCallback(() => {
+    setShowLayoutSheet(true);
+  }, []);
+
+  const handleMoreObjects = useCallback(() => {
+    setShowObjectTree(true);
+  }, []);
+
+  const handleMoreScreenshot = useCallback(() => {
+    handleScreenshot();
+  }, [handleScreenshot]);
+
+  const handleMoreReplay = useCallback(() => {
+    onBarReplay?.();
+  }, [onBarReplay]);
+
+  // ── Slot border helper ─────────────────────────────────────────────────────
   const slotBorderStyle = useCallback(
     (slot: number) =>
       slot === activeChartSlot
@@ -374,7 +1694,7 @@ export const MobileChartLayout = memo(function MobileChartLayout(
     [activeChartSlot],
   );
 
-  /** Main chart pane (slot 0) — always CustomChart with full overlays */
+  // ── Main chart pane ────────────────────────────────────────────────────────
   const mainChartPane = (
     <CustomChart settings={chartSettings} replayBars={replayBarSlice}>
       <DrawingOverlay
@@ -388,7 +1708,6 @@ export const MobileChartLayout = memo(function MobileChartLayout(
     </CustomChart>
   );
 
-  /** Mini-chart pane for slot i+1 (slotSymbols[i]) */
   const miniPane = (i: number) => (
     <MiniChart
       defaultSymbol={slotSymbols[i] ?? "ETHUSD"}
@@ -410,18 +1729,7 @@ export const MobileChartLayout = memo(function MobileChartLayout(
     </MiniChart>
   );
 
-  // ── Chart grid renderer ───────────────────────────────────────────────────
-  //
-  // Web uses CSS grid; RN uses nested flex Views.
-  //
-  // layoutCount=1: single chart fills container
-  // layoutCount=2: [main | mini[0]] side-by-side (1:1)
-  // layoutCount=3: [main(flex:2) | column[mini[0], mini[1]](flex:1)]
-  // layoutCount=4: [col[main, mini[1]] | col[mini[0], mini[2]]] — 2×2
-  //
-  // Gap between panes: 2px (matches web's gap:2)
-  // Active pane has a 2px blue border inset; idle pane has dim border.
-
+  // ── Chart grid ─────────────────────────────────────────────────────────────
   const renderChartGrid = () => {
     if (layoutCount === 1) {
       return (
@@ -432,7 +1740,6 @@ export const MobileChartLayout = memo(function MobileChartLayout(
     }
 
     if (layoutCount === 2) {
-      // Side-by-side: [main | mini[0]]
       return (
         <View style={[StyleSheet.absoluteFillObject, styles.gridRow, { gap: 2 }]}>
           <Pressable
@@ -452,9 +1759,6 @@ export const MobileChartLayout = memo(function MobileChartLayout(
     }
 
     if (layoutCount === 3) {
-      // [main(flex:2) | column(flex:1)[mini[0], mini[1]]]
-      // Mirrors CSS: gridTemplateColumns:"2fr 1fr", gridTemplateRows:"1fr 1fr",
-      // slot 0 gridRow:"1 / 3"
       return (
         <View style={[StyleSheet.absoluteFillObject, styles.gridRow, { gap: 2 }]}>
           <Pressable
@@ -481,12 +1785,9 @@ export const MobileChartLayout = memo(function MobileChartLayout(
       );
     }
 
-    // layoutCount === 4: 2×2 grid
-    // Mirrors CSS: gridTemplateColumns:"1fr 1fr", gridTemplateRows:"1fr 1fr"
-    // slot 0 = top-left, mini[0] = top-right, mini[1] = bottom-left, mini[2] = bottom-right
+    // layoutCount === 4: 2×2
     return (
       <View style={[StyleSheet.absoluteFillObject, styles.gridCol, { gap: 2 }]}>
-        {/* Top row */}
         <View style={[styles.gridRow, { flex: 1, gap: 2 }]}>
           <Pressable
             style={[styles.gridCell, { flex: 1 }, slotBorderStyle(0)]}
@@ -501,7 +1802,6 @@ export const MobileChartLayout = memo(function MobileChartLayout(
             {miniPane(0)}
           </Pressable>
         </View>
-        {/* Bottom row */}
         <View style={[styles.gridRow, { flex: 1, gap: 2 }]}>
           <Pressable
             style={[styles.gridCell, { flex: 1 }, slotBorderStyle(2)]}
@@ -520,29 +1820,19 @@ export const MobileChartLayout = memo(function MobileChartLayout(
     );
   };
 
-  // ── Render ────────────────────────────────────────────────────────────────
-  //
-  // Root container:
-  //   • backgroundColor:#08090f  (matches web's background:"#08090f")
-  //   • flex:1 fills the screen given by Expo Router's tab container
-  //   • Bottom SafeArea inset is reserved; Pass B MiniControlBar will sit
-  //     above insets.bottom so it floats above the home indicator.
-  //
-  // chartArea:
-  //   • flex:1 expands to remaining height above the control bar
-  //   • overflow:'hidden' prevents chart canvas from bleeding outside bounds
-  //   • chartAreaRef forwarded from charts.tsx (e.g. for screenshot capture)
-  //
-  // Sheets / toolbars are stubs in Pass A — implemented in Pass B.
+  // ── Derived flags ──────────────────────────────────────────────────────────
+  const showDrawingMiniBar = selectedDrawing != null && !isFullscreen;
+  const showControlBar     = !showDrawingMiniBar && !isFullscreen;
+  const showFloatingPill   = activeTool !== "cursor" && !showDrawingMiniBar;
 
+  // ── Render ─────────────────────────────────────────────────────────────────
   return (
     <View style={styles.container}>
-      {/* ── Chart area ─────────────────────────────────────────────────── */}
+      {/* ── Chart area ──────────────────────────────────────────────────── */}
       <View
         ref={chartAreaRef}
         style={[
           styles.chartArea,
-          // In landscape, side insets apply (notch on left/right)
           isLandscape && {
             paddingLeft:  insets.left,
             paddingRight: insets.right,
@@ -554,20 +1844,154 @@ export const MobileChartLayout = memo(function MobileChartLayout(
 
         {/* Chart grid — single or multi-pane */}
         {renderChartGrid()}
+
+        {/* FloatingDrawingPill — absolute-positioned inside chart area */}
+        {showFloatingPill && (
+          <FloatingDrawingPill
+            activeTool={activeTool}
+            onClear={handleClearActiveTool}
+            onOpenTools={handleOpenDrawingSheet}
+          />
+        )}
       </View>
 
-      {/* ── Pass B: MiniControlBar / DrawingMiniBar ─────────────────────
-           Rendered below chartArea; height ~58px + insets.bottom padding.
-           Preserved as a comment block so Pass B has an exact insertion point.
-      ─────────────────────────────────────────────────────────────────── */}
+      {/* ── Bottom toolbar ──────────────────────────────────────────────── */}
+      {showDrawingMiniBar && selectedDrawing && (
+        <DrawingMiniBar
+          drawing={selectedDrawing}
+          canUndo={canUndo}
+          onUndo={undo}
+          onOpenSettings={() => setShowDrawingSettings(true)}
+          onDelete={handleDeleteSelectedDrawing}
+          onDone={handleDoneDrawing}
+          bottomInset={insets.bottom}
+        />
+      )}
 
-      {/* ── Pass B: Bottom sheets (TradeSheet, TFSheet, DrawingToolsSheet,
-           BrokerIntegrationModal, ChartTypeSheet, MoreOptionsSheet,
-           LayoutBottomSheet, ChartSettingsSheet, IndicatorsPanel,
-           AlertSheet, DrawingAlertModal, BrokerSelectModal, BrokerAuthModal,
-           ObjectTreeSheet) ───────────────────────────────────────────────── */}
+      {showControlBar && (
+        <MiniControlBar
+          symbol={activeSlotSymbol}
+          badge={activeSlotBadge}
+          interval={activeSlotInterval}
+          livePrice={livePrice}
+          changePct={liveChangePct}
+          isUp={isUp}
+          activeTool={activeTool}
+          chartType={chartType}
+          brokerConnected={brokerConnected}
+          isFullscreen={isFullscreen}
+          bottomInset={insets.bottom}
+          onSymbolPress={() => setShowWatchlist(true)}
+          onTFPress={handleOpenTFSheet}
+          onPrev={handlePrev}
+          onNext={handleNext}
+          onDrawPress={handleOpenDrawingSheet}
+          onChartType={() => setShowChartType(true)}
+          onTrade={handleOpenTradeSheet}
+          onBroker={handleOpenBrokerSheet}
+          onMore={handleOpenMoreSheet}
+          onFullscreen={handleFullscreen}
+        />
+      )}
 
-      {/* ── Watchlist overlay — always present so it can animate in/out ── */}
+      {/* ── Bottom sheets ────────────────────────────────────────────────── */}
+      <TFSheet
+        visible={showTFSheet}
+        onClose={() => setShowTFSheet(false)}
+        current={activeSlotInterval}
+        onSelect={handleSelectInterval}
+      />
+
+      <ChartTypeSheet
+        visible={showChartType}
+        onClose={() => setShowChartType(false)}
+        current={chartType}
+        onSelect={setChartType}
+      />
+
+      <DrawingToolsSheet
+        visible={showDrawingSheet}
+        onClose={handleCloseDrawingSheet}
+      />
+
+      <MoreOptionsSheet
+        visible={showMoreSheet}
+        onClose={() => setShowMoreSheet(false)}
+        isFullscreen={isFullscreen}
+        syncTF={syncTF}
+        onSyncTFChange={onSyncTFChange}
+        onIndicators={handleMoreIndicators}
+        onAlerts={handleMoreAlerts}
+        onLayout={handleMoreLayout}
+        onObjects={handleMoreObjects}
+        onScreenshot={handleMoreScreenshot}
+        onReplay={handleMoreReplay}
+        onReset={handleResetChart}
+        onFullscreen={handleFullscreen}
+      />
+
+      <LayoutBottomSheet
+        visible={showLayoutSheet}
+        onClose={() => setShowLayoutSheet(false)}
+        layoutCount={layoutCount}
+        onLayoutChange={onLayoutChange}
+        syncTF={syncTF}
+        onSyncTFChange={onSyncTFChange}
+        namedLayouts={namedLayouts}
+        defaultLayoutName={defaultLayoutName}
+        onSaveNamedLayout={onSaveNamedLayout}
+        onLoadNamedLayout={onLoadNamedLayout}
+        onRenameNamedLayout={onRenameNamedLayout}
+        onDeleteNamedLayout={onDeleteNamedLayout}
+        activeLayoutId={activeLayoutId}
+      />
+
+      <ObjectTreeSheet
+        visible={showObjectTree}
+        onClose={handleCloseObjectTree}
+        symbol={activeSlotSymbol}
+        timeframe={activeSlotInterval}
+      />
+
+      {/* ── Full-screen modals ───────────────────────────────────────────── */}
+      <ChartSettingsSheet
+        visible={showSettings}
+        settings={chartSettings}
+        onChange={handleSettings}
+        onSaveAsDefault={handleSaveAsDefault}
+        onClose={handleCloseSettings}
+      />
+
+      <TradeSheet
+        visible={showTradeSheet}
+        symbol={activeSlotSymbol}
+        currentPrice={livePrice}
+        onClose={() => setShowTradeSheet(false)}
+      />
+
+      {/* ── Broker integration modal ─────────────────────────────────────── */}
+      {showBrokerIntegration && (
+        <BrokerIntegrationModal
+          onClose={() => setShowBrokerIntegration(false)}
+        />
+      )}
+
+      {/* ── Broker store-driven modals handled globally by broker store ──── */}
+      {/* showSelectModal / showAuthModal are rendered by the global broker
+          modal provider in _layout.tsx; no render needed here. */}
+
+      {/* ── Drawing settings modal ───────────────────────────────────────── */}
+      {showDrawingSettings && selectedDrawing && (
+        <DrawingSettingsModal
+          drawing={selectedDrawing}
+          pos={{ x: 0, y: 0 }}
+          onUpdate={handleUpdateDrawingStyle}
+          onUpdatePoints={handleUpdateDrawingPoints}
+          onClose={() => setShowDrawingSettings(false)}
+        />
+      )}
+
+      {/* ── Watchlist overlay ────────────────────────────────────────────── */}
       <MobileWatchlistOverlay
         visible={showWatchlist}
         activeSymbol={activeSlotSymbol}
@@ -579,7 +2003,7 @@ export const MobileChartLayout = memo(function MobileChartLayout(
   );
 });
 
-// ── Styles ─────────────────────────────────────────────────────────────────
+// ── Styles ───────────────────────────────────────────────────────────────────
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -591,8 +2015,6 @@ const styles = StyleSheet.create({
     overflow: "hidden",
   },
 
-  // Solid bg painted behind the chart canvas so the dark color shows during
-  // initial load before the first frame renders.
   chartBackground: {
     ...StyleSheet.absoluteFillObject,
     backgroundColor: "#08090f",
@@ -606,18 +2028,18 @@ const styles = StyleSheet.create({
     flexDirection: "column",
   },
 
-  // Individual chart slot — fills its flex cell, clips overflow
+  // Individual chart slot
   gridCell: {
     overflow: "hidden",
   },
 
-  // Active slot: 2px inset border matching web's outline:#38bdf8 2px
+  // Active slot: 2px border matching web's outline:#38bdf8 2px
   slotActive: {
     borderWidth: 2,
     borderColor: SLOT_ACTIVE_BORDER,
   },
 
-  // Idle slot: dim 1px border matching web's outline:rgba(255,255,255,0.06)
+  // Idle slot: dim 1px border
   slotIdle: {
     borderWidth: 1,
     borderColor: SLOT_IDLE_BORDER,
