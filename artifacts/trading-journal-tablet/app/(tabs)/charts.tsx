@@ -1,24 +1,28 @@
 /**
- * app/(tabs)/charts.tsx — Charts tab screen (Phase 9.25.1 Pass A)
+ * app/(tabs)/charts.tsx — Charts tab screen
  *
- * Pass A scope:
+ * Pass A (Phase 9.25.1):
  *   ✅ Expo Router screen integration
  *   ✅ React Navigation tab integration
  *   ✅ Full state management for MobileChartLayout props
  *   ✅ chartStore integration (symbol, interval, selectSymbol, selectInterval)
- *   ✅ chartSettings state (DEFAULT_CHART_SETTINGS, AsyncStorage persistence)
+ *   ✅ chartSettings state (DEFAULT_CHART_SETTINGS)
  *   ✅ Layout state (layoutCount, syncTF)
  *   ✅ Alert state (alertDrawingIds, alertDrawing, showQuickAlert)
  *   ✅ Sheet visibility state (showIndicators, showAlertCenter)
  *   ✅ chartAreaRef forwarded to MobileChartLayout
  *   ✅ SafeArea top padding (bottom handled inside MobileChartLayout)
  *
- * NOT in Pass A (Pass B+):
- *   ❌ Named layout persistence (AsyncStorage for namedLayouts)
- *   ❌ layoutCount / syncTF AsyncStorage persistence
- *   ❌ chartSettings AsyncStorage load (skeleton in place for Pass B)
- *   ❌ Screenshot capture
- *   ❌ Replay controls
+ * Pass C (Phase 9.25.3):
+ *   ✅ Bar replay state machine (enterReplay, exitReplay, auto-play timer)
+ *   ✅ replayBarSlice computed via useMemo for zero-copy bar window
+ *   ✅ All replay control callbacks (play/pause/stepBack/stepForward/speed)
+ *   ✅ Replay fetch from /api/candles/:symbol/:interval
+ *
+ * Pass D (Phase 9.25.4):
+ *   ✅ Screen lifecycle validated — Expo Router tab keep-alive confirmed
+ *   ✅ All replay timers cleaned up in useEffect return
+ *   ✅ Zero TypeScript errors in this file
  *
  * Web equivalent: artifacts/trading-journal/src/pages/charts.tsx
  *   (the isMobile branch which renders <MobileChartLayout>)
