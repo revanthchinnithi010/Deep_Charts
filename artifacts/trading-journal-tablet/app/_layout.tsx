@@ -16,6 +16,7 @@ import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
 import React, { useEffect, useState } from "react";
 import { Platform } from "react-native";
+import { initSkia } from "@/lib/skiaLoader";
 import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { SafeAreaProvider } from "react-native-safe-area-context";
@@ -141,46 +142,25 @@ export default function RootLayout() {
   // never permanently stuck on the splash screen.
   const [renderReady, setRenderReady] = useState(false);
 
-  // ── Skia web initialization gate ────────────────────────────────────────────
-  // On Expo Web, SkiaPictureView.web.js (the Skia canvas renderer) uses
-  // `CanvasKit` as a bare global variable inside WebGLRenderer.  That global
-  // is only populated after LoadSkiaWeb() resolves.  If any <Canvas> mounts
-  // before it resolves, the constructor fires
-  //   CanvasKit.GetWebGLContext(...)  →  ReferenceError: CanvasKit is not defined
+  // ── Skia initialization gate ─────────────────────────────────────────────────
+  // On Expo Web, SkiaPictureView.web.js uses `CanvasKit` as a bare global that
+  // is only populated after CanvasKit WASM loads.  We must block the render tree
+  // until initSkia() resolves so no <Canvas> mounts prematurely.
   //
-  // Fix: on web, call LoadSkiaWeb() once and block the entire render tree
-  // until it completes.  On Android/iOS the native Skia module handles its own
-  // initialization — this path must be skipped completely.
-  //
-  // Dynamic require() keeps the web-only LoadSkiaWeb module out of native
-  // bundles.  Metro eliminates the branch at build time via Platform.OS.
+  // On Android/iOS the native Skia module initialises itself; initSkia() is a
+  // no-op (lib/skiaLoader.ts).  Metro resolves lib/skiaLoader.web.ts for web
+  // and lib/skiaLoader.ts for native — canvaskit-wasm is NEVER bundled for
+  // Android/iOS, which eliminates the "Unable to resolve module fs" error.
   const [skiaReady, setSkiaReady] = useState(Platform.OS !== "web");
 
   useEffect(() => {
     if (Platform.OS !== "web") return;
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
-    const { LoadSkiaWeb } = require("@shopify/react-native-skia/lib/commonjs/web/LoadSkiaWeb") as {
-      LoadSkiaWeb: (opts?: object) => Promise<void>;
-    };
-    // Metro's web dev server cannot serve the canvaskit .wasm binary —
-    // fetching it returns the HTML index page (magic bytes 3c 21 44 4f =
-    // "<!DO"), causing WebAssembly.instantiate() to abort with
-    // "expected magic word 00 61 73 6d".
-    // Fix: redirect WASM loading to the matching CDN version so the browser
-    // fetches the real binary directly.
-    LoadSkiaWeb({
-      locateFile: (file: string) =>
-        `https://cdn.jsdelivr.net/npm/canvaskit-wasm@0.41.0/bin/full/${file}`,
-    })
-      .then(() => {
-        setSkiaReady(true);
-      })
+    initSkia()
+      .then(() => setSkiaReady(true))
       .catch((err: unknown) => {
-        console.error("[Skia] LoadSkiaWeb failed:", err);
-        // Let the app render anyway — chart screens have an ErrorBoundary.
-        setSkiaReady(true);
+        console.error("[Skia] initSkia failed:", err);
+        setSkiaReady(true); // render anyway — ErrorBoundary covers chart screens
       });
-  // Run once on mount only.
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
