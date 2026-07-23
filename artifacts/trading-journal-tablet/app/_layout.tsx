@@ -15,6 +15,7 @@ import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
 import React, { useEffect, useState } from "react";
+import { Platform } from "react-native";
 import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { SafeAreaProvider } from "react-native-safe-area-context";
@@ -140,6 +141,40 @@ export default function RootLayout() {
   // never permanently stuck on the splash screen.
   const [renderReady, setRenderReady] = useState(false);
 
+  // ── Skia web initialization gate ────────────────────────────────────────────
+  // On Expo Web, SkiaPictureView.web.js (the Skia canvas renderer) uses
+  // `CanvasKit` as a bare global variable inside WebGLRenderer.  That global
+  // is only populated after LoadSkiaWeb() resolves.  If any <Canvas> mounts
+  // before it resolves, the constructor fires
+  //   CanvasKit.GetWebGLContext(...)  →  ReferenceError: CanvasKit is not defined
+  //
+  // Fix: on web, call LoadSkiaWeb() once and block the entire render tree
+  // until it completes.  On Android/iOS the native Skia module handles its own
+  // initialization — this path must be skipped completely.
+  //
+  // Dynamic require() keeps the web-only LoadSkiaWeb module out of native
+  // bundles.  Metro eliminates the branch at build time via Platform.OS.
+  const [skiaReady, setSkiaReady] = useState(Platform.OS !== "web");
+
+  useEffect(() => {
+    if (Platform.OS !== "web") return;
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const { LoadSkiaWeb } = require("@shopify/react-native-skia/lib/commonjs/web/LoadSkiaWeb") as {
+      LoadSkiaWeb: (opts?: object) => Promise<void>;
+    };
+    LoadSkiaWeb()
+      .then(() => {
+        setSkiaReady(true);
+      })
+      .catch((err: unknown) => {
+        console.error("[Skia] LoadSkiaWeb failed:", err);
+        // Let the app render anyway — chart screens have an ErrorBoundary.
+        setSkiaReady(true);
+      });
+  // Run once on mount only.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   // Primary path: fonts resolved normally.
   useEffect(() => {
     if (fontsLoaded || fontError) {
@@ -157,7 +192,7 @@ export default function RootLayout() {
     return () => clearTimeout(t);
   }, []);
 
-  if (!renderReady) return null;
+  if (!renderReady || !skiaReady) return null;
 
   return (
     <SafeAreaProvider>
