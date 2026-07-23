@@ -162,7 +162,16 @@ export default function RootLayout() {
     const { LoadSkiaWeb } = require("@shopify/react-native-skia/lib/commonjs/web/LoadSkiaWeb") as {
       LoadSkiaWeb: (opts?: object) => Promise<void>;
     };
-    LoadSkiaWeb()
+    // Metro's web dev server cannot serve the canvaskit .wasm binary —
+    // fetching it returns the HTML index page (magic bytes 3c 21 44 4f =
+    // "<!DO"), causing WebAssembly.instantiate() to abort with
+    // "expected magic word 00 61 73 6d".
+    // Fix: redirect WASM loading to the matching CDN version so the browser
+    // fetches the real binary directly.
+    LoadSkiaWeb({
+      locateFile: (file: string) =>
+        `https://cdn.jsdelivr.net/npm/canvaskit-wasm@0.41.0/bin/full/${file}`,
+    })
       .then(() => {
         setSkiaReady(true);
       })
