@@ -31,10 +31,8 @@
     "expo-font": "~14.0.10",
     "expo-haptics": "~15.0.8",
     "expo-image": "~3.0.11",
-    "expo-image-picker": "~17.0.9",
     "expo-linear-gradient": "~15.0.8",
     "expo-linking": "~8.0.10",
-    "expo-location": "~19.0.8",
     "expo-router": "~6.0.17",
     "expo-splash-screen": "~31.0.12",
     "expo-status-bar": "~3.0.9",
@@ -68,7 +66,6 @@
     "react-native-calendars": "^1.1314.0",
     "react-native-toast-message": "^2.4.0",
     "react-native-webview": "13.15.0",
-    "reanimated-color-picker": "5.1.2",
     "tailwindcss": "^3.4.19",
     "victory-native": "^41.26.0"
   }

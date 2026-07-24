@@ -50,9 +50,6 @@ import {
   PieChartWrapper,
 } from "@/components/analytics";
 import { Skeleton } from "@/components/ui/skeleton";
-import { DEV_MODE } from "@/mock/config";
-import { MOCK_NETPNL_TRADE_ROWS } from "@/mock/data/netpnl";
-
 // ── Design tokens ──────────────────────────────────────────────────────────
 const BG       = "#000000";
 const BG_CARD  = "rgba(12,14,19,0.97)";
@@ -449,14 +446,6 @@ export default function NetPnLAnalytics() {
     setError(null);
     (async () => {
       try {
-        if (DEV_MODE) {
-          const startIso = getStartIso(timeFilter);
-          const rows = startIso
-            ? MOCK_NETPNL_TRADE_ROWS.filter(r => r.exit_date >= startIso)
-            : MOCK_NETPNL_TRADE_ROWS;
-          setTrades(rows);
-          return;
-        }
         const res = await fetch("/api/stats/equity-curve");
         if (cancelled) return;
         if (!res.ok) {
