@@ -73,7 +73,8 @@ export default function Balances() {
         <Pressable
           onPress={() => router.back()}
           style={({ pressed }) => [styles.headerBtn, pressed && { opacity: 0.7 }]}
-          accessibilityLabel="Back"
+          accessibilityRole="button"
+          accessibilityLabel="Go back"
         >
           <Ionicons name="arrow-back-outline" size={20} color="#E8E8E8" />
         </Pressable>
@@ -85,7 +86,8 @@ export default function Balances() {
         <Pressable
           onPress={() => setCurrency(currency === "USD" ? "INR" : "USD")}
           style={({ pressed }) => [styles.headerBtn, pressed && { opacity: 0.7 }]}
-          accessibilityLabel={`Switch to ${currency === "USD" ? "INR" : "USD"}`}
+          accessibilityRole="button"
+          accessibilityLabel={`Switch currency, currently ${currency}`}
         >
           <Text style={styles.currencySymbol}>
             {CURRENCY_META[currency].symbol}

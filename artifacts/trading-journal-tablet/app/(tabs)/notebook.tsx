@@ -105,6 +105,9 @@ const NoteRow = memo(function NoteRow({ note, isSelected, onSelect }: NoteRowPro
         isSelected && rowStyles.selected,
         pressed && !isSelected && rowStyles.pressed,
       ]}
+      accessibilityRole="button"
+      accessibilityLabel={note.title || "Untitled"}
+      accessibilityState={{ selected: isSelected }}
     >
       <Text style={[rowStyles.title, isSelected && rowStyles.titleActive]} numberOfLines={1}>
         {note.title || "Untitled"}
@@ -326,6 +329,9 @@ export default function NotebookScreen() {
                 pressed && styles.newBtnPressed,
                 createNote.isPending && styles.newBtnDisabled,
               ]}
+              accessibilityRole="button"
+              accessibilityLabel="Create new note"
+              accessibilityState={{ disabled: createNote.isPending, busy: createNote.isPending }}
             >
               {createNote.isPending ? (
                 <ActivityIndicator size={14} color="#fff" />
@@ -348,6 +354,7 @@ export default function NotebookScreen() {
                 clearButtonMode="while-editing"
                 autoCorrect={false}
                 autoCapitalize="none"
+                accessibilityLabel="Search notes"
               />
             </View>
           </View>
@@ -395,6 +402,7 @@ export default function NotebookScreen() {
                   placeholderTextColor={TEXT_DIM}
                   returnKeyType="done"
                   blurOnSubmit
+                  accessibilityLabel="Note title"
                 />
                 <Pressable
                   onPress={handleDelete}
@@ -404,6 +412,9 @@ export default function NotebookScreen() {
                     styles.deleteBtn,
                     pressed && styles.deleteBtnPressed,
                   ]}
+                  accessibilityRole="button"
+                  accessibilityLabel="Delete note"
+                  accessibilityState={{ disabled: deleteNote.isPending, busy: deleteNote.isPending }}
                 >
                   {deleteNote.isPending ? (
                     <ActivityIndicator size={14} color={DANGER} />

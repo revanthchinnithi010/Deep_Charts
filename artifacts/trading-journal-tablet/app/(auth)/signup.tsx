@@ -191,6 +191,7 @@ export default function SignupScreen() {
                 textContentType="name"
                 returnKeyType="next"
                 editable={!loading}
+                accessibilityLabel="Display name"
               />
               {displayNameError ? (
                 <Text style={styles.fieldError}>{displayNameError}</Text>
@@ -213,6 +214,7 @@ export default function SignupScreen() {
                 textContentType="emailAddress"
                 returnKeyType="next"
                 editable={!loading}
+                accessibilityLabel="Email address"
               />
               {emailError ? (
                 <Text style={styles.fieldError}>{emailError}</Text>
@@ -236,11 +238,13 @@ export default function SignupScreen() {
                   textContentType="newPassword"
                   returnKeyType="next"
                   editable={!loading}
+                  accessibilityLabel="Password"
                 />
                 <Pressable
                   onPress={() => setShowPassword((v) => !v)}
                   hitSlop={8}
                   style={styles.eyeButton}
+                  accessibilityRole="button"
                   accessibilityLabel={showPassword ? "Hide password" : "Show password"}
                 >
                   <Ionicons
@@ -273,11 +277,13 @@ export default function SignupScreen() {
                   returnKeyType="done"
                   onSubmitEditing={handleSignup}
                   editable={!loading}
+                  accessibilityLabel="Confirm password"
                 />
                 <Pressable
                   onPress={() => setShowConfirmPassword((v) => !v)}
                   hitSlop={8}
                   style={styles.eyeButton}
+                  accessibilityRole="button"
                   accessibilityLabel={
                     showConfirmPassword
                       ? "Hide confirm password"

@@ -527,7 +527,13 @@ export default function NetPnLAnalytics() {
 
       {/* ── Secondary header ─────────────────────────────────────────────── */}
       <View style={[s.header, { paddingTop: insets.top }]}>
-        <Pressable onPress={() => router.back()} style={s.backBtn} hitSlop={8}>
+        <Pressable
+          onPress={() => router.back()}
+          style={s.backBtn}
+          hitSlop={8}
+          accessibilityRole="button"
+          accessibilityLabel="Go back"
+        >
           <Ionicons name="arrow-back" size={20} color="#E8E8E8" />
         </Pressable>
         <Text style={s.headerTitle}>Net PNL Analytics</Text>
@@ -574,6 +580,9 @@ export default function NetPnLAnalytics() {
                     key={f.id}
                     onPress={() => setTimeFilter(f.id)}
                     style={[s.filterPill, active && s.filterPillActive]}
+                    accessibilityRole="button"
+                    accessibilityLabel={f.label}
+                    accessibilityState={{ selected: active }}
                   >
                     <Text style={[s.filterPillText, active && s.filterPillTextActive]}>
                       {f.label}

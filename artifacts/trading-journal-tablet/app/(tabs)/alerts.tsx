@@ -85,7 +85,11 @@ interface StatCardProps {
 
 function StatCard({ label, value, iconName, iconColor, iconBg, pulse = false }: StatCardProps) {
   return (
-    <View style={styles.statCard}>
+    <View
+      style={styles.statCard}
+      accessible={true}
+      accessibilityLabel={`${label}: ${value}`}
+    >
       <View style={[styles.statIconBox, { backgroundColor: iconBg }]}>
         <Ionicons name={iconName as "notifications"} size={15} color={iconColor} />
       </View>
@@ -132,6 +136,8 @@ function ConnectionStatusSection({
           onPress={() => router.push("/brokers")}
           style={styles.manageBtn}
           hitSlop={8}
+          accessibilityRole="button"
+          accessibilityLabel="Manage broker connections"
         >
           <Ionicons name="settings-outline" size={11} color="#B7FF5A" />
           <Text style={styles.manageBtnText}>Manage</Text>
@@ -166,6 +172,8 @@ function ConnectionStatusSection({
       <Pressable
         onPress={() => router.push("/brokers")}
         style={({ pressed }) => [styles.openBrokersBtn, pressed && styles.openBrokersBtnPressed]}
+        accessibilityRole="button"
+        accessibilityLabel="Open Broker Settings"
       >
         <Ionicons name="settings-outline" size={11} color="rgba(167,184,169,0.55)" />
         <Text style={styles.openBrokersBtnText}>Open Broker Settings</Text>
@@ -378,6 +386,8 @@ export default function AlertsScreen() {
           onPress={() => setActiveTab("info")}
           style={({ pressed }) => [styles.bellBtn, pressed && styles.bellBtnPressed]}
           hitSlop={8}
+          accessibilityRole="button"
+          accessibilityLabel={unreadCount > 0 ? `Notifications, ${unreadCount} unread` : "Notifications"}
         >
           <Ionicons name="notifications-outline" size={18} color="rgba(167,184,169,0.7)" />
           {unreadCount > 0 && (
@@ -434,6 +444,9 @@ export default function AlertsScreen() {
                 active && styles.tabPillActive,
                 pressed && !active && styles.tabPillPressed,
               ]}
+              accessibilityRole="tab"
+              accessibilityLabel={t.label}
+              accessibilityState={{ selected: active }}
             >
               <Ionicons
                 name={t.iconName as "notifications-outline"}

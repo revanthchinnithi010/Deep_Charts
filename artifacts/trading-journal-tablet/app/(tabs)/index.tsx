@@ -148,9 +148,15 @@ const DayDetailSheet = memo(function DayDetailSheet({
       animationType="slide"
       onRequestClose={onClose}
       statusBarTranslucent
+      accessibilityViewIsModal
     >
       {/* Backdrop */}
-      <Pressable style={styles.sheetBackdrop} onPress={onClose} />
+      <Pressable
+        style={styles.sheetBackdrop}
+        onPress={onClose}
+        accessibilityRole="button"
+        accessibilityLabel="Dismiss daily summary"
+      />
 
       {/* Sheet panel — 85% height */}
       <View style={styles.sheetPanel}>
@@ -167,7 +173,10 @@ const DayDetailSheet = memo(function DayDetailSheet({
           <Pressable
             onPress={onClose}
             style={styles.sheetCloseBtn}
-            accessibilityLabel="Close"
+            hitSlop={8}
+            accessibilityRole="button"
+            accessibilityLabel="Close daily summary"
+            accessibilityHint="Closes the daily summary sheet"
           >
             <Ionicons name="close" size={16} color="rgba(148,163,184,0.70)" />
           </Pressable>
@@ -275,6 +284,8 @@ const DayDetailSheet = memo(function DayDetailSheet({
               return (
                 <View
                   key={trade.id}
+                  accessible={true}
+                  accessibilityLabel={`${trade.symbol}, ${trade.side === "long" ? "Long" : "Short"}, P&L ${isWin ? "+" : ""}${fc(pnl)}, entry ${fmtPrice(trade.entryPrice ?? 0)}, exit ${trade.exitPrice != null ? fmtPrice(trade.exitPrice) : "open"}`}
                   style={[
                     styles.sheetTradeRow,
                     !isLast && styles.sheetTradeRowBorder,
@@ -424,6 +435,8 @@ const CalendarHeatmap = memo(function CalendarHeatmap({
           <Pressable
             onPress={onPrev}
             style={calStyles.navBtn}
+            hitSlop={10}
+            accessibilityRole="button"
             accessibilityLabel="Previous month"
           >
             <Ionicons name="chevron-back" size={16} color="rgba(148,163,184,0.60)" />
@@ -432,6 +445,8 @@ const CalendarHeatmap = memo(function CalendarHeatmap({
           <Pressable
             onPress={onNext}
             style={calStyles.navBtn}
+            hitSlop={10}
+            accessibilityRole="button"
             accessibilityLabel="Next month"
           >
             <Ionicons name="chevron-forward" size={16} color="rgba(148,163,184,0.60)" />
@@ -505,11 +520,13 @@ const CalendarHeatmap = memo(function CalendarHeatmap({
                 },
                 pressed && hasTrades && { opacity: 0.60 },
               ]}
+              accessibilityRole="button"
               accessibilityLabel={
                 hasTrades
                   ? `${dateStr}: ${entry.trades} trade${entry.trades > 1 ? "s" : ""}, PnL ${fc(entry.pnl)}`
                   : `${dateStr}: no trades`
               }
+              accessibilityState={{ disabled: !hasTrades }}
             >
               <Text style={calStyles.cellDay}>{day}</Text>
               {hasTrades && (
@@ -669,7 +686,12 @@ export default function HomeScreen() {
 
         {/* ── API offline banner ── */}
         {apiOffline && (
-          <View style={styles.offlineBanner}>
+          <View
+            style={styles.offlineBanner}
+            accessible={true}
+            accessibilityRole="alert"
+            accessibilityLabel="API server offline — dashboard showing cached or empty data"
+          >
             <View style={styles.offlineDot} />
             <Text style={styles.offlineText}>
               API server offline — dashboard showing cached or empty data

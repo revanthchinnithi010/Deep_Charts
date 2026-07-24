@@ -144,6 +144,7 @@ function InputField({
         secureTextEntry={secure}
         autoCapitalize="none"
         autoCorrect={false}
+        accessibilityLabel={label}
         style={[sharedStyles.input, mono && { fontFamily: "monospace" }]}
       />
     </View>
@@ -164,6 +165,9 @@ function ConnectButton({
         sharedStyles.connectBtn,
         { backgroundColor: color, opacity: pressed || disabled ? 0.65 : 1 },
       ]}
+      accessibilityRole="button"
+      accessibilityLabel={label}
+      accessibilityState={{ disabled: (disabled || loading) ?? false, busy: loading ?? false }}
     >
       {loading
         ? <ActivityIndicator size={14} color={textColor} />
@@ -173,7 +177,7 @@ function ConnectButton({
   );
 }
 
-function Toggle({ value, onChange }: { value: boolean; onChange: (v: boolean) => void }) {
+function Toggle({ value, onChange, label }: { value: boolean; onChange: (v: boolean) => void; label?: string }) {
   const anim = useRef(new Animated.Value(value ? 22 : 2)).current;
   useEffect(() => {
     Animated.spring(anim, {
@@ -187,6 +191,9 @@ function Toggle({ value, onChange }: { value: boolean; onChange: (v: boolean) =>
     <Pressable
       onPress={() => onChange(!value)}
       style={[sharedStyles.toggleTrack, value && sharedStyles.toggleTrackOn]}
+      accessibilityRole="switch"
+      accessibilityLabel={label}
+      accessibilityState={{ checked: value }}
     >
       <Animated.View style={[
         sharedStyles.toggleThumb,
@@ -232,6 +239,8 @@ function CopyButton({ text }: { text: string }) {
     <Pressable
       onPress={handleCopy}
       style={({ pressed }) => [copyStyles.btn, pressed && { opacity: 0.7 }]}
+      accessibilityRole="button"
+      accessibilityLabel={copied ? "Copied to clipboard" : "Copy to clipboard"}
     >
       <Ionicons
         name={copied ? "checkmark-outline" : "copy-outline"}
@@ -360,6 +369,8 @@ function DeltaPanel() {
           <Pressable
             onPress={handleDisconnect}
             style={({ pressed }) => [panelStyles.disconnectBtn, pressed && { opacity: 0.7 }]}
+            accessibilityRole="button"
+            accessibilityLabel="Disconnect Delta Exchange"
           >
             <Text style={panelStyles.disconnectText}>Disconnect</Text>
           </Pressable>
@@ -374,7 +385,7 @@ function DeltaPanel() {
           <Text style={panelStyles.toggleLabel}>Auto-sync trades</Text>
           <Text style={panelStyles.toggleSub}>Sync every 30 minutes automatically</Text>
         </View>
-        <Toggle value={autoSync} onChange={setAutoSync} />
+        <Toggle value={autoSync} onChange={setAutoSync} label="Auto-sync trades" />
       </View>
 
       <Divider />

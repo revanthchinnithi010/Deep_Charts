@@ -149,6 +149,7 @@ export default function LoginScreen() {
                 textContentType="emailAddress"
                 returnKeyType="next"
                 editable={!loading}
+                accessibilityLabel="Email address"
               />
               {emailError ? (
                 <Text style={styles.fieldError}>{emailError}</Text>
@@ -173,11 +174,13 @@ export default function LoginScreen() {
                   returnKeyType="done"
                   onSubmitEditing={handleLogin}
                   editable={!loading}
+                  accessibilityLabel="Password"
                 />
                 <Pressable
                   onPress={() => setShowPassword((v) => !v)}
                   hitSlop={8}
                   style={styles.eyeButton}
+                  accessibilityRole="button"
                   accessibilityLabel={showPassword ? "Hide password" : "Show password"}
                 >
                   <Ionicons

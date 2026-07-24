@@ -214,6 +214,9 @@ export default function CalcCrypto() {
                 <View style={s.chipRow}>
                   {Object.keys(COINS).map(c => (
                     <Pressable key={c} onPress={() => { setCoin(c); setEntry(String(COINS[c].defaultEntry)); }}
+                      accessibilityRole="button"
+                      accessibilityLabel={c.replace("USD", "")}
+                      accessibilityState={{ selected: c === coin }}
                       style={[s.chip, c === coin ? s.chipActive : s.chipInactive]}>
                       <Text style={[s.chipText, c === coin ? s.chipTextActive : s.chipTextInactive]}>
                         {c.replace("USD", "")}
@@ -227,6 +230,9 @@ export default function CalcCrypto() {
                 <View style={s.sideToggle}>
                   {(["long", "short"] as const).map(sd => (
                     <Pressable key={sd} onPress={() => setSide(sd)}
+                      accessibilityRole="button"
+                      accessibilityLabel={sd === "long" ? "Long" : "Short"}
+                      accessibilityState={{ selected: sd === side }}
                       style={[s.sideBtn, sd === side
                         ? sd === "long" ? s.sideBtnLong : s.sideBtnShort
                         : s.sideBtnOff]}>
@@ -250,6 +256,9 @@ export default function CalcCrypto() {
                 <View style={s.chipRow}>
                   {RISK_PRESETS.map(p => (
                     <Pressable key={p} onPress={() => setRisk(String(p))}
+                      accessibilityRole="button"
+                      accessibilityLabel={`${p}% risk`}
+                      accessibilityState={{ selected: String(p) === risk }}
                       style={[s.chip, String(p) === risk ? s.chipActive : s.chipInactive]}>
                       <Text style={[s.chipText, String(p) === risk ? s.chipTextActive : s.chipTextInactive]}>{p}%</Text>
                     </Pressable>
@@ -261,6 +270,9 @@ export default function CalcCrypto() {
                 <View style={s.chipRow}>
                   {LEV_PRESETS.map(p => (
                     <Pressable key={p} onPress={() => setLev(String(p))}
+                      accessibilityRole="button"
+                      accessibilityLabel={`${p}x leverage`}
+                      accessibilityState={{ selected: String(p) === lev }}
                       style={[s.chip, String(p) === lev ? s.chipActive : s.chipInactive]}>
                       <Text style={[s.chipText, String(p) === lev ? s.chipTextActive : s.chipTextInactive]}>{p}x</Text>
                     </Pressable>
@@ -292,7 +304,12 @@ export default function CalcCrypto() {
                     </Text>
                   )}
                 </View>
-                <Pressable onPress={fillEntry} style={s.fillBtn}>
+                <Pressable
+                  onPress={fillEntry}
+                  style={s.fillBtn}
+                  accessibilityRole="button"
+                  accessibilityLabel="Fill entry with live price"
+                >
                   <Text style={s.fillBtnText}>Fill Entry ↑</Text>
                 </Pressable>
               </View>
@@ -330,7 +347,12 @@ export default function CalcCrypto() {
                   <Text style={s.recLotsLabel}>Recommended Lot Size</Text>
                   <Text style={s.recLotsValue}>{fmt(calc.recLots, 3)} lots</Text>
                 </View>
-                <Pressable onPress={applyRecLots} style={s.applyBtn}>
+                <Pressable
+                  onPress={applyRecLots}
+                  style={s.applyBtn}
+                  accessibilityRole="button"
+                  accessibilityLabel="Apply recommended lot size"
+                >
                   <Text style={s.applyBtnText}>Apply</Text>
                   <Ionicons name="chevron-forward" size={12} color={ACCENT} />
                 </Pressable>

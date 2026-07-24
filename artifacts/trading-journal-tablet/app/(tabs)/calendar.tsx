@@ -216,7 +216,12 @@ const DayDetailSheet = memo(function DayDetailSheet({
       statusBarTranslucent
     >
       {/* Backdrop */}
-      <Pressable style={sheet.backdrop} onPress={onClose} />
+      <Pressable
+        style={sheet.backdrop}
+        onPress={onClose}
+        accessibilityRole="button"
+        accessibilityLabel="Dismiss daily summary"
+      />
 
       {/* Panel */}
       <View style={sheet.panel}>
@@ -232,7 +237,9 @@ const DayDetailSheet = memo(function DayDetailSheet({
           <Pressable
             onPress={onClose}
             style={sheet.closeBtn}
-            accessibilityLabel="Close"
+            hitSlop={8}
+            accessibilityRole="button"
+            accessibilityLabel="Close daily summary"
           >
             <Ionicons name="close" size={16} color={TEXT_MUT} />
           </Pressable>
@@ -538,6 +545,8 @@ export default function CalendarPage() {
             <Pressable
               onPress={prevMonth}
               style={styles.navBtn}
+              hitSlop={10}
+              accessibilityRole="button"
               accessibilityLabel="Previous month"
             >
               <Ionicons name="chevron-back" size={16} color={TEXT_MUT} />
@@ -550,6 +559,8 @@ export default function CalendarPage() {
             <Pressable
               onPress={nextMonth}
               style={styles.navBtn}
+              hitSlop={10}
+              accessibilityRole="button"
               accessibilityLabel="Next month"
             >
               <Ionicons name="chevron-forward" size={16} color={TEXT_MUT} />
@@ -689,11 +700,13 @@ export default function CalendarPage() {
                       key={cell.date}
                       onPress={() => hasData && handleDayPress(cell.date)}
                       disabled={!hasData}
+                      accessibilityRole="button"
                       accessibilityLabel={
                         hasData
                           ? `${cell.date}: ${cell.data.trades} trade${cell.data.trades !== 1 ? "s" : ""}, PnL ${fc(cell.data.pnl)}`
                           : `${cell.date}: no trades`
                       }
+                      accessibilityState={{ disabled: !hasData }}
                       style={({ pressed }) => [
                         styles.dayCell,
                         {

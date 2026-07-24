@@ -143,6 +143,9 @@ const MultiSelectChipsRN = memo(function MultiSelectChipsRN({
                 borderColor:     activeColor + "55",
               },
             ]}
+            accessibilityRole="button"
+            accessibilityLabel={opt}
+            accessibilityState={{ selected: isActive }}
           >
             <Text style={[chipStyles.chipText, isActive && { color: activeColor }]}>
               {opt}

@@ -124,6 +124,7 @@ export function AnimatedCard({
       onPressIn={handlePressIn}
       onPressOut={handlePressOut}
       style={{ flexShrink: 1 }}
+      accessibilityRole={onClick ? "button" : "none"}
     >
       <Animated.View style={[animatedStyle, style]}>
         {children}

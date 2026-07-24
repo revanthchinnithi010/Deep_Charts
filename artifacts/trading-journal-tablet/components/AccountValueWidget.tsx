@@ -113,7 +113,11 @@ const C = {
 
 const Dots = memo(function Dots({ count = 6 }: { count?: number }) {
   return (
-    <View style={styles.dotsRow}>
+    <View
+      style={styles.dotsRow}
+      accessible={false}
+      importantForAccessibility="no-hide-descendants"
+    >
       {Array.from({ length: count }).map((_, i) => (
         <View key={i} style={styles.dot} />
       ))}
@@ -282,6 +286,7 @@ function AccountValueWidget({
               hitSlop={8}
               accessibilityRole="button"
               accessibilityLabel={masked ? "Show values" : "Hide values"}
+              accessibilityState={{ checked: masked }}
             >
               <Ionicons
                 name={masked ? "eye-off-outline" : "eye-outline"}

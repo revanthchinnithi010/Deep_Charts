@@ -169,6 +169,9 @@ export default function CalcForex() {
               <View style={s.chipRow}>
                 {Object.entries(PAIRS).map(([k, v]) => (
                   <Pressable key={k} onPress={() => { setPair(k); setSlPips(String(v.defaultSL)); }}
+                    accessibilityRole="button"
+                    accessibilityLabel={v.label}
+                    accessibilityState={{ selected: k === pair }}
                     style={[s.chip, k === pair ? s.chipActive : s.chipInactive]}>
                     <Text style={[s.chipText, k === pair ? s.chipTextActive : s.chipTextInactive]}>{v.label}</Text>
                   </Pressable>
@@ -182,6 +185,9 @@ export default function CalcForex() {
               <View style={s.sideToggle}>
                 {(["long", "short"] as const).map(sd => (
                   <Pressable key={sd} onPress={() => setSide(sd)}
+                    accessibilityRole="button"
+                    accessibilityLabel={sd === "long" ? "Long" : "Short"}
+                    accessibilityState={{ selected: sd === side }}
                     style={[s.sideBtn, sd === side
                       ? sd === "long" ? s.sideBtnLong : s.sideBtnShort
                       : s.sideBtnOff]}>
@@ -202,6 +208,9 @@ export default function CalcForex() {
                 <View style={s.chipRow}>
                   {RISK_PRESETS.map(p => (
                     <Pressable key={p} onPress={() => setRisk(String(p))}
+                      accessibilityRole="button"
+                      accessibilityLabel={`${p}% risk`}
+                      accessibilityState={{ selected: String(p) === risk }}
                       style={[s.chip, String(p) === risk ? s.chipActive : s.chipInactive]}>
                       <Text style={[s.chipText, String(p) === risk ? s.chipTextActive : s.chipTextInactive]}>{p}%</Text>
                     </Pressable>
@@ -213,6 +222,9 @@ export default function CalcForex() {
                 <View style={s.chipRow}>
                   {LEV_PRESETS.map(p => (
                     <Pressable key={p} onPress={() => setLev(String(p))}
+                      accessibilityRole="button"
+                      accessibilityLabel={`${p}x leverage`}
+                      accessibilityState={{ selected: String(p) === lev }}
                       style={[s.chip, String(p) === lev ? s.chipActive : s.chipInactive]}>
                       <Text style={[s.chipText, String(p) === lev ? s.chipTextActive : s.chipTextInactive]}>{p}x</Text>
                     </Pressable>
@@ -233,6 +245,9 @@ export default function CalcForex() {
                 <View style={s.chipRow}>
                   {LOT_PRESETS.map(p => (
                     <Pressable key={p} onPress={() => setLots(String(p))}
+                      accessibilityRole="button"
+                      accessibilityLabel={`${p} lots`}
+                      accessibilityState={{ selected: String(p) === lots }}
                       style={[s.chip, s.chipSm, String(p) === lots ? s.chipActive : s.chipInactive]}>
                       <Text style={[s.chipTextSm, String(p) === lots ? s.chipTextActive : s.chipTextInactive]}>{p}</Text>
                     </Pressable>
@@ -300,7 +315,12 @@ export default function CalcForex() {
                   <Text style={s.recLotsLabel}>Recommended Lot Size</Text>
                   <Text style={s.recLotsValue}>{fmt(calc.recLots, 3)} lots</Text>
                 </View>
-                <Pressable onPress={applyRecLots} style={s.applyBtn}>
+                <Pressable
+                  onPress={applyRecLots}
+                  style={s.applyBtn}
+                  accessibilityRole="button"
+                  accessibilityLabel="Apply recommended lot size"
+                >
                   <Text style={s.applyBtnText}>Apply</Text>
                   <Ionicons name="chevron-forward" size={12} color={ACCENT} />
                 </Pressable>

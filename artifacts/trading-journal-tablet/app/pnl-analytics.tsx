@@ -469,7 +469,13 @@ export default function PnlAnalytics() {
 
       {/* ── Secondary header ─────────────────────────────────────────────── */}
       <View style={[s.header, { paddingTop: insets.top }]}>
-        <Pressable onPress={() => router.back()} style={s.backBtn} hitSlop={8}>
+        <Pressable
+          onPress={() => router.back()}
+          style={s.backBtn}
+          hitSlop={8}
+          accessibilityRole="button"
+          accessibilityLabel="Go back"
+        >
           <Ionicons name="arrow-back" size={20} color="#E8E8E8" />
         </Pressable>
         <Text style={s.headerTitle}>Net PNL Analytics</Text>
@@ -477,6 +483,8 @@ export default function PnlAnalytics() {
           onPress={() => setCurrency(currency === "USD" ? "INR" : "USD")}
           style={[s.currencyBtn, currency === "INR" && s.currencyBtnINR]}
           hitSlop={8}
+          accessibilityRole="button"
+          accessibilityLabel={`Switch currency, currently ${currency}`}
         >
           <Text style={[s.currencyText, currency === "INR" && s.currencyTextINR]}>
             {currency === "USD" ? "$ USD" : "₹ INR"}
@@ -557,6 +565,9 @@ export default function PnlAnalytics() {
               key={f.id}
               onPress={() => setTimeFilter(f.id)}
               style={[s.filterPill, timeFilter === f.id && s.filterPillActive]}
+              accessibilityRole="button"
+              accessibilityLabel={f.label}
+              accessibilityState={{ selected: timeFilter === f.id }}
             >
               <Text style={[s.filterPillText, timeFilter === f.id && s.filterPillTextActive]}>
                 {f.label}
