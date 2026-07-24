@@ -15,8 +15,9 @@
  *   AnimatedModal
  *   PageTransition
  *
- * Pending future phases (do not import until migrated):
- *   SplashScreen  — future phase
+ * Phase 12.5 exports (complete):
+ *   SplashScreen  — at @/components/SplashScreen (top-level; not in animations barrel)
+ *   heroTransition, popupManager, sheetDragState — at @/lib/*
  */
 
 export { FadeIn }                       from "./FadeIn";
