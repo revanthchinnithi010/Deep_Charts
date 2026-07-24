@@ -121,6 +121,16 @@ function RootLayoutNav() {
           Phase 11 — Settings migration.
         */}
         <Stack.Screen name="settings" />
+        {/*
+          profile — Full-screen profile screen (name, email, export, sign out).
+          Pushed on top of the tab bar; back button returns to the previous screen.
+          animation: "slide_from_right" so it slides in like settings sub-pages.
+          Phase 11.3 — Profile Module migration.
+        */}
+        <Stack.Screen
+          name="profile"
+          options={{ animation: "slide_from_right" }}
+        />
         {/* +not-found must be declared so Expo Router can match unknown routes. */}
         <Stack.Screen name="+not-found" />
       </Stack>
