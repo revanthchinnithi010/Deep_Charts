@@ -2,7 +2,6 @@
  * components/animations/index.ts — Barrel export
  *
  * Migration of: artifacts/trading-journal/src/components/animations/index.ts
- * Phase 12.3 — Animation Primitive Wrappers (React → React Native)
  *
  * Phase 12.3 exports (complete):
  *   FadeIn, FadeInVariant
@@ -10,12 +9,14 @@
  *   LoadingSpinner, DotLoader
  *   NumberCounter
  *
+ * Phase 12.4 exports (complete):
+ *   AnimatedButton, AnimatedIconButton
+ *   AnimatedList, AnimatedListItem, AnimatedPresenceList
+ *   AnimatedModal
+ *   PageTransition
+ *
  * Pending future phases (do not import until migrated):
- *   AnimatedList, AnimatedListItem, AnimatedPresenceList  — Phase 12.4
- *   AnimatedModal                                         — future phase
- *   AnimatedButton, AnimatedIconButton                    — future phase
- *   PageTransition                                        — future phase
- *   SplashScreen                                          — future phase
+ *   SplashScreen  — future phase
  */
 
 export { FadeIn }                       from "./FadeIn";
@@ -29,3 +30,18 @@ export {
 }                                       from "./LoadingSpinner";
 
 export { NumberCounter }                from "./NumberCounter";
+
+export {
+  AnimatedButton,
+  AnimatedIconButton,
+}                                       from "./AnimatedButton";
+
+export {
+  AnimatedList,
+  AnimatedListItem,
+  AnimatedPresenceList,
+}                                       from "./AnimatedList";
+
+export { AnimatedModal }                from "./AnimatedModal";
+
+export { PageTransition }               from "./PageTransition";
