@@ -48,6 +48,25 @@ export default function SettingsLayout() {
         Section content is migrated in Phase 11.2+.
       */}
       <Stack.Screen name="index" />
+
+      {/*
+        Phase 11.2 — Settings sub-pages.
+        Each screen is a full Expo Router screen that replaces the web's
+        controlled-component pattern (open/onClose props) with stack navigation.
+        All screens render their own header with a back button (router.back()).
+
+        profile      — ProfileSettingsPage: General / Connections / Account list.
+                       Navigates to appearance, notifications, security, about.
+        appearance   — AppearanceSettingsPage: Light / Dark / System theme picker.
+        notifications— NotificationsSettingsPage: Alert sounds + ringtone + duration.
+        security     — SecuritySettingsPage: Password, 2FA, API Keys, Sessions.
+        about        — AboutSettingsPage: Version, Terms of Service, Privacy Policy.
+      */}
+      <Stack.Screen name="profile" />
+      <Stack.Screen name="appearance" />
+      <Stack.Screen name="notifications" />
+      <Stack.Screen name="security" />
+      <Stack.Screen name="about" />
     </Stack>
   );
 }
