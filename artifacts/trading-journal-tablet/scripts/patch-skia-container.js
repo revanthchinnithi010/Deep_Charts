@@ -40,7 +40,7 @@ var Skia = new Proxy({}, {
   get: function(_t, prop) {
     if (!_skiaApi) {
       var ck = global.CanvasKit;
-      if (!ck) throw new Error('[Skia] CanvasKit WASM is not yet loaded — cannot access Skia.' + String(prop));
+      if (!ck) return undefined; // CanvasKit not yet loaded — return undefined; caller's null-checks handle it
       _skiaApi = JsiSkApi(ck);
     }
     return _skiaApi[prop];
@@ -58,7 +58,7 @@ export const Skia = new Proxy({} as ReturnType<typeof JsiSkApi>, {
     if (!_skiaApi) {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const ck = (global as any).CanvasKit;
-      if (!ck) throw new Error('[Skia] CanvasKit WASM is not yet loaded — cannot access Skia.' + String(prop));
+      if (!ck) return undefined; // CanvasKit not yet loaded — return undefined; caller's null-checks handle it
       _skiaApi = JsiSkApi(ck as Parameters<typeof JsiSkApi>[0]);
     }
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
