@@ -113,6 +113,14 @@ function RootLayoutNav() {
         {/* Phase 10.8 analytics stack screens — no tab bar, back-navigable */}
         <Stack.Screen name="pnl-analytics" />
         <Stack.Screen name="net-pnl-analytics" />
+        {/*
+          settings — nested Stack rooted at app/settings/_layout.tsx.
+          Pushed on top of the tab bar; back button returns to the previous screen.
+          animation: "none" here defers to the nested Stack's own animation
+          (slide_from_right defined in app/settings/_layout.tsx).
+          Phase 11 — Settings migration.
+        */}
+        <Stack.Screen name="settings" />
         {/* +not-found must be declared so Expo Router can match unknown routes. */}
         <Stack.Screen name="+not-found" />
       </Stack>
