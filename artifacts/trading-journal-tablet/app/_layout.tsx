@@ -110,6 +110,9 @@ function RootLayoutNav() {
           intentional use (e.g. opening the full web app from a settings screen).
         */}
         <Stack.Screen name="webview" />
+        {/* Phase 10.8 analytics stack screens — no tab bar, back-navigable */}
+        <Stack.Screen name="pnl-analytics" />
+        <Stack.Screen name="net-pnl-analytics" />
         {/* +not-found must be declared so Expo Router can match unknown routes. */}
         <Stack.Screen name="+not-found" />
       </Stack>
