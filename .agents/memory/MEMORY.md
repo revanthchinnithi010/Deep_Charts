@@ -1,4 +1,5 @@
 - [tar npm package blocked by Replit firewall](tar-stub.md) — ALL tar versions 403'd; fix is lib/tar-stub workspace package + pnpm override
+- [Metro FallbackWatcher + tailwindcss temp dirs](metro-tailwindcss-blockList.md) — packages that create/delete tmp dirs crash Metro; add pattern to metro.config.js blockList
 - [Multi-account portfolio architecture](multi-account-portfolio.md) — useDeltaAccount/useCtraderAccount/useCombinedPortfolio; Delta=fixed ₹85, cTrader=live rate; Dashboard uses display not usd props
 - [Layout content wrapper stability](layout-content-wrapper-stability.md) — single stable wrapper in Layout; branching on location mid-transition breaks popLayout exit animations; StandardPageWrapper in App.tsx for standard pages
 - [cTrader dynamic leverage](ctrader-dynamic-leverage.md) — PT2177/2178; leverage stored ×100 (divide by 100); volumeUsdCents≥1e12 = sentinel flat tier; leverageId from ProtoOASymbol field 35

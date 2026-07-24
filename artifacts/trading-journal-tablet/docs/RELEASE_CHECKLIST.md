@@ -54,8 +54,8 @@ Legend: ✅ Done  ❌ Blocked / Missing  ⬜ Not yet checked  ⚠️ Needs atten
 
 - [ ] `EXPO_PUBLIC_API_BASE_URL` — Production API base URL
 - [ ] `EXPO_PUBLIC_SENTRY_DSN` — Sentry DSN (from sentry.io project settings)
-- [ ] `EXPO_PUBLIC_POSTHOG_KEY` — PostHog project API key
-- [ ] `EXPO_PUBLIC_POSTHOG_HOST` — PostHog host (omit to use `https://us.i.posthog.com`)
+- [ ] `EXPO_PUBLIC_ANALYTICS_KEY` — Analytics provider API key (see `lib/analytics.ts`)
+- [ ] `EXPO_PUBLIC_ANALYTICS_HOST` — Analytics host (optional, provider-dependent)
 
 ### Optional
 
@@ -85,9 +85,9 @@ Legend: ✅ Done  ❌ Blocked / Missing  ⬜ Not yet checked  ⚠️ Needs atten
 
 ## 6. Analytics (PostHog)
 
-- [ ] `posthog-react-native` installed
+- [ ] Analytics provider SDK installed (see `lib/analytics.ts` for instructions)
 - [ ] `initAnalytics()` called at module level in `app/_layout.tsx`
-- [ ] `EXPO_PUBLIC_POSTHOG_KEY` set in EAS Secrets for production + preview
+- [ ] `EXPO_PUBLIC_ANALYTICS_KEY` set in EAS Secrets for production + preview
 - [ ] Analytics disabled in `__DEV__` (enforced in `lib/analytics.ts`)
 - [ ] `trackScreen()` called on meaningful screens
 - [ ] `trackSessionStart()` / `trackSessionEnd()` wired to AppState

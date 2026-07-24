@@ -35,6 +35,10 @@ config.resolver.unstable_enableSymlinks = true;
 //    FallbackWatcher to throw ENOENT and crash the bundler.
 config.resolver.blockList = [
   /\/\.local\/.*/,
+  // tailwindcss creates temporary build directories (tailwindcss_tmp_*) that
+  // get deleted during compilation.  Metro's FallbackWatcher throws ENOENT and
+  // crashes the bundler when it tries to watch a dir that no longer exists.
+  /tailwindcss_tmp/,
 ];
 
 // 6. Wrap with NativeWind so Metro applies the CSS→JS transform for
