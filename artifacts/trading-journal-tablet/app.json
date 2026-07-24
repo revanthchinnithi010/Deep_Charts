@@ -8,31 +8,67 @@
     "scheme": "tradevault",
     "userInterfaceStyle": "dark",
     "newArchEnabled": true,
+
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+
+    "updates": {
+      "enabled": true,
+      "checkAutomatically": "ON_ERROR_RECOVERY",
+      "fallbackToCacheTimeout": 0,
+      "url": "https://u.expo.dev/YOUR_EAS_PROJECT_ID"
+    },
+
     "splash": {
       "image": "./assets/images/icon.png",
       "resizeMode": "contain",
       "backgroundColor": "#0d1117"
     },
+
     "ios": {
       "supportsTablet": true,
       "requireFullScreen": true,
       "bundleIdentifier": "com.tradevault.app"
     },
+
     "android": {
       "softwareKeyboardLayoutMode": "pan",
       "package": "com.tradevault.app",
       "edgeToEdgeEnabled": true,
-      "navigationBarColor": "#0d1117"
+      "navigationBarColor": "#0d1117",
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/images/icon.png",
+        "monochromeImage": "./assets/images/icon.png",
+        "backgroundColor": "#0d1117"
+      }
     },
+
     "web": {
       "favicon": "./assets/images/icon.png",
       "backgroundColor": "#0d1117"
     },
+
     "plugins": [
       "expo-router",
       "expo-font",
-      "expo-web-browser"
+      "expo-web-browser",
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/images/icon.png",
+          "backgroundColor": "#0d1117",
+          "resizeMode": "contain",
+          "dark": {
+            "image": "./assets/images/icon.png",
+            "backgroundColor": "#0d1117"
+          }
+        }
+      ],
+      "expo-updates",
+      "@sentry/react-native"
     ],
+
     "experiments": {
       "typedRoutes": true
     }

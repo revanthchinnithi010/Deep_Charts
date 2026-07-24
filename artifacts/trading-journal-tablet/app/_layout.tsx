@@ -2,6 +2,16 @@
 // CSS→JS transform is registered before any component tree is evaluated.
 import "../global.css";
 
+// ─── Production infrastructure (initialize before any component renders) ──────
+// Sentry and analytics are no-ops in __DEV__ and when env vars are absent,
+// so importing here is safe for both development and production.
+import { initSentry, captureException } from "@/lib/sentry";
+import { initAnalytics, trackSessionStart, trackSessionEnd, flushAnalytics } from "@/lib/analytics";
+
+initSentry();
+initAnalytics();
+// ─────────────────────────────────────────────────────────────────────────────
+
 import {
   Inter_400Regular,
   Inter_500Medium,
@@ -14,8 +24,8 @@ import { setBaseUrl } from "@workspace/api-client-react";
 import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
-import React, { useEffect, useState } from "react";
-import { Platform } from "react-native";
+import React, { useCallback, useEffect, useRef, useState } from "react";
+import { AppState, type AppStateStatus, Platform } from "react-native";
 import { initSkia } from "@/lib/skiaLoader";
 import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
@@ -25,6 +35,7 @@ import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { Toaster } from "@/components/ui/toaster";
 import { WatchlistProvider } from "@/contexts/WatchlistContext";
+import { useOTAUpdates } from "@/lib/updates";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // API base URL
@@ -202,13 +213,47 @@ export default function RootLayout() {
     return () => clearTimeout(t);
   }, []);
 
+  // ── OTA Updates ───────────────────────────────────────────────────────────────
+  // Checks for OTA updates on launch and foreground resume. Downloads silently;
+  // never force-reloads the active session — update applies on next cold start.
+  useOTAUpdates();
+
+  // ── Session lifecycle analytics ───────────────────────────────────────────────
+  // Track session start/end as the app moves in and out of the foreground.
+  // No-op in __DEV__ or when analytics are not configured.
+  const appState = useRef<AppStateStatus>(AppState.currentState);
+  useEffect(() => {
+    trackSessionStart();
+
+    const subscription = AppState.addEventListener("change", (next) => {
+      const prev = appState.current;
+      appState.current = next;
+      if (prev !== "active" && next === "active") {
+        trackSessionStart();
+      } else if (prev === "active" && (next === "inactive" || next === "background")) {
+        trackSessionEnd();
+        void flushAnalytics();
+      }
+    });
+
+    return () => subscription.remove();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // ── ErrorBoundary onError handler ─────────────────────────────────────────────
+  // Forward render errors from the ErrorBoundary to Sentry. This is the only
+  // path for capturing errors that crash the React tree before any try/catch.
+  const handleBoundaryError = useCallback((error: Error, stackTrace: string) => {
+    captureException(error, { stackTrace: stackTrace.slice(0, 500) });
+  }, []);
+
   if (!renderReady || !skiaReady) return null;
 
   return (
     <SafeAreaProvider>
       <ThemeProvider>
         <QueryClientProvider client={queryClient}>
-          <ErrorBoundary>
+          <ErrorBoundary onError={handleBoundaryError}>
             <GestureHandlerRootView style={{ flex: 1 }}>
               <BottomSheetModalProvider>
                 <WatchlistProvider>

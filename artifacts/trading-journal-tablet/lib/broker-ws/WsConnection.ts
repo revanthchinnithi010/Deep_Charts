@@ -84,7 +84,7 @@ export class WsConnection {
       ...opts.reconnectOptions,
       onReconnect: (attempt) => {
         this._reconnectAttempts = attempt;
-        console.log(`[${opts.name}] reconnecting (attempt ${attempt})`);
+        if (__DEV__) { console.log(`[${opts.name}] reconnecting (attempt ${attempt})`); }
         this.setStatus("reconnecting");
         this.openSocket();
       },
@@ -154,7 +154,9 @@ export class WsConnection {
   private openSocket(): void {
     if (this.destroyed) return;
     const url = typeof this.opts.url === "function" ? this.opts.url() : this.opts.url;
-    console.log(`[${this.opts.name}] connecting to ${url}`);
+    if (__DEV__) {
+      console.log(`[${this.opts.name}] connecting to ${url}`);
+    }
 
     let ws: WebSocket;
     try { ws = new WebSocket(url); } catch (e) {
@@ -166,7 +168,7 @@ export class WsConnection {
 
     ws.onopen = () => {
       if (this.ws !== ws) return;
-      console.log(`[${this.opts.name}] connected`);
+      if (__DEV__) { console.log(`[${this.opts.name}] connected`); }
       this._lastConnectedAt = Date.now();
       this.reconnect.reset();
       this._reconnectAttempts = 0;
