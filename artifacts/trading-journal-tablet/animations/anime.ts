@@ -94,13 +94,13 @@ export interface RNAnimeParams {
  * Easing.out(Easing.exp) etc. in Reanimated 4).
  * Bezier control points match the named curves exactly.
  */
-const OUT_EXPO   = Easing.bezier(0.16, 1, 0.3, 1);    // outExpo
-const IN_EXPO    = Easing.bezier(0.7, 0, 0.84, 0);    // inExpo
-const IN_OUT_SINE = Easing.bezier(0.37, 0, 0.63, 1);  // inOutSine
-const OUT_BACK   = Easing.bezier(0.34, 1.56, 0.64, 1); // outBack
-const EASE_OUT_FN = Easing.bezier(0, 0, 0.58, 1);
-const EASE_IN_FN  = Easing.bezier(0.42, 0, 1, 1);
-const EASE_IO_FN  = Easing.bezier(0.42, 0, 0.58, 1);
+const OUT_EXPO    = Easing.bezier(0.16, 1, 0.3, 1)    as unknown as EasingFunction; // outExpo
+const IN_EXPO     = Easing.bezier(0.7, 0, 0.84, 0)    as unknown as EasingFunction; // inExpo
+const IN_OUT_SINE = Easing.bezier(0.37, 0, 0.63, 1)   as unknown as EasingFunction; // inOutSine
+const OUT_BACK    = Easing.bezier(0.34, 1.56, 0.64, 1) as unknown as EasingFunction; // outBack
+const EASE_OUT_FN = Easing.bezier(0, 0, 0.58, 1)      as unknown as EasingFunction;
+const EASE_IN_FN  = Easing.bezier(0.42, 0, 1, 1)      as unknown as EasingFunction;
+const EASE_IO_FN  = Easing.bezier(0.42, 0, 0.58, 1)   as unknown as EasingFunction;
 
 const EASE_MAP: Record<string, EasingFunction> = {
   outExpo:   OUT_EXPO,
@@ -596,13 +596,13 @@ export function animateLoadingDots(
     dot.translateY.value = -7;
     dot.opacity.value    = 0.25;
 
-    let anim = withTiming(-7, { duration: dur, easing });
+    let anim: number = withTiming(-7, { duration: dur, easing });
     if (loop) anim = withRepeat(withSequence(
       withTiming(-7,  { duration: dur, easing }),
       withTiming(0,   { duration: dur, easing }),
     ), -1, false);
 
-    let opacityAnim = withTiming(0.25, { duration: dur, easing });
+    let opacityAnim: number = withTiming(0.25, { duration: dur, easing });
     if (loop) opacityAnim = withRepeat(withSequence(
       withTiming(0.25, { duration: dur, easing }),
       withTiming(1,    { duration: dur, easing }),
@@ -773,7 +773,7 @@ export interface PopTarget {
  */
 export function animateValuePop(target: PopTarget): RNAnimeInstance {
   const dur    = 360;
-  const easing = Easing.out(Easing.back);
+  const easing = OUT_BACK;
   const fns: Array<() => void> = [];
 
   target.scale.value = withSequence(
