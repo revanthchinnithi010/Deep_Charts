@@ -143,6 +143,116 @@ export const Skia = JsiSkApi(global.CanvasKit);`,
 
 ${LAZY_SKIA_TS}`,
   },
+
+  // ── 7-18. core/ factory bind() crash fix ─────────────────────────────────
+  // Typeface, Image, SVG, AnimatedImage all do module-level:
+  //   const xFactory = Skia.X.Method.bind(Skia.X);
+  // This runs at import time, before CanvasKit WASM loads.
+  // The Skia Proxy returns undefined, so the factory is permanently undefined.
+  // Fix: replace .bind() with an inline arrow function so Skia.X is accessed
+  // at call time (inside a hook invocation, by which point WASM is ready).
+
+  // Typeface — TS source
+  {
+    file: path.join(SKIA_ROOT, 'src/skia/core/Typeface.ts'),
+    broken: `const tfFactory = Skia.Typeface.MakeFreeTypeFaceFromData.bind(Skia.Typeface);`,
+    fixed: `// PATCHED: defer Skia.Typeface access to call time — module-level .bind() runs
+// before CanvasKit WASM is ready, permanently capturing undefined.
+const tfFactory = (data: ArrayBuffer) => Skia.Typeface.MakeFreeTypeFaceFromData(data);`,
+  },
+  // Typeface — ES module compiled
+  {
+    file: path.join(SKIA_ROOT, 'lib/module/skia/core/Typeface.js'),
+    broken: `const tfFactory = Skia.Typeface.MakeFreeTypeFaceFromData.bind(Skia.Typeface);`,
+    fixed: `// PATCHED: defer Skia.Typeface access to call time — module-level .bind() runs
+// before CanvasKit WASM is ready, permanently capturing undefined.
+const tfFactory = data => Skia.Typeface.MakeFreeTypeFaceFromData(data);`,
+  },
+  // Typeface — commonjs compiled
+  {
+    file: path.join(SKIA_ROOT, 'lib/commonjs/skia/core/Typeface.js'),
+    broken: `const tfFactory = _Skia.Skia.Typeface.MakeFreeTypeFaceFromData.bind(_Skia.Skia.Typeface);`,
+    fixed: `// PATCHED: defer Skia.Typeface access to call time — module-level .bind() runs
+// before CanvasKit WASM is ready, permanently capturing undefined.
+const tfFactory = data => _Skia.Skia.Typeface.MakeFreeTypeFaceFromData(data);`,
+  },
+
+  // Image — TS source
+  {
+    file: path.join(SKIA_ROOT, 'src/skia/core/Image.ts'),
+    broken: `const imgFactory = Skia.Image.MakeImageFromEncoded.bind(Skia.Image);`,
+    fixed: `// PATCHED: defer Skia.Image access to call time — module-level .bind() runs
+// before CanvasKit WASM is ready, permanently capturing undefined.
+const imgFactory = (data: ArrayBuffer) => Skia.Image.MakeImageFromEncoded(data);`,
+  },
+  // Image — ES module compiled
+  {
+    file: path.join(SKIA_ROOT, 'lib/module/skia/core/Image.js'),
+    broken: `const imgFactory = Skia.Image.MakeImageFromEncoded.bind(Skia.Image);`,
+    fixed: `// PATCHED: defer Skia.Image access to call time — module-level .bind() runs
+// before CanvasKit WASM is ready, permanently capturing undefined.
+const imgFactory = data => Skia.Image.MakeImageFromEncoded(data);`,
+  },
+  // Image — commonjs compiled
+  {
+    file: path.join(SKIA_ROOT, 'lib/commonjs/skia/core/Image.js'),
+    broken: `const imgFactory = _Skia.Skia.Image.MakeImageFromEncoded.bind(_Skia.Skia.Image);`,
+    fixed: `// PATCHED: defer Skia.Image access to call time — module-level .bind() runs
+// before CanvasKit WASM is ready, permanently capturing undefined.
+const imgFactory = data => _Skia.Skia.Image.MakeImageFromEncoded(data);`,
+  },
+
+  // SVG — TS source
+  {
+    file: path.join(SKIA_ROOT, 'src/skia/core/SVG.ts'),
+    broken: `const svgFactory = Skia.SVG.MakeFromData.bind(Skia.SVG);`,
+    fixed: `// PATCHED: defer Skia.SVG access to call time — module-level .bind() runs
+// before CanvasKit WASM is ready, permanently capturing undefined.
+const svgFactory = (data: ArrayBuffer) => Skia.SVG.MakeFromData(data);`,
+  },
+  // SVG — ES module compiled
+  {
+    file: path.join(SKIA_ROOT, 'lib/module/skia/core/SVG.js'),
+    broken: `const svgFactory = Skia.SVG.MakeFromData.bind(Skia.SVG);`,
+    fixed: `// PATCHED: defer Skia.SVG access to call time — module-level .bind() runs
+// before CanvasKit WASM is ready, permanently capturing undefined.
+const svgFactory = data => Skia.SVG.MakeFromData(data);`,
+  },
+  // SVG — commonjs compiled
+  {
+    file: path.join(SKIA_ROOT, 'lib/commonjs/skia/core/SVG.js'),
+    broken: `const svgFactory = _Skia.Skia.SVG.MakeFromData.bind(_Skia.Skia.SVG);`,
+    fixed: `// PATCHED: defer Skia.SVG access to call time — module-level .bind() runs
+// before CanvasKit WASM is ready, permanently capturing undefined.
+const svgFactory = data => _Skia.Skia.SVG.MakeFromData(data);`,
+  },
+
+  // AnimatedImage — TS source
+  {
+    file: path.join(SKIA_ROOT, 'src/skia/core/AnimatedImage.ts'),
+    broken: `const animatedImgFactory = Skia.AnimatedImage.MakeAnimatedImageFromEncoded.bind(
+  Skia.AnimatedImage
+);`,
+    fixed: `// PATCHED: defer Skia.AnimatedImage access to call time — module-level .bind() runs
+// before CanvasKit WASM is ready, permanently capturing undefined.
+const animatedImgFactory = (data: ArrayBuffer) => Skia.AnimatedImage.MakeAnimatedImageFromEncoded(data);`,
+  },
+  // AnimatedImage — ES module compiled
+  {
+    file: path.join(SKIA_ROOT, 'lib/module/skia/core/AnimatedImage.js'),
+    broken: `const animatedImgFactory = Skia.AnimatedImage.MakeAnimatedImageFromEncoded.bind(Skia.AnimatedImage);`,
+    fixed: `// PATCHED: defer Skia.AnimatedImage access to call time — module-level .bind() runs
+// before CanvasKit WASM is ready, permanently capturing undefined.
+const animatedImgFactory = data => Skia.AnimatedImage.MakeAnimatedImageFromEncoded(data);`,
+  },
+  // AnimatedImage — commonjs compiled
+  {
+    file: path.join(SKIA_ROOT, 'lib/commonjs/skia/core/AnimatedImage.js'),
+    broken: `const animatedImgFactory = _Skia.Skia.AnimatedImage.MakeAnimatedImageFromEncoded.bind(_Skia.Skia.AnimatedImage);`,
+    fixed: `// PATCHED: defer Skia.AnimatedImage access to call time — module-level .bind() runs
+// before CanvasKit WASM is ready, permanently capturing undefined.
+const animatedImgFactory = data => _Skia.Skia.AnimatedImage.MakeAnimatedImageFromEncoded(data);`,
+  },
 ];
 
 // ─── Apply patches ────────────────────────────────────────────────────────────
