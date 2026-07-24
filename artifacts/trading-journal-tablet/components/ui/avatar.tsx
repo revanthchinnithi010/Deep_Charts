@@ -26,12 +26,11 @@
 
 import * as React from "react";
 import {
-  Image,
   StyleSheet,
   View,
-  type ImageProps,
   type ViewProps,
 } from "react-native";
+import { Image as ExpoImage, type ImageProps as ExpoImageProps } from "expo-image";
 
 import { cn } from "@/lib/utils";
 
@@ -75,24 +74,26 @@ Avatar.displayName = "Avatar";
 // ─── AvatarImage ─────────────────────────────────────────────────────────────
 
 export interface AvatarImageProps
-  extends Omit<ImageProps, "source"> {
-  /** URI string — mapped to { uri: src } for RN Image. */
+  extends Omit<ExpoImageProps, "source"> {
+  /** URI string — mapped to { uri: src } for expo-image. */
   src?: string;
   className?: string;
 }
 
-const AvatarImage = React.forwardRef<Image, AvatarImageProps>(
+const AvatarImage = React.forwardRef<React.ElementRef<typeof ExpoImage>, AvatarImageProps>(
   ({ src, className, onLoad, onError, style, ...props }, ref) => {
     const { setImageLoaded } = React.useContext(AvatarContext);
 
     if (!src) return null;
 
     return (
-      <Image
+      <ExpoImage
         ref={ref}
         source={{ uri: src }}
-        className={cn("h-full w-full", className)}
         style={[StyleSheet.absoluteFillObject, style]}
+        contentFit="cover"
+        cachePolicy="memory-disk"
+        transition={150}
         onLoad={(e) => {
           setImageLoaded(true);
           onLoad?.(e);

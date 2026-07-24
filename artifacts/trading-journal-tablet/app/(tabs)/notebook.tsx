@@ -53,12 +53,12 @@ import {
   Pressable,
   TextInput,
   StyleSheet,
-  FlatList,
   ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
   Alert,
 } from "react-native";
+import { FlashList } from "@shopify/flash-list";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { useQueryClient } from "@tanstack/react-query";
@@ -357,7 +357,7 @@ export default function NotebookScreen() {
             {isLoading ? (
               <SkeletonNoteRows />
             ) : (
-              <FlatList
+              <FlashList
                 data={filteredNotes ?? []}
                 keyExtractor={keyExtractor}
                 renderItem={renderNote}

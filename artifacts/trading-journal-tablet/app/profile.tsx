@@ -70,7 +70,7 @@ import {
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { Image } from "react-native";
+import { Image } from "expo-image";
 
 import {
   useProfile,
@@ -226,6 +226,8 @@ function ProfileScreen() {
                 <Image
                   source={{ uri: profile.avatarDataUrl }}
                   style={styles.avatarImage}
+                  contentFit="cover"
+                  cachePolicy="memory"
                   accessibilityLabel={profile.name}
                 />
               ) : (

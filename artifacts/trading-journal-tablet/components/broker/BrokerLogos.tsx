@@ -25,7 +25,8 @@
  */
 
 import { memo, useState } from "react";
-import { View, Text, Image } from "react-native";
+import { View, Text } from "react-native";
+import { Image } from "expo-image";
 import { BrokerId, BROKERS } from "@/types/broker";
 import { getApiBase } from "@/lib/apiBase";
 
@@ -64,7 +65,9 @@ export const BrokerLogo = memo(function BrokerLogo({
         source={{ uri: `${getApiBase()}${broker.image}` }}
         style={sizeStyle}
         onError={() => setImgError(true)}
-        resizeMode="cover"
+        contentFit="cover"
+        cachePolicy="memory-disk"
+        transition={150}
       />
     );
   }

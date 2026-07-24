@@ -56,13 +56,13 @@ import React, {
   useState,
 } from "react";
 import {
-  Image,
   Pressable,
   Share,
   StyleSheet,
   Text,
   View,
 } from "react-native";
+import { Image } from "expo-image";
 
 import { useTheme } from "@/contexts/ThemeContext";
 import type { ThemeMode } from "@/contexts/ThemeContext";
@@ -495,6 +495,8 @@ export const ProfileDropdown = memo(function ProfileDropdown({
                   <Image
                     source={{ uri: profile.avatarDataUrl }}
                     style={styles.avatarImage}
+                    contentFit="cover"
+                    cachePolicy="memory"
                     accessibilityLabel={profile.name}
                   />
                 ) : (
