@@ -66,6 +66,8 @@ import React, {
 import {
   Animated,
   BackHandler,
+  Dimensions,
+  Easing,
   Modal,
   Pressable,
   ScrollView,
@@ -122,8 +124,8 @@ const TYPE_CFG: Record<NotifType, { iconName: string; color: string; bg: string 
 
 /* ─── animation constants ─────────────────────────────────────────────────── */
 
-const OPEN_MS  = 230;
-const CLOSE_MS = 210;
+const OPEN_MS  = 340;   // ease-out deceleration feels instant but smooth
+const CLOSE_MS = 240;   // ease-in acceleration for dismiss
 
 /* ─── memoised sub-components ─────────────────────────────────────────────── */
 
@@ -208,19 +210,54 @@ export const NotificationPanel = memo(function NotificationPanel({ open, onClose
   const onCloseRef = useRef(onClose);
   useEffect(() => { onCloseRef.current = onClose; }, [onClose]);
 
-  /* Animated values for backdrop opacity and panel scale+opacity.
-     All driven by useNativeDriver:true — compositor-only path. */
-  const backdropOpacity = useRef(new Animated.Value(open ? 1 : 0)).current;
-  const panelScale      = useRef(new Animated.Value(open ? 1 : 0.04)).current;
-  const panelOpacity    = useRef(new Animated.Value(open ? 1 : 0)).current;
+  /* Screen height — used as the off-screen starting translateY so the panel
+     slides in from below rather than scaling from centre (which caused the
+     "half-screen in the middle" visual artefact). */
+  const SCREEN_H = Dimensions.get("window").height;
+
+  /* Animated values — compositor-only (useNativeDriver:true):
+       backdropOpacity  0→1 on open,  1→0 on close
+       panelY           SCREEN_H→0 on open (slide up),  0→SCREEN_H on close  */
+  const backdropOpacity = useRef(new Animated.Value(0)).current;
+  const panelY          = useRef(new Animated.Value(SCREEN_H)).current;
 
   useEffect(() => {
-    const dur = open ? OPEN_MS : CLOSE_MS;
-    Animated.parallel([
-      Animated.timing(backdropOpacity, { toValue: open ? 1 : 0, duration: dur,                                  useNativeDriver: true }),
-      Animated.timing(panelScale,      { toValue: open ? 1 : 0.04, duration: dur,                               useNativeDriver: true }),
-      Animated.timing(panelOpacity,    { toValue: open ? 1 : 0, duration: open ? Math.round(dur * 0.55) : dur, useNativeDriver: true }),
-    ]).start();
+    if (open) {
+      /* Open: slide up with a decelerating ease-out — feels snappy and
+         natural, identical to iOS sheet presentation. Backdrop fades in
+         slightly faster so the content never appears on a bare white flash. */
+      Animated.parallel([
+        Animated.timing(backdropOpacity, {
+          toValue:         1,
+          duration:        Math.round(OPEN_MS * 0.65),
+          easing:          Easing.out(Easing.quad),
+          useNativeDriver: true,
+        }),
+        Animated.timing(panelY, {
+          toValue:         0,
+          duration:        OPEN_MS,
+          easing:          Easing.out(Easing.cubic),
+          useNativeDriver: true,
+        }),
+      ]).start();
+    } else {
+      /* Close: accelerating ease-in — snappier dismiss so it doesn't feel
+         sluggish. Backdrop follows the panel out. */
+      Animated.parallel([
+        Animated.timing(backdropOpacity, {
+          toValue:         0,
+          duration:        CLOSE_MS,
+          easing:          Easing.in(Easing.quad),
+          useNativeDriver: true,
+        }),
+        Animated.timing(panelY, {
+          toValue:         SCREEN_H,
+          duration:        CLOSE_MS,
+          easing:          Easing.in(Easing.cubic),
+          useNativeDriver: true,
+        }),
+      ]).start();
+    }
   }, [open]); // eslint-disable-line react-hooks/exhaustive-deps
 
   /* Android hardware back button — close panel instead of navigating away.
@@ -247,10 +284,12 @@ export const NotificationPanel = memo(function NotificationPanel({ open, onClose
       onRequestClose={() => onCloseRef.current()}
       accessibilityViewIsModal
     >
-      {/* Backdrop — opacity-only animation, tap-to-close */}
+      {/* Backdrop — fades in behind the panel, tap-to-close */}
       <Animated.View
-        style={[StyleSheet.absoluteFillObject, { opacity: backdropOpacity }]}
-        pointerEvents="box-none"
+        style={[
+          StyleSheet.absoluteFillObject,
+          { opacity: backdropOpacity, pointerEvents: "box-none" },
+        ]}
       >
         <BlurView
           intensity={60}
@@ -266,13 +305,14 @@ export const NotificationPanel = memo(function NotificationPanel({ open, onClose
         />
       </Animated.View>
 
-      {/* Fullscreen sheet — GPU-composited scale + opacity animation */}
+      {/* Fullscreen sheet — slides up/down via translateY (compositor-only).
+          translateY replaces the old scale animation which caused the panel
+          to appear at half-size in the middle of the screen mid-animation. */}
       <Animated.View
         style={[
           StyleSheet.absoluteFillObject,
           {
-            transform: [{ scale: panelScale }],
-            opacity: panelOpacity,
+            transform: [{ translateY: panelY }],
             backgroundColor: "#000000",
             flexDirection: "column",
             paddingBottom: insets.bottom,

@@ -9,6 +9,25 @@
  *   contain: "layout paint"     → removed (no CSS containment in RN)
  *   useLocation (wouter)        → removed; value is now a controlled prop
  *   href navigation             → removed; caller manages navigation via onValueChange
+ *   ::before/::after layers     → LinearGradient overlay + borderColor top highlight
+ *   backdrop-filter blur        → solid dark background (no blur in RN without libs)
+ *   active:scale-[0.96]         → Reanimated withSpring on button press
+ *
+ * Design tokens (matched exactly from index.css .dash-segment-bar):
+ *   Track bg          rgba(12, 12, 14, 0.94) — liquid-glass dark base
+ *   Track border      rgba(255, 255, 255, 0.12) — glass rim
+ *   Track shadow      0 18px 48px rgba(0,0,0,0.55)
+ *   Track height      46px (web: h-[46px])
+ *   Track padding     4px
+ *   Track radius      12
+ *   Pill bg           #2A2D31 — elevated dark solid
+ *   Pill border       rgba(255, 255, 255, 0.10)
+ *   Pill inset top    rgba(255, 255, 255, 0.12) — top highlight
+ *   Pill shadow       0 8px 20px rgba(0,0,0,0.35)
+ *   Pill radius       9
+ *   Active label      #FFFFFF  font-weight 600  14px
+ *   Idle label        #6E7578  font-weight 400  14px
+ *   Anim duration     200ms  easing: cubic-bezier(0.16, 1, 0.3, 1) ≈ Easing.out(Easing.exp)
  *
  * API changes vs web:
  *   Web: no props (reads router location internally)
@@ -17,12 +36,9 @@
  *
  * Animation:
  *   Uses react-native-reanimated (already in devDependencies ~4.1.1).
- *   The sliding pill translates on the UI thread via withTiming — zero JS
- *   bridge frames, equivalent to CSS translate3d on the web.
- *
- * Responsive:
- *   Each segment is flex:1; the pill width matches one segment exactly.
- *   Works for 2–6 options across phone and tablet widths.
+ *   Pill slides on the UI thread via withTiming + Easing.out(Easing.exp) — zero JS
+ *   bridge frames, equivalent to CSS cubic-bezier(0.16, 1, 0.3, 1) on the web.
+ *   Button labels scale to 0.96 on press via withSpring, matching web active:scale.
  */
 
 import React, { memo, useCallback, useEffect, useRef } from "react";
@@ -35,10 +51,13 @@ import {
   type ViewStyle,
 } from "react-native";
 import Animated, {
+  Easing,
   useAnimatedStyle,
   useSharedValue,
+  withSpring,
   withTiming,
 } from "react-native-reanimated";
+import { LinearGradient } from "expo-linear-gradient";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Types
@@ -65,13 +84,90 @@ export interface DashboardSegmentedControlProps {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
+// Design tokens — matched from index.css .dash-segment-bar (web)
+// ─────────────────────────────────────────────────────────────────────────────
+
+const TRACK_HEIGHT   = 46;                           // web: h-[46px]
+const TRACK_RADIUS   = 12;                           // web: border-radius 12
+const TRACK_PADDING  = 4;                            // web: padding 4
+const PILL_RADIUS    = 9;                            // web: inner pill radius = 12 − 3 ≈ 9
+const PILL_BG        = "#2A2D31";                    // web: pill background
+const PILL_BORDER    = "rgba(255,255,255,0.10)";     // web: pill border
+const PILL_TOP_HL    = "rgba(255,255,255,0.12)";     // web: inset 0 1px 0 highlight
+const TRACK_BG       = "rgba(12,12,14,0.94)";        // web: .dash-segment-bar background
+const TRACK_BORDER   = "rgba(255,255,255,0.12)";     // web: border
+const LABEL_ACTIVE   = "#FFFFFF";                    // web: selected label colour
+const LABEL_IDLE     = "#6E7578";                    // web: unselected label colour
+
+// ─────────────────────────────────────────────────────────────────────────────
 // Animation constants
 // ─────────────────────────────────────────────────────────────────────────────
 
-/** Duration mirrors CSS transition 220ms used throughout the web app. */
-const ANIM_DURATION_MS = 220;
-/** Easing curve: approximates iOS native segmented control. */
-const PILL_EASING = { duration: ANIM_DURATION_MS } as const;
+/** 200ms matches the web CSS transition-duration. */
+const PILL_DURATION  = 200;
+/** Easing.out(Easing.exp) approximates cubic-bezier(0.16, 1, 0.3, 1) from the web. */
+const PILL_EASING    = Easing.out(Easing.exp);
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Individual segment button with press-scale animation
+// ─────────────────────────────────────────────────────────────────────────────
+
+interface SegmentButtonProps {
+  option:    SegmentOption;
+  isActive:  boolean;
+  disabled:  boolean;
+  onPress:   () => void;
+}
+
+const SegmentButton = memo(function SegmentButton({
+  option, isActive, disabled, onPress,
+}: SegmentButtonProps) {
+  // Replicates web: active:scale-[0.96] on the button
+  const scale = useSharedValue(1);
+
+  const animStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: scale.value }],
+    flex: 1,
+    alignItems: "center" as const,
+    justifyContent: "center" as const,
+    zIndex: 1,
+    paddingHorizontal: 4,
+  }));
+
+  const handlePressIn = useCallback(() => {
+    scale.value = withSpring(0.96, { mass: 0.3, damping: 12, stiffness: 200 });
+  }, [scale]);
+
+  const handlePressOut = useCallback(() => {
+    scale.value = withSpring(1, { mass: 0.3, damping: 12, stiffness: 200 });
+  }, [scale]);
+
+  return (
+    <Pressable
+      onPress={onPress}
+      onPressIn={handlePressIn}
+      onPressOut={handlePressOut}
+      disabled={disabled}
+      accessibilityRole="tab"
+      accessibilityLabel={option.label}
+      accessibilityState={{ selected: isActive, disabled }}
+      style={styles.pressableArea}
+    >
+      <Animated.View style={animStyle}>
+        <Text
+          numberOfLines={1}
+          style={[
+            styles.label,
+            isActive ? styles.labelActive : styles.labelIdle,
+            disabled && styles.labelDisabled,
+          ]}
+        >
+          {option.label}
+        </Text>
+      </Animated.View>
+    </Pressable>
+  );
+});
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Component
@@ -106,7 +202,10 @@ function DashboardSegmentedControl({
       const segW    = w / count;
       const targetX = index * segW;
       if (animated) {
-        pillX.value = withTiming(targetX, PILL_EASING);
+        pillX.value = withTiming(targetX, {
+          duration: PILL_DURATION,
+          easing:   PILL_EASING,
+        });
       } else {
         pillX.value = targetX;
       }
@@ -133,7 +232,7 @@ function DashboardSegmentedControl({
   // Animated pill style — width = 1/count of container, translateX = pillX.
   const pillStyle = useAnimatedStyle(() => ({
     transform: [{ translateX: pillX.value }],
-    width:     containerWidthRef.current > 0
+    width: containerWidthRef.current > 0
       ? containerWidthRef.current / count
       : undefined,
   }));
@@ -143,43 +242,48 @@ function DashboardSegmentedControl({
       style={[styles.track, disabled && styles.trackDisabled, style]}
       onLayout={handleLayout}
     >
+      {/*
+       * Top glass reflection — mirrors web .dash-segment-bar::before
+       * radial + linear gradient overlay (pointer-events:none, z:1)
+       * In RN we use a LinearGradient absolutely positioned above the pill
+       * but below the buttons (pointerEvents="none").
+       */}
+      <LinearGradient
+        colors={[
+          "rgba(255,255,255,0.025)",
+          "rgba(255,255,255,0.008)",
+          "rgba(255,255,255,0.000)",
+        ]}
+        start={{ x: 0.5, y: 0 }}
+        end={{ x: 0.5, y: 1 }}
+        style={styles.trackReflection}
+      />
+
       {/* ── Sliding pill (rendered behind labels) ── */}
       <Animated.View
         style={[styles.pill, pillStyle]}
-        pointerEvents="none"
-      />
+      >
+        {/*
+         * Top inset highlight — mirrors web:
+         *   inset 0 1px 0 rgba(255,255,255,0.12)
+         * Rendered as a thin top-border stripe inside the pill.
+         */}
+        <View style={styles.pillTopHighlight} />
+      </Animated.View>
 
       {/* ── Segment buttons ── */}
-      {options.map((option, idx) => {
+      {options.map((option) => {
         const isActive = option.value === value;
-
         return (
-          <Pressable
+          <SegmentButton
             key={option.value}
-            onPress={() => {
-              if (disabled || isActive) return;
-              onValueChange(option.value);
-            }}
+            option={option}
+            isActive={isActive}
             disabled={disabled}
-            accessibilityRole="tab"
-            accessibilityLabel={option.label}
-            accessibilityState={{ selected: isActive, disabled }}
-            style={styles.segment}
-          >
-            {({ pressed }) => (
-              <Text
-                numberOfLines={1}
-                style={[
-                  styles.label,
-                  isActive  ? styles.labelActive   : styles.labelInactive,
-                  pressed   ? styles.labelPressed   : null,
-                  disabled  ? styles.labelDisabled  : null,
-                ]}
-              >
-                {option.label}
-              </Text>
-            )}
-          </Pressable>
+            onPress={() => {
+              if (!disabled && !isActive) onValueChange(option.value);
+            }}
+          />
         );
       })}
     </View>
@@ -187,71 +291,87 @@ function DashboardSegmentedControl({
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Design tokens
-// ─────────────────────────────────────────────────────────────────────────────
-
-const TRACK_BG     = "rgba(255,255,255,0.04)";
-const TRACK_BORDER = "rgba(255,255,255,0.07)";
-const PILL_BG      = "rgba(255,255,255,0.10)";
-const PILL_BORDER  = "rgba(255,255,255,0.12)";
-
-// ─────────────────────────────────────────────────────────────────────────────
 // Styles
 // ─────────────────────────────────────────────────────────────────────────────
 
 const styles = StyleSheet.create({
+  // ── Track ─────────────────────────────────────────────────────────────────
+  // web: background rgba(12,12,14,0.94)  border rgba(255,255,255,0.12)
+  //      border-radius 12  padding 4  height 46  box-shadow 0 18px 48px rgba(0,0,0,0.55)
   track: {
     flexDirection:   "row",
     backgroundColor: TRACK_BG,
-    borderRadius:    10,
+    borderRadius:    TRACK_RADIUS,
     borderWidth:     1,
     borderColor:     TRACK_BORDER,
-    padding:         3,
+    padding:         TRACK_PADDING,
     position:        "relative",
     overflow:        "hidden",
-    height:          36,
+    height:          TRACK_HEIGHT,
+    // web: box-shadow 0 18px 48px rgba(0,0,0,0.55)
+    boxShadow:       "0px 8px 18px 0px rgba(0,0,0,0.55)",
   },
   trackDisabled: {
     opacity: 0.50,
   },
 
+  // ── Top reflection overlay (::before equivalent) ─────────────────────────
+  trackReflection: {
+    ...StyleSheet.absoluteFillObject,
+    borderRadius: TRACK_RADIUS,
+    zIndex:       1,
+  },
+
   // ── Pill ─────────────────────────────────────────────────────────────────
+  // web: background #2A2D31  border rgba(255,255,255,0.10)
+  //      border-radius 9  inset top rgba(255,255,255,0.12)  shadow 0 8px 20px rgba(0,0,0,0.35)
   pill: {
     position:        "absolute",
-    top:             3,
-    bottom:          3,
-    borderRadius:    7,
+    top:             TRACK_PADDING,
+    bottom:          TRACK_PADDING,
+    borderRadius:    PILL_RADIUS,
     backgroundColor: PILL_BG,
     borderWidth:     1,
     borderColor:     PILL_BORDER,
+    overflow:        "hidden",
+    zIndex:          0,
+    // web: inset box-shadow + drop shadow 0 8px 20px rgba(0,0,0,0.35)
+    boxShadow:       "0px 4px 8px 0px rgba(0,0,0,0.35)",
   },
 
-  // ── Segments ─────────────────────────────────────────────────────────────
-  segment: {
-    flex:            1,
-    alignItems:      "center",
-    justifyContent:  "center",
-    zIndex:          1,        // sit above the pill so taps register
-    paddingHorizontal: 4,
+  // ── Pill top inset highlight ───────────────────────────────────────────
+  // web: inset 0 1px 0 rgba(255,255,255,0.12)
+  pillTopHighlight: {
+    position:          "absolute",
+    top:               0,
+    left:              0,
+    right:             0,
+    height:            1,
+    backgroundColor:   PILL_TOP_HL,
+  },
+
+  // ── Segment pressable wrapper ─────────────────────────────────────────────
+  pressableArea: {
+    flex:   1,
+    zIndex: 2,        // sit above pill and reflection
   },
 
   // ── Labels ───────────────────────────────────────────────────────────────
+  // web: font-size 14px  active: #FFFFFF font-weight 600
+  //                     idle:   #6E7578  font-weight 400
   label: {
-    fontSize:      12,
+    fontSize:      14,
     letterSpacing: 0.1,
   },
   labelActive: {
-    color:       "#EDF0F6",
+    color:       LABEL_ACTIVE,
     fontFamily:  "Inter_600SemiBold",
     fontWeight:  "600",
   },
-  labelInactive: {
-    color:       "rgba(148,163,184,0.55)",
+  labelIdle: {
+    color:       LABEL_IDLE,
     fontFamily:  "Inter_400Regular",
     fontWeight:  "400",
-  },
-  labelPressed: {
-    opacity: 0.70,
   },
   labelDisabled: {
     opacity: 0.50,
