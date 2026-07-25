@@ -354,9 +354,13 @@ const CalendarHeatmap = memo(function CalendarHeatmap({
     setGridWidth(e.nativeEvent.layout.width);
   }, []);
 
-  // Cell size: (available width − 6 gaps) ÷ 7 columns
+  // Cell size: (available width − 2×horizontal padding − 7×per-cell margin) ÷ 7
+  // Each cell carries margin: CELL_GAP/2 on all sides, so each cell consumes
+  // CELL_GAP total horizontal space.  The grid's paddingHorizontal (CAL_H_PAD)
+  // is included in the onLayout width and must be subtracted explicitly, otherwise
+  // the cells are too wide and the 7th column wraps to the next line on Android.
   const cellSize = gridWidth > 0
-    ? Math.floor((gridWidth - 6 * CELL_GAP) / 7)
+    ? Math.floor((gridWidth - 2 * CAL_H_PAD - 7 * CELL_GAP) / 7)
     : 40;
 
   // Indexed by dateString for O(1) lookup
@@ -779,6 +783,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrollContent: {
+    flexGrow:          1,
     paddingHorizontal: 16,
     paddingTop:        16,
     gap:               16,

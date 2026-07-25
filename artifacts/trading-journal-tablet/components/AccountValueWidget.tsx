@@ -36,6 +36,7 @@ import {
   Pressable,
   StyleSheet,
   Text,
+  useWindowDimensions,
   View,
 } from "react-native";
 
@@ -246,6 +247,10 @@ function AccountValueWidget({
 }: AccountValueWidgetProps) {
   const [masked, setMasked] = useState(false);
   const currency = useCurrencyStore((s) => s.currency);
+  const { width: screenWidth } = useWindowDimensions();
+  // On very narrow screens (< 380px) shrink the chip text slightly
+  const chipFontSize = screenWidth < 380 ? 11 : 12;
+  const chipPadH    = screenWidth < 380 ? 9  : 12;
 
   const resolvedNetPnlDisplay =
     netPnlDisplay ?? (upnlDisplay + realizedPnlDisplay);
@@ -350,13 +355,14 @@ function AccountValueWidget({
                 onPress={onShowPositions}
                 style={({ pressed }) => [
                   styles.chipInner,
+                  { paddingHorizontal: chipPadH },
                   pressed && styles.pressed,
                 ]}
                 accessibilityRole="button"
                 accessibilityLabel="Show positions"
               >
                 <Ionicons name="layers-outline" size={12} color="#fff" />
-                <Text style={styles.positionsChipText}>Show Positions</Text>
+                <Text style={[styles.positionsChipText, { fontSize: chipFontSize }]}>Show Positions</Text>
               </Pressable>
             </LinearGradient>
           </View>
@@ -520,16 +526,22 @@ const styles = StyleSheet.create({
   },
 
   // web: flex items-center gap-2 (8px)
+  // flex:1 + minWidth:0 ensures this side shrinks when chip needs space
   titleLeft: {
     flexDirection: "row",
     alignItems:    "center",
     gap:           8,
+    flex:          1,
+    minWidth:      0,
+    flexShrink:    1,
   },
 
   titleLinkBtn: {
     flexDirection: "row",
     alignItems:    "center",
     gap:           2,
+    flexShrink:    1,
+    minWidth:      0,
   },
 
   // web: text-[13px] font-semibold --stat-title = rgba(255,255,255,0.72)
@@ -538,6 +550,7 @@ const styles = StyleSheet.create({
     fontSize:    13,
     fontFamily:  "Inter_600SemiBold",
     fontWeight:  "600",
+    flexShrink:  1,   // allow text to truncate before pushing chip off-screen
   },
 
   // ── Show Positions chip ───────────────────────────────────────────────────
@@ -545,6 +558,7 @@ const styles = StyleSheet.create({
   //      px-3 py-1.5 rounded-full
   chipShadowWrapper: {
     borderRadius: 20,
+    flexShrink:   0,   // never let the chip be compressed or clipped
     ...Platform.select({
       ios: {
         shadowColor:   C.chipShadow,
@@ -591,7 +605,8 @@ const styles = StyleSheet.create({
     lineHeight:    34,
   },
   mainValueSkeleton: {
-    width:        160,
+    maxWidth:     160,
+    width:        "100%",
     height:       32,
     borderRadius: 6,
   },
