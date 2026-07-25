@@ -66,13 +66,13 @@ import React, {
 import {
   Animated,
   BackHandler,
-  Dimensions,
   Easing,
   Modal,
   Pressable,
   ScrollView,
   StyleSheet,
   Text,
+  useWindowDimensions,
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -210,22 +210,48 @@ export const NotificationPanel = memo(function NotificationPanel({ open, onClose
   const onCloseRef = useRef(onClose);
   useEffect(() => { onCloseRef.current = onClose; }, [onClose]);
 
-  /* Screen height — used as the off-screen starting translateY so the panel
-     slides in from below rather than scaling from centre (which caused the
-     "half-screen in the middle" visual artefact). */
-  const SCREEN_H = Dimensions.get("window").height;
+  /* useWindowDimensions is reactive and returns the correct height even on
+     first render on Expo web (unlike Dimensions.get which can return 0 until
+     the layout pass completes). We also keep a ref so the close animation's
+     toValue is always current without making it an effect dependency. */
+  const { height: windowHeight } = useWindowDimensions();
+  const screenHRef = useRef(windowHeight || 900);
+  useEffect(() => { screenHRef.current = windowHeight || 900; }, [windowHeight]);
 
   /* Animated values — compositor-only (useNativeDriver:true):
        backdropOpacity  0→1 on open,  1→0 on close
-       panelY           SCREEN_H→0 on open (slide up),  0→SCREEN_H on close  */
+       panelY           screenH→0 on open (slide up),  0→screenH on close
+     Initialised to the correct off-screen start value. If windowHeight is 0
+     on the very first render (Expo web timing edge case) we fall back to 900
+     so the panel is never pre-positioned at 0 (i.e. visibly open). */
   const backdropOpacity = useRef(new Animated.Value(0)).current;
-  const panelY          = useRef(new Animated.Value(SCREEN_H)).current;
+  const panelY          = useRef(new Animated.Value(windowHeight || 900)).current;
+
+  /* Track whether this is the very first mount so we skip the close path
+     that runs when open=false on initial render — without this guard the
+     close animation fires immediately and positions panelY, then the user's
+     first tap triggers the open animation starting from the wrong place. */
+  const didMountRef = useRef(false);
 
   useEffect(() => {
+    if (!didMountRef.current) {
+      /* First render (open is always false at this point since hasOpenedRef
+         prevents rendering until open=true — but keep the guard defensive). */
+      didMountRef.current = true;
+      return;
+    }
+
     if (open) {
-      /* Open: slide up with a decelerating ease-out — feels snappy and
-         natural, identical to iOS sheet presentation. Backdrop fades in
-         slightly faster so the content never appears on a bare white flash. */
+      /* ── OPEN ────────────────────────────────────────────────────────────
+         1. Stop any in-flight close animation to prevent "down then up" fights.
+         2. Hard-snap panelY to off-screen so the slide always starts clean,
+            regardless of where a previously interrupted close left it.
+         3. Start the slide-up + backdrop-fade in parallel. */
+      backdropOpacity.stopAnimation();
+      panelY.stopAnimation();
+      panelY.setValue(screenHRef.current);
+      backdropOpacity.setValue(0);
+
       Animated.parallel([
         Animated.timing(backdropOpacity, {
           toValue:         1,
@@ -241,8 +267,8 @@ export const NotificationPanel = memo(function NotificationPanel({ open, onClose
         }),
       ]).start();
     } else {
-      /* Close: accelerating ease-in — snappier dismiss so it doesn't feel
-         sluggish. Backdrop follows the panel out. */
+      /* ── CLOSE ───────────────────────────────────────────────────────────
+         Accelerating ease-in: snappy dismiss, backdrop fades out in sync. */
       Animated.parallel([
         Animated.timing(backdropOpacity, {
           toValue:         0,
@@ -251,7 +277,7 @@ export const NotificationPanel = memo(function NotificationPanel({ open, onClose
           useNativeDriver: true,
         }),
         Animated.timing(panelY, {
-          toValue:         SCREEN_H,
+          toValue:         screenHRef.current,
           duration:        CLOSE_MS,
           easing:          Easing.in(Easing.cubic),
           useNativeDriver: true,
