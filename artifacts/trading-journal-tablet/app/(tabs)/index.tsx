@@ -430,7 +430,16 @@ const CalendarHeatmap = memo(function CalendarHeatmap({
   }, [firstDay, daysInMonth, year, month]);
 
   return (
-    <View>
+    // width:"100%" is required for native Android (Yoga layout engine).
+    // Without an explicit width on this root View, Yoga cannot resolve the
+    // width chain through implicitly-sized ancestors (calendarCard has no
+    // explicit width, only padding/border). The inner grid Views with
+    // flexDirection:"row" + flexWrap:"wrap" then get an UNCONSTRAINED
+    // main-axis width, so flexWrap never fires — all cells render on one
+    // infinite row, producing "123456789101112...".
+    // On RN Web the browser auto-stretches block elements so this never
+    // triggers; on Yoga/Expo Go it must be explicit.
+    <View style={{ width: "100%" }}>
       {/* ── Month navigator + monthly stats ── */}
       <View style={calStyles.navRow}>
         {/* Left: prev / month / next */}

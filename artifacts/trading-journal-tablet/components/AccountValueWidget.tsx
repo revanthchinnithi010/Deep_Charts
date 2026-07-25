@@ -475,13 +475,18 @@ const styles = StyleSheet.create({
   // ── Card surface ─────────────────────────────────────────────────────────
   // web: background rgba(6,6,8,0.97), border rgba(255,255,255,0.12),
   //      border-radius 24px, box-shadow 0 18px 48px rgba(0,0,0,0.55)
+  //
+  // ANDROID BUG: overflow:"hidden" + elevation on the same View causes
+  // canvas.clipRect() to clip children with their own elevation (the chip).
+  // On Android the shadow and the View itself get clipped at the card edge.
+  // The cardSheen LinearGradient already carries its own borderRadius so it
+  // self-clips without needing the parent to clip it. Safe to remove.
   card: {
     backgroundColor: C.cardBg,
     borderRadius:    C.cardRadius,
     borderWidth:     1,
     borderColor:     C.cardBorder,
-    overflow:        "hidden",
-    // Shadow — web: box-shadow 0 18px 48px rgba(0,0,0,0.55)
+    // overflow:"hidden" intentionally removed — see note above
     ...Platform.select({
       ios: {
         shadowColor:   "#000000",
@@ -573,7 +578,12 @@ const styles = StyleSheet.create({
   },
   positionsChip: {
     borderRadius: 20,
-    overflow:     "hidden",
+    // overflow:"hidden" intentionally removed.
+    // On Android, expo-linear-gradient renders a bitmap gradient.
+    // overflow:"hidden" + borderRadius tells Android to clip that bitmap via
+    // a rounded-rect path — on API < 28 (and inconsistently above) this causes
+    // the entire child tree (Pressable + Text) to become invisible.
+    // borderRadius alone is sufficient to give the pill shape visually.
   },
   chipInner: {
     flexDirection:     "row",
