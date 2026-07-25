@@ -135,7 +135,7 @@ const TABS: TabDef[] = [
   },
   {
     name:         "trades",
-    label:        "Trade",
+    label:        "Trades",
     iconActive:   "swap-horizontal",
     iconInactive: "swap-horizontal-outline",
   },
@@ -146,22 +146,10 @@ const TABS: TabDef[] = [
     iconInactive: "bar-chart-outline",
   },
   {
-    name:         "calendar",
-    label:        "Calendar",
-    iconActive:   "calendar",
-    iconInactive: "calendar-outline",
-  },
-  {
     name:         "alerts",
     label:        "Alerts",
     iconActive:   "notifications",
     iconInactive: "notifications-outline",
-  },
-  {
-    name:         "notebook",
-    label:        "Notebook",
-    iconActive:   "book",
-    iconInactive: "book-outline",
   },
 ];
 
@@ -354,6 +342,22 @@ export default function TabsLayout() {
         name="reports"
         options={{
           title:       "Reports",
+          href:        null,   // hidden from tab bar
+          headerShown: false,
+        }}
+      />
+      <Tabs.Screen
+        name="calendar"
+        options={{
+          title:       "Calendar",
+          href:        null,   // hidden from tab bar
+          headerShown: false,
+        }}
+      />
+      <Tabs.Screen
+        name="notebook"
+        options={{
+          title:       "Notebook",
           href:        null,   // hidden from tab bar
           headerShown: false,
         }}
