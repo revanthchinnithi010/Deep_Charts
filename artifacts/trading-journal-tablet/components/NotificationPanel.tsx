@@ -72,7 +72,6 @@ import {
   ScrollView,
   StyleSheet,
   Text,
-  useWindowDimensions,
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -124,8 +123,8 @@ const TYPE_CFG: Record<NotifType, { iconName: string; color: string; bg: string 
 
 /* ─── animation constants ─────────────────────────────────────────────────── */
 
-const OPEN_MS  = 340;   // ease-out deceleration feels instant but smooth
-const CLOSE_MS = 240;   // ease-in acceleration for dismiss
+const OPEN_MS  = 220;   // fast enough to feel instant, long enough to feel smooth
+const CLOSE_MS = 180;   // slightly faster dismiss
 
 /* ─── memoised sub-components ─────────────────────────────────────────────── */
 
@@ -210,65 +209,54 @@ export const NotificationPanel = memo(function NotificationPanel({ open, onClose
   const onCloseRef = useRef(onClose);
   useEffect(() => { onCloseRef.current = onClose; }, [onClose]);
 
-  /* useWindowDimensions is reactive and returns the correct height even on
-     first render on Expo web (unlike Dimensions.get which can return 0 until
-     the layout pass completes). We also keep a ref so the close animation's
-     toValue is always current without making it an effect dependency. */
-  const { height: windowHeight } = useWindowDimensions();
-  const screenHRef = useRef(windowHeight || 900);
-  useEffect(() => { screenHRef.current = windowHeight || 900; }, [windowHeight]);
+  /* Animated values — all compositor-only (useNativeDriver:true):
+       backdropOpacity  0 → 1 on open, 1 → 0 on close  (blur backdrop)
+       panelOpacity     0 → 1 on open, 1 → 0 on close  (panel fade)
+       panelScale       0.96 → 1 on open, 1 → 0.96 on close  (subtle emerge)
 
-  /* Animated values — compositor-only (useNativeDriver:true):
-       backdropOpacity  0→1 on open,  1→0 on close
-       panelY           screenH→0 on open (slide up),  0→screenH on close
-     Initialised to the correct off-screen start value. If windowHeight is 0
-     on the very first render (Expo web timing edge case) we fall back to 900
-     so the panel is never pre-positioned at 0 (i.e. visibly open). */
+     The scale range (0.96–1.0) is intentionally tiny — it adds depth without
+     any "grow from centre" artifact, because at 0.96 the panel already covers
+     most of the screen. This is the standard iOS fullscreen-overlay pattern. */
   const backdropOpacity = useRef(new Animated.Value(0)).current;
-  const panelY          = useRef(new Animated.Value(windowHeight || 900)).current;
-
-  /* Track whether this is the very first mount so we skip the close path
-     that runs when open=false on initial render — without this guard the
-     close animation fires immediately and positions panelY, then the user's
-     first tap triggers the open animation starting from the wrong place. */
-  const didMountRef = useRef(false);
+  const panelOpacity    = useRef(new Animated.Value(0)).current;
+  const panelScale      = useRef(new Animated.Value(0.96)).current;
 
   useEffect(() => {
-    if (!didMountRef.current) {
-      /* First render (open is always false at this point since hasOpenedRef
-         prevents rendering until open=true — but keep the guard defensive). */
-      didMountRef.current = true;
-      return;
-    }
-
     if (open) {
-      /* ── OPEN ────────────────────────────────────────────────────────────
-         1. Stop any in-flight close animation to prevent "down then up" fights.
-         2. Hard-snap panelY to off-screen so the slide always starts clean,
-            regardless of where a previously interrupted close left it.
-         3. Start the slide-up + backdrop-fade in parallel. */
+      /* ── OPEN: fade in + gentle scale-up emerge ─────────────────────────
+         Stop any in-flight close first so there's no fighting. Then snap
+         back to start values before animating — ensures every open starts
+         clean regardless of where a prior interrupted close left things. */
       backdropOpacity.stopAnimation();
-      panelY.stopAnimation();
-      panelY.setValue(screenHRef.current);
+      panelOpacity.stopAnimation();
+      panelScale.stopAnimation();
       backdropOpacity.setValue(0);
+      panelOpacity.setValue(0);
+      panelScale.setValue(0.96);
 
       Animated.parallel([
         Animated.timing(backdropOpacity, {
           toValue:         1,
-          duration:        Math.round(OPEN_MS * 0.65),
+          duration:        OPEN_MS,
           easing:          Easing.out(Easing.quad),
           useNativeDriver: true,
         }),
-        Animated.timing(panelY, {
-          toValue:         0,
+        Animated.timing(panelOpacity, {
+          toValue:         1,
+          duration:        OPEN_MS,
+          easing:          Easing.out(Easing.quad),
+          useNativeDriver: true,
+        }),
+        Animated.timing(panelScale, {
+          toValue:         1,
           duration:        OPEN_MS,
           easing:          Easing.out(Easing.cubic),
           useNativeDriver: true,
         }),
       ]).start();
     } else {
-      /* ── CLOSE ───────────────────────────────────────────────────────────
-         Accelerating ease-in: snappy dismiss, backdrop fades out in sync. */
+      /* ── CLOSE: fade out + gentle scale-down ───────────────────────────
+         Reverse of open — panel fades and shrinks back to 0.96 and out. */
       Animated.parallel([
         Animated.timing(backdropOpacity, {
           toValue:         0,
@@ -276,8 +264,14 @@ export const NotificationPanel = memo(function NotificationPanel({ open, onClose
           easing:          Easing.in(Easing.quad),
           useNativeDriver: true,
         }),
-        Animated.timing(panelY, {
-          toValue:         screenHRef.current,
+        Animated.timing(panelOpacity, {
+          toValue:         0,
+          duration:        CLOSE_MS,
+          easing:          Easing.in(Easing.quad),
+          useNativeDriver: true,
+        }),
+        Animated.timing(panelScale, {
+          toValue:         0.96,
           duration:        CLOSE_MS,
           easing:          Easing.in(Easing.cubic),
           useNativeDriver: true,
@@ -331,17 +325,18 @@ export const NotificationPanel = memo(function NotificationPanel({ open, onClose
         />
       </Animated.View>
 
-      {/* Fullscreen sheet — slides up/down via translateY (compositor-only).
-          translateY replaces the old scale animation which caused the panel
-          to appear at half-size in the middle of the screen mid-animation. */}
+      {/* Fullscreen panel — fade + gentle emerge scale (0.96 → 1).
+          The 4% scale range is imperceptible as "growth from centre" but
+          gives the panel a polished depth feel on both open and close. */}
       <Animated.View
         style={[
           StyleSheet.absoluteFillObject,
           {
-            transform: [{ translateY: panelY }],
+            opacity:         panelOpacity,
+            transform:       [{ scale: panelScale }],
             backgroundColor: "#000000",
-            flexDirection: "column",
-            paddingBottom: insets.bottom,
+            flexDirection:   "column",
+            paddingBottom:   insets.bottom,
           },
         ]}
       >
