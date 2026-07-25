@@ -35,6 +35,7 @@ import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { Toaster } from "@/components/ui/toaster";
 import { WatchlistProvider } from "@/contexts/WatchlistContext";
+import { NotificationsProvider } from "@/contexts/NotificationsContext";
 import { useOTAUpdates } from "@/lib/updates";
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -257,7 +258,9 @@ export default function RootLayout() {
             <GestureHandlerRootView style={{ flex: 1 }}>
               <BottomSheetModalProvider>
                 <WatchlistProvider>
-                  <RootLayoutNav />
+                  <NotificationsProvider>
+                    <RootLayoutNav />
+                  </NotificationsProvider>
                 </WatchlistProvider>
               </BottomSheetModalProvider>
             </GestureHandlerRootView>
