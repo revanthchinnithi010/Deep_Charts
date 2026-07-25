@@ -280,7 +280,7 @@ function AccountValueWidget({
   // ── Main card ─────────────────────────────────────────────────────────────
 
   return (
-    <View style={styles.card}>
+    <View style={[styles.card, { borderWidth: 3, borderColor: "lime" }]}>
 
       {/*
         * Gradient sheen — mirrors web .dash-account-card::before
@@ -344,7 +344,13 @@ function AccountValueWidget({
             *      boxShadow: "0 2px 10px rgba(249,115,22,0.35)"
             *      px-3 py-1.5 rounded-full text-[12px] font-semibold
             */}
-          <View style={styles.chipShadowWrapper}>
+          <View
+            style={[styles.chipShadowWrapper, { borderWidth: 3, borderColor: "cyan" }]}
+            onLayout={(e) => {
+              const { x, y, width, height } = e.nativeEvent.layout;
+              console.log(`[DEBUG-CHIP] chipShadowWrapper x=${x} y=${y} w=${width} h=${height}`);
+            }}
+          >
             <LinearGradient
               colors={[C.chipFrom, C.chipTo]}
               start={{ x: 0, y: 0 }}

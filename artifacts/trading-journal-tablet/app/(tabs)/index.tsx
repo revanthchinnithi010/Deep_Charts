@@ -351,7 +351,9 @@ const CalendarHeatmap = memo(function CalendarHeatmap({
   // Measure the grid container to compute cell sizes
   const [gridWidth, setGridWidth] = useState(0);
   const handleGridLayout = useCallback((e: LayoutChangeEvent) => {
-    setGridWidth(e.nativeEvent.layout.width);
+    const w = e.nativeEvent.layout.width;
+    console.log(`[DEBUG-CAL] onLayout gridWidth=${w} cellSize=${w > 0 ? Math.floor((w - 2 * CAL_H_PAD - 7 * CELL_GAP) / 7) : 40}`);
+    setGridWidth(w);
   }, []);
 
   // Cell size: (available width − 2×horizontal padding − 7×per-cell margin) ÷ 7
@@ -439,7 +441,7 @@ const CalendarHeatmap = memo(function CalendarHeatmap({
     // infinite row, producing "123456789101112...".
     // On RN Web the browser auto-stretches block elements so this never
     // triggers; on Yoga/Expo Go it must be explicit.
-    <View style={{ width: "100%" }}>
+    <View style={{ width: "100%", borderWidth: 3, borderColor: "red" }}>
       {/* ── Month navigator + monthly stats ── */}
       <View style={calStyles.navRow}>
         {/* Left: prev / month / next */}
@@ -504,7 +506,7 @@ const CalendarHeatmap = memo(function CalendarHeatmap({
       </View>
 
       {/* ── Calendar cells ── */}
-      <View style={calStyles.grid}>
+      <View style={[calStyles.grid, { borderWidth: 2, borderColor: "yellow" }]}>
         {cells.map(({ key, day, dateStr }) => {
           if (day === null || dateStr === null) {
             // Empty spacer
