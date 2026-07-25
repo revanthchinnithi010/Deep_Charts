@@ -57,10 +57,9 @@ import {
   Text,
   View,
 } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
-
 import AccountValueWidget from "@/components/AccountValueWidget";
 import DashboardSegmentedControl from "@/components/DashboardSegmentedControl";
+import DashboardTopBar from "@/components/DashboardTopBar";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   useCurrencyAxisFormatter,
@@ -553,8 +552,6 @@ const CalendarHeatmap = memo(function CalendarHeatmap({
 // ─────────────────────────────────────────────────────────────────────────────
 
 export default function HomeScreen() {
-  const insets = useSafeAreaInsets();
-
   // ── Loading timeout (mirrors web: 2 s max wait before rendering) ──────────
   const mountTimeRef   = useRef(Date.now());
   const [timedOut, setTimedOut] = useState(false);
@@ -664,7 +661,8 @@ export default function HomeScreen() {
 
   if (isStillLoading) {
     return (
-      <View style={[styles.container, { paddingTop: insets.top }]}>
+      <View style={styles.container}>
+        <DashboardTopBar />
         <View style={styles.loadingContent}>
           {/* Mirrors web: AccountValueWidget ≈176 px, calendar card ≈302 px */}
           <Skeleton style={styles.skeletonWidget} />
@@ -676,7 +674,8 @@ export default function HomeScreen() {
 
   // ── Render ─────────────────────────────────────────────────────────────────
   return (
-    <View style={[styles.container, { paddingTop: insets.top }]}>
+    <View style={styles.container}>
+      <DashboardTopBar />
       <ScrollView
         style={styles.scroll}
         contentContainerStyle={styles.scrollContent}
