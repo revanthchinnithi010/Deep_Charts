@@ -567,7 +567,8 @@ const styles = StyleSheet.create({
   // web: linear-gradient(135deg,#f97316,#ea580c), boxShadow rgba(249,115,22,0.35)
   //      px-3 py-1.5 rounded-full
   chipShadowWrapper: {
-    borderRadius: 20,
+    // borderRadius = CHIP_HEIGHT / 2 = 28 / 2 = 14 — perfect pill
+    borderRadius: 14,
     flexShrink: 0, // never let the chip be compressed or clipped
     ...Platform.select({
       ios: {
@@ -582,25 +583,40 @@ const styles = StyleSheet.create({
     }),
   },
   positionsChip: {
-    borderRadius: 20,
+    // borderRadius matches chipShadowWrapper — both must equal CHIP_HEIGHT / 2
+    borderRadius: 14,
     // overflow:"hidden" intentionally removed.
     // On Android, expo-linear-gradient renders a bitmap gradient.
     // overflow:"hidden" + borderRadius tells Android to clip that bitmap via
     // a rounded-rect path — on API < 28 (and inconsistently above) this causes
     // the entire child tree (Pressable + Text) to become invisible.
-    // borderRadius alone is sufficient to give the pill shape visually.
+    // Explicit height + matching borderRadius gives the pill shape without clipping.
   },
   chipInner: {
     flexDirection: "row",
     alignItems: "center",
+    justifyContent: "center",
     gap: 5,
     paddingHorizontal: 12,
-    paddingVertical: 6,
+    // Explicit height instead of paddingVertical: Android Text without lineHeight
+    // uses platform font metrics that inflate the measured height to ~18–20px
+    // (vs ~14px on web/iOS), making the chip grow to ~30px and the borderRadius
+    // (20) overshoot height/2, distorting the pill shape. Fixing to 28px and
+    // setting lineHeight on the text gives a deterministic, correct pill on both
+    // platforms — matching the web's py-1.5 + text-[12px] = ~26px height.
+    height: 28,
   },
   // web: text-[12px] font-semibold color #fff
   positionsChipText: {
     color: "#fff",
     fontSize: 12,
+    // Explicit lineHeight prevents Android from using inflated platform font
+    // metrics. 14 matches browser's "normal" ratio for 12px sans-serif (~1.17×).
+    lineHeight: 14,
+    // includeFontPadding: Android adds extra space above the ascender by default,
+    // pushing the text visual centre below the layout centre and making the icon
+    // appear to float above the text. Setting false aligns visual and layout centres.
+    includeFontPadding: false,
     fontFamily: "SFProDisplay-Semibold",
     fontWeight: "600",
   },
