@@ -55,7 +55,7 @@ import {
   BottomSheetBackdrop,
   type BottomSheetBackdropProps,
 } from "@gorhom/bottom-sheet";
-import { ArrowUp, ArrowDown, Star, Search, X, XCircle, ChevronDown, ChevronRight } from "lucide-react-native";
+import { ArrowUp, ArrowDown, Star, Search, X, XCircle, ChevronDown, ChevronRight, TrendingUp } from "lucide-react-native";
 
 import { useWatchlist }         from "@/contexts/WatchlistContext";
 import { useSymbolTick }        from "@/store/tickStore";
@@ -832,7 +832,7 @@ export const SharedMarketSelector = memo(function SharedMarketSelector({
       case "wl_empty":
         return (
           <EmptyState
-            iconName="trending-up-outline"
+            Icon={TrendingUp}
             title={item.searchActive ? "No results" : "No favorite markets yet"}
             subtitle={!item.searchActive ? "Tap the star icon in Markets to add your favorite symbols." : undefined}
           />

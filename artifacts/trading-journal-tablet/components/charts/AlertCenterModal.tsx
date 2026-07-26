@@ -164,7 +164,7 @@ const AlertCard = memo(function AlertCard({
         <TypeBadge type={alert.type} />
         <StatusBadge status={alert.status} />
         <View style={s.cardTimestamp}>
-          <Ionicons name="time-outline" size={10} color="rgba(167,184,169,0.4)" />
+          <Clock size={10} color="rgba(167,184,169,0.4)" />
           <Text style={s.cardTimestampText}>{fmtTime(alert.createdAt)}</Text>
         </View>
       </View>
@@ -227,14 +227,14 @@ function EditAlertModal({
           {/* Header */}
           <View style={s.editHeader}>
             <View style={s.editIconBox}>
-              <Ionicons name="create-outline" size={14} color="#B7FF5A" />
+              <Pencil size={14} color="#B7FF5A" />
             </View>
             <View style={{ flex: 1 }}>
               <Text style={s.editTitle}>Edit Alert</Text>
               <Text style={s.editSubtitle}>{alert.symbol} · {TYPE_CFG[alert.type].label}</Text>
             </View>
             <Pressable onPress={onClose} hitSlop={8} style={s.editCloseBtn}>
-              <Ionicons name="close" size={14} color="rgba(167,184,169,0.4)" />
+              <X size={14} color="rgba(167,184,169,0.4)" />
             </Pressable>
           </View>
 
@@ -350,7 +350,7 @@ function WatchlistSymbolPicker({
         style={[s.symBtn]}
       >
         <Text style={s.symBtnText}>{currentLabel || value}</Text>
-        <Ionicons name="chevron-down" size={12} color="rgba(167,184,169,0.45)" />
+        <ChevronDown size={12} color="rgba(167,184,169,0.45)" />
       </Pressable>
 
       <Modal transparent animationType="fade" visible={open} onRequestClose={handleClose} statusBarTranslucent>
@@ -358,7 +358,7 @@ function WatchlistSymbolPicker({
           <Pressable onPress={() => {}} style={s.symPickerPanel}>
             {/* Search */}
             <View style={s.symSearchRow}>
-              <Ionicons name="search" size={11} color="rgba(167,184,169,0.4)" />
+              <Search size={11} color="rgba(167,184,169,0.4)" />
               <TextInput
                 ref={searchRef}
                 value={query}
@@ -369,7 +369,7 @@ function WatchlistSymbolPicker({
               />
               {!!query && (
                 <Pressable onPress={() => setQuery("")} hitSlop={6}>
-                  <Ionicons name="close" size={10} color="rgba(167,184,169,0.4)" />
+                  <X size={10} color="rgba(167,184,169,0.4)" />
                 </Pressable>
               )}
             </View>
@@ -402,7 +402,7 @@ function WatchlistSymbolPicker({
                         {it.label}
                       </Text>
                       {it.symbol === value && (
-                        <Ionicons name="checkmark-circle" size={11} color="#B7FF5A" />
+                        <CheckCircle2 size={11} color="#B7FF5A" />
                       )}
                     </Pressable>
                   ))}
@@ -466,9 +466,9 @@ function QuickCreateModal({
   };
 
   const TYPE_OPTIONS = [
-    { key: "price"     as const, label: "Price Alert",     iconName: "radio-button-on-outline", color: "#60a5fa", desc: "Trigger when price hits a level" },
-    { key: "zone"      as const, label: "Zone Alert",      iconName: "layers-outline",          color: "#fb923c", desc: "Trigger when price enters a zone" },
-    { key: "trendline" as const, label: "Trendline Alert", iconName: "git-branch-outline",      color: "#B7FF5A", desc: "Trigger on trendline interaction" },
+    { key: "price"     as const, label: "Price Alert",     Icon: Circle,    color: "#60a5fa", desc: "Trigger when price hits a level" },
+    { key: "zone"      as const, label: "Zone Alert",      Icon: Layers,    color: "#fb923c", desc: "Trigger when price enters a zone" },
+    { key: "trendline" as const, label: "Trendline Alert", Icon: GitBranch, color: "#B7FF5A", desc: "Trigger on trendline interaction" },
   ];
 
   const ZONE_TYPES = ["supply", "demand", "support_resistance", "order_block"] as const;
@@ -480,13 +480,13 @@ function QuickCreateModal({
           {/* Header */}
           <View style={s.editHeader}>
             <View style={s.editIconBox}>
-              <Ionicons name="add" size={14} color="#B7FF5A" />
+              <Plus size={14} color="#B7FF5A" />
             </View>
             <Text style={s.editTitle}>
               {step === "pick" ? "Create Alert" : `New ${step.charAt(0).toUpperCase() + step.slice(1)} Alert`}
             </Text>
             <Pressable onPress={onClose} hitSlop={8} style={s.editCloseBtn}>
-              <Ionicons name="close" size={14} color="rgba(167,184,169,0.4)" />
+              <X size={14} color="rgba(167,184,169,0.4)" />
             </Pressable>
           </View>
 
@@ -494,20 +494,20 @@ function QuickCreateModal({
           {step === "pick" && (
             <View style={{ gap: 8 }}>
               <Text style={s.pickPrompt}>Choose alert type:</Text>
-              {TYPE_OPTIONS.map(({ key, label, iconName, color, desc }) => (
+              {TYPE_OPTIONS.map(({ key, label, Icon, color, desc }) => (
                 <Pressable
                   key={key}
                   onPress={() => setStep(key)}
                   style={({ pressed }) => [s.typeOptionBtn, pressed && s.typeOptionBtnPressed]}
                 >
                   <View style={[s.typeIconBox, { backgroundColor: color + "18" }]}>
-                    <Ionicons name={iconName as "layers-outline"} size={15} color={color} />
+                    <Icon size={15} color={color} />
                   </View>
                   <View style={{ flex: 1 }}>
                     <Text style={s.typeOptionLabel}>{label}</Text>
                     <Text style={s.typeOptionDesc}>{desc}</Text>
                   </View>
-                  <Ionicons name="chevron-forward" size={14} color="rgba(167,184,169,0.3)" />
+                  <ChevronRight size={14} color="rgba(167,184,169,0.3)" />
                 </Pressable>
               ))}
             </View>
@@ -764,14 +764,14 @@ export function AlertSheetContent({ onClose: _onClose }: { onClose: () => void }
             {counts.active} active · {counts.triggered} triggered · {counts.paused} paused
           </Text>
           <Pressable onPress={() => setShowCreate(true)} style={s.createBtn}>
-            <Ionicons name="add" size={12} color="#B7FF5A" />
+            <Plus size={12} color="#B7FF5A" />
             <Text style={s.createBtnText}>Create Alert</Text>
           </Pressable>
         </View>
 
         {/* Search */}
         <View style={s.searchBox}>
-          <Ionicons name="search" size={13} color="rgba(167,184,169,0.3)" />
+          <Search size={13} color="rgba(167,184,169,0.3)" />
           <TextInput
             value={query}
             onChangeText={setQuery}
@@ -811,7 +811,7 @@ export function AlertSheetContent({ onClose: _onClose }: { onClose: () => void }
         {filtered.length === 0 ? (
           <View style={s.emptyState}>
             <View style={s.emptyIconBox}>
-              <Ionicons name="notifications-outline" size={24} color="rgba(167,184,169,0.25)" />
+              <Bell size={24} color="rgba(167,184,169,0.25)" />
             </View>
             <Text style={s.emptyTitle}>
               {query || filter !== "all" ? "No matching alerts" : "No Active Alerts"}
@@ -823,7 +823,7 @@ export function AlertSheetContent({ onClose: _onClose }: { onClose: () => void }
             </Text>
             {!query && filter === "all" && (
               <Pressable onPress={() => setShowCreate(true)} style={s.emptyCreateBtn}>
-                <Ionicons name="add" size={13} color="#B7FF5A" />
+                <Plus size={13} color="#B7FF5A" />
                 <Text style={s.createBtnText}>Create First Alert</Text>
               </Pressable>
             )}
@@ -936,7 +936,7 @@ export default function AlertCenterModal({ onClose }: AlertCenterModalProps) {
           {/* ── Header ── */}
           <View style={s.mainHeader}>
             <View style={s.mainHeaderIcon}>
-              <Ionicons name="notifications-outline" size={16} color="#B7FF5A" />
+              <Bell size={16} color="#B7FF5A" />
             </View>
             <View>
               <Text style={s.mainHeaderTitle}>Alerts Center</Text>
@@ -947,11 +947,11 @@ export default function AlertCenterModal({ onClose }: AlertCenterModalProps) {
 
             <View style={s.mainHeaderActions}>
               <Pressable onPress={() => setShowCreate(true)} style={s.createBtn}>
-                <Ionicons name="add" size={13} color="#B7FF5A" />
+                <Plus size={13} color="#B7FF5A" />
                 <Text style={s.createBtnText}>Create Alert</Text>
               </Pressable>
               <Pressable onPress={onClose} hitSlop={8} style={s.mainCloseBtn}>
-                <Ionicons name="close" size={14} color="rgba(167,184,169,0.5)" />
+                <X size={14} color="rgba(167,184,169,0.5)" />
               </Pressable>
             </View>
           </View>
@@ -959,7 +959,7 @@ export default function AlertCenterModal({ onClose }: AlertCenterModalProps) {
           {/* ── Search + Filters ── */}
           <View style={s.mainSearchSection}>
             <View style={s.searchBox}>
-              <Ionicons name="search" size={13} color="rgba(167,184,169,0.3)" />
+              <Search size={13} color="rgba(167,184,169,0.3)" />
               <TextInput
                 value={query}
                 onChangeText={setQuery}
@@ -995,7 +995,7 @@ export default function AlertCenterModal({ onClose }: AlertCenterModalProps) {
             {filtered.length === 0 ? (
               <View style={[s.emptyState, { minHeight: 260 }]}>
                 <View style={[s.emptyIconBox, { width: 60, height: 60, borderRadius: 18 }]}>
-                  <Ionicons name="notifications-outline" size={26} color="rgba(167,184,169,0.25)" />
+                  <Bell size={26} color="rgba(167,184,169,0.25)" />
                 </View>
                 <Text style={s.emptyTitle}>
                   {query || filter !== "all" ? "No matching alerts" : "No Active Alerts"}
@@ -1007,7 +1007,7 @@ export default function AlertCenterModal({ onClose }: AlertCenterModalProps) {
                 </Text>
                 {!query && filter === "all" && (
                   <Pressable onPress={() => setShowCreate(true)} style={[s.emptyCreateBtn, { marginTop: 4 }]}>
-                    <Ionicons name="add" size={13} color="#B7FF5A" />
+                    <Plus size={13} color="#B7FF5A" />
                     <Text style={s.createBtnText}>Create First Alert</Text>
                   </Pressable>
                 )}

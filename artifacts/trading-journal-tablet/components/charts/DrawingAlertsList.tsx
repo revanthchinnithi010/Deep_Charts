@@ -298,7 +298,7 @@ function HistoryPanel({ symbol, allSymbols, refreshKey }: { symbol: string; allS
   if (rows.length === 0) {
     return (
       <View style={s.emptyState}>
-        <Ionicons name="hourglass-outline" size={24} color="rgba(167,184,169,0.2)" />
+        <Timer size={24} color="rgba(167,184,169,0.2)" />
         <Text style={s.emptyTitle}>No alert history yet</Text>
         <Text style={s.emptySubtitle}>Alerts will appear here after they fire</Text>
       </View>
@@ -308,16 +308,16 @@ function HistoryPanel({ symbol, allSymbols, refreshKey }: { symbol: string; allS
   return (
     <ScrollView style={s.historyScroll} showsVerticalScrollIndicator={false}>
       {rows.map(row => {
-        const iconName  = DRAWING_ICON_NAMES[row.drawingType ?? ""] ?? "alert-circle-outline";
-        const color     = DRAWING_COLORS[row.drawingType ?? ""] ?? "#A7B8A9";
-        const condLabel = CONDITION_LABELS[row.condition] ?? row.condition;
+        const DrawingIcon = DRAWING_ICONS[row.drawingType ?? ""] ?? AlertCircle;
+        const color       = DRAWING_COLORS[row.drawingType ?? ""] ?? "#A7B8A9";
+        const condLabel   = CONDITION_LABELS[row.condition] ?? row.condition;
         return (
           <View
             key={row.id}
             style={s.historyRow}
           >
             <View style={[s.historyIcon, { backgroundColor: `${color}14`, borderColor: `${color}30` }]}>
-              <Ionicons name={iconName as any} size={14} color={color} />
+              <DrawingIcon size={14} color={color} />
             </View>
 
             <View style={s.historyInfo}>
@@ -435,10 +435,10 @@ export function DrawingAlertsList({ symbol, currentInterval, currentPrice }: Pro
   const activeCount    = activeRows.length;
   const triggeredCount = triggeredRows.length;
 
-  const tabs: [DrawingsTab, string, number | null, string][] = [
-    ["active",    "Active",    activeCount,    "pulse-outline"],
-    ["triggered", "Triggered", triggeredCount, "checkmark-circle-outline"],
-    ["history",   "History",   null,           "hourglass-outline"],
+  const tabs: [DrawingsTab, string, number | null, LucideIcon][] = [
+    ["active",    "Active",    activeCount,    Activity],
+    ["triggered", "Triggered", triggeredCount, CheckCircle2],
+    ["history",   "History",   null,           Timer],
   ];
 
   return (
@@ -448,7 +448,7 @@ export function DrawingAlertsList({ symbol, currentInterval, currentPrice }: Pro
       <View style={s.subHeader}>
         {/* Tabs */}
         <View style={s.tabRow}>
-          {tabs.map(([val, label, count, iconName]) => {
+          {tabs.map(([val, label, count, TabIcon]) => {
             const active = subTab === val;
             return (
               <Pressable
@@ -459,8 +459,7 @@ export function DrawingAlertsList({ symbol, currentInterval, currentPrice }: Pro
                   active && s.tabActive,
                 ]}
               >
-                <Ionicons
-                  name={iconName as any}
+                <TabIcon
                   size={10}
                   color={active ? "#B7FF5A" : "rgba(167,184,169,0.5)"}
                 />
@@ -493,8 +492,7 @@ export function DrawingAlertsList({ symbol, currentInterval, currentPrice }: Pro
               allSymbols && s.globeBtnActive,
             ]}
           >
-            <Ionicons
-              name="globe-outline"
+            <Globe
               size={10}
               color={allSymbols ? "#38bdf8" : "rgba(167,184,169,0.55)"}
             />
@@ -507,7 +505,7 @@ export function DrawingAlertsList({ symbol, currentInterval, currentPrice }: Pro
             onPress={() => { setEditItem(null); setShowModal(true); }}
             style={s.newBtn}
           >
-            <Ionicons name="add-outline" size={10} color="#B7FF5A" />
+            <Plus size={10} color="#B7FF5A" />
             <Text style={s.newBtnText}>New Alert</Text>
           </Pressable>
         </View>
@@ -550,7 +548,7 @@ export function DrawingAlertsList({ symbol, currentInterval, currentPrice }: Pro
             <View style={s.emptyState}>
               {subTab === "triggered" ? (
                 <>
-                  <Ionicons name="checkmark-circle-outline" size={24} color="rgba(167,184,169,0.2)" />
+                  <CheckCircle2 size={24} color="rgba(167,184,169,0.2)" />
                   <Text style={s.emptyTitle}>
                     No triggered alerts{allSymbols ? "" : ` for ${symbol}`}
                   </Text>
@@ -560,7 +558,7 @@ export function DrawingAlertsList({ symbol, currentInterval, currentPrice }: Pro
                 </>
               ) : (
                 <>
-                  <Ionicons name="trending-up-outline" size={24} color="rgba(167,184,169,0.2)" />
+                  <TrendingUp size={24} color="rgba(167,184,169,0.2)" />
                   <Text style={s.emptyTitle}>
                     No drawing alerts{allSymbols ? "" : ` for ${symbol}`}
                   </Text>
@@ -568,7 +566,7 @@ export function DrawingAlertsList({ symbol, currentInterval, currentPrice }: Pro
                     onPress={() => { setEditItem(null); setShowModal(true); }}
                     style={s.createFirstBtn}
                   >
-                    <Ionicons name="add-outline" size={12} color="#B7FF5A" />
+                    <Plus size={12} color="#B7FF5A" />
                     <Text style={s.newBtnText}>Create First Alert</Text>
                   </Pressable>
                 </>
@@ -580,9 +578,9 @@ export function DrawingAlertsList({ symbol, currentInterval, currentPrice }: Pro
               keyExtractor={item => String(item.id)}
               showsVerticalScrollIndicator={false}
               renderItem={({ item: row }) => {
-                const color     = DRAWING_COLORS[row.drawingType] ?? "#A7B8A9";
-                const iconName  = DRAWING_ICON_NAMES[row.drawingType] ?? "trending-up-outline";
-                const projected = calcProjected(row, projNow);
+                const color      = DRAWING_COLORS[row.drawingType] ?? "#A7B8A9";
+                const DrawingIcon = DRAWING_ICONS[row.drawingType] ?? TrendingUp;
+                const projected  = calcProjected(row, projNow);
                 const condLabel = CONDITION_LABELS[row.condition] ?? row.condition;
                 const dtLabel   = DRAWING_LABELS[row.drawingType] ?? row.drawingType;
                 const dist      = projected !== null && currentPrice
@@ -610,8 +608,7 @@ export function DrawingAlertsList({ symbol, currentInterval, currentPrice }: Pro
                           borderColor:     isTrig ? "rgba(239,68,68,0.3)"  : `${color}30`,
                         },
                       ]}>
-                        <Ionicons
-                          name={iconName as any}
+                        <DrawingIcon
                           size={12}
                           color={isTrig ? "#f87171" : color}
                         />

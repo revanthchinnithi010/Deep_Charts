@@ -515,41 +515,41 @@ export default function PnlAnalytics() {
         <View style={s.grid2}>
           <KpiCard
             label="Net PNL"
-            iconName={allTimePnl >= 0 ? "trending-up" : "trending-down"}
+            Icon={allTimePnl >= 0 ? TrendingUp : TrendingDown}
             value={fc(allTimePnl)}
             positive={allTimePnl > 0 ? true : allTimePnl < 0 ? false : undefined}
             sub="All time"
           />
           <KpiCard
             label="Today"
-            iconName="pulse-outline"
+            Icon={Activity}
             value={`${pnlSign(todayPnl)}${fc(todayPnl)}`}
             positive={todayPnl > 0 ? true : todayPnl < 0 ? false : undefined}
             sub={todayStr}
           />
           <KpiCard
             label="This Week"
-            iconName="bar-chart-outline"
+            Icon={BarChart2}
             value={`${pnlSign(weekPnl)}${fc(weekPnl)}`}
             positive={weekPnl > 0 ? true : weekPnl < 0 ? false : undefined}
           />
           <KpiCard
             label="This Month"
-            iconName="calendar-outline"
+            Icon={Calendar}
             value={`${pnlSign(monthPnl)}${fc(monthPnl)}`}
             positive={monthPnl > 0 ? true : monthPnl < 0 ? false : undefined}
             sub={now.toLocaleDateString("en-US", { month: "long" })}
           />
           <KpiCard
             label="This Year"
-            iconName="flash-outline"
+            Icon={Zap}
             value={`${pnlSign(yearPnl)}${fc(yearPnl)}`}
             positive={yearPnl > 0 ? true : yearPnl < 0 ? false : undefined}
             sub={yearStr}
           />
           <KpiCard
             label="All Time"
-            iconName="flame-outline"
+            Icon={Flame}
             value={fc(allTimePnl)}
             positive={allTimePnl > 0 ? true : allTimePnl < 0 ? false : undefined}
           />
@@ -581,7 +581,7 @@ export default function PnlAnalytics() {
         {/* ── 1. Daily Net PNL Bar Chart ────────────────────────────────────── */}
         <View style={s.card}>
           <ChartHeader
-            iconName="bar-chart-outline"
+            Icon={BarChart2}
             title="Daily Net PNL"
             right={
               filteredDaily.length > 0 ? (
@@ -608,7 +608,7 @@ export default function PnlAnalytics() {
 
         {/* ── 2. Weekly Net PNL Bar Chart ───────────────────────────────────── */}
         <View style={s.card}>
-          <ChartHeader iconName="bar-chart-outline" title="Weekly Net PNL" />
+          <ChartHeader Icon={BarChart2} title="Weekly Net PNL" />
           {weeklyBarData.length === 0 ? (
             <View style={s.emptyChart}>
               <Text style={s.emptyText}>No data for this period</Text>
@@ -626,7 +626,7 @@ export default function PnlAnalytics() {
 
         {/* ── 3. Monthly Net PNL Bar Chart ──────────────────────────────────── */}
         <View style={s.card}>
-          <ChartHeader iconName="calendar-outline" title="Monthly Net PNL" />
+          <ChartHeader Icon={Calendar} title="Monthly Net PNL" />
           {monthlyBarData.length === 0 ? (
             <View style={s.emptyChart}>
               <Text style={s.emptyText}>No data for this period</Text>
@@ -645,7 +645,7 @@ export default function PnlAnalytics() {
         {/* ── 4. Cumulative Net PNL (Equity Curve) ──────────────────────────── */}
         <View style={s.card}>
           <ChartHeader
-            iconName="pulse-outline"
+            Icon={Activity}
             title="Cumulative Net PNL"
             right={
               cumulativeAreaData.length > 0 ? (
@@ -673,7 +673,7 @@ export default function PnlAnalytics() {
         {/* ── 5. PNL Calendar Heatmap ───────────────────────────────────────── */}
         <View style={s.card}>
           <ChartHeader
-            iconName="calendar-outline"
+            Icon={Calendar}
             title="PNL Calendar"
             right={
               <View style={s.calLegend}>
@@ -699,7 +699,7 @@ export default function PnlAnalytics() {
 
         {/* ── Trade Statistics grid ─────────────────────────────────────────── */}
         <View style={s.card}>
-          <ChartHeader iconName="trophy-outline" title="Trade Statistics" />
+          <ChartHeader Icon={Trophy} title="Trade Statistics" />
           <View style={si.grid}>
             {/* Row 1 */}
             <StatItem
@@ -793,7 +793,7 @@ export default function PnlAnalytics() {
         {/* ── PNL Statistics (period stats) ─────────────────────────────────── */}
         <View style={s.card}>
           <ChartHeader
-            iconName="stats-chart-outline"
+            Icon={BarChart2}
             title="PNL Statistics"
             right={
               <View style={s.filterBadge}>

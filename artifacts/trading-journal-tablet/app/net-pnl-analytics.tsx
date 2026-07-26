@@ -32,7 +32,7 @@
  *   Chart ordering: line chart → distribution → monthly → trading stats → cumulative
  */
 
-import { ArrowLeft, TrendingUp, TrendingDown, BarChart2, Flame } from "lucide-react-native";
+import { ArrowLeft, TrendingUp, TrendingDown, BarChart2, Flame, Calendar, MinusCircle } from "lucide-react-native";
 import { router } from "expo-router";
 import { memo, useCallback, useEffect, useMemo, useState } from "react";
 import {
@@ -713,37 +713,37 @@ export default function NetPnLAnalytics() {
                 <TradingStatCard
                   label="Best Trade"
                   value={fmtUsd(MOCK_TRADING_STATS.bestTrade)}
-                  iconName="trending-up"
+                  Icon={TrendingUp}
                   positive={true}
                 />
                 <TradingStatCard
                   label="Worst Trade"
                   value={fmtUsd(MOCK_TRADING_STATS.worstTrade)}
-                  iconName="trending-down"
+                  Icon={TrendingDown}
                   positive={false}
                 />
                 <TradingStatCard
                   label="Average Win"
                   value={fmtUsd(MOCK_TRADING_STATS.avgWin)}
-                  iconName="bar-chart-outline"
+                  Icon={BarChart2}
                   positive={true}
                 />
                 <TradingStatCard
                   label="Average Loss"
                   value={fmtUsd(MOCK_TRADING_STATS.avgLoss)}
-                  iconName="bar-chart-outline"
+                  Icon={BarChart2}
                   positive={false}
                 />
                 <TradingStatCard
                   label="Largest Winning Streak"
                   value={String(MOCK_TRADING_STATS.longestWinStreak)}
-                  iconName="flame-outline"
+                  Icon={Flame}
                   positive={true}
                 />
                 <TradingStatCard
                   label="Largest Losing Streak"
                   value={String(MOCK_TRADING_STATS.longestLossStreak)}
-                  iconName="flame-outline"
+                  Icon={Flame}
                   positive={false}
                 />
               </View>
@@ -756,7 +756,7 @@ export default function NetPnLAnalytics() {
                   label="Winning Days"
                   value={String(MOCK_CUMULATIVE.winningDays)}
                   sub={`${((MOCK_CUMULATIVE.winningDays / MOCK_CUMULATIVE.totalTradingDays) * 100).toFixed(1)}% of trading days`}
-                  iconName="calendar-outline"
+                  Icon={Calendar}
                   valueColor={GREEN}
                   iconColor={GREEN}
                   iconBg="rgba(34,197,94,0.12)"
@@ -765,7 +765,7 @@ export default function NetPnLAnalytics() {
                   label="Losing Days"
                   value={String(MOCK_CUMULATIVE.losingDays)}
                   sub={`${((MOCK_CUMULATIVE.losingDays / MOCK_CUMULATIVE.totalTradingDays) * 100).toFixed(1)}% of trading days`}
-                  iconName="calendar-outline"
+                  Icon={Calendar}
                   valueColor={RED}
                   iconColor={RED}
                   iconBg="rgba(239,68,68,0.12)"
@@ -774,7 +774,7 @@ export default function NetPnLAnalytics() {
                   label="Break-even Days"
                   value={String(MOCK_CUMULATIVE.breakEvenDays)}
                   sub={`${((MOCK_CUMULATIVE.breakEvenDays / MOCK_CUMULATIVE.totalTradingDays) * 100).toFixed(1)}% of trading days`}
-                  iconName="remove-circle-outline"
+                  Icon={MinusCircle}
                   valueColor="#eab308"
                   iconColor="#eab308"
                   iconBg="rgba(234,179,8,0.12)"
@@ -783,7 +783,7 @@ export default function NetPnLAnalytics() {
                   label="Longest Green Streak"
                   value={String(MOCK_CUMULATIVE.longestGreenStreak)}
                   sub="Days"
-                  iconName="trending-up"
+                  Icon={TrendingUp}
                   valueColor={GREEN}
                   iconColor={GREEN}
                   iconBg="rgba(34,197,94,0.12)"
@@ -792,7 +792,7 @@ export default function NetPnLAnalytics() {
                   label="Longest Red Streak"
                   value={String(MOCK_CUMULATIVE.longestRedStreak)}
                   sub="Days"
-                  iconName="trending-down"
+                  Icon={TrendingDown}
                   valueColor={RED}
                   iconColor={RED}
                   iconBg="rgba(239,68,68,0.12)"

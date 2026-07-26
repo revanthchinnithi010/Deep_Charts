@@ -36,7 +36,7 @@ import {
 } from "react-native";
 import {
   TrendingUp, ArrowRight, Minus, Square, LayoutGrid,
-  ChevronUp, ChevronDown, X, Clock, AlertTriangle,
+  ChevronUp, ChevronDown, X, Clock, AlertTriangle, Check,
 } from "lucide-react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import type { Drawing } from "@/types/drawing";
@@ -779,7 +779,7 @@ export function DrawingAlertModal({
               {/* Error */}
               {!!error && (
                 <View style={s.errorBox}>
-                  <Ionicons name="warning" size={16} color="#f87171" />
+                  <AlertTriangle size={16} color="#f87171" />
                   <Text style={s.errorText}>{error}</Text>
                 </View>
               )}
@@ -805,7 +805,7 @@ export function DrawingAlertModal({
                 {saving ? (
                   <ActivityIndicator size="small" color="#07110D" />
                 ) : (
-                  <Ionicons name="checkmark" size={16} color="#07110D" />
+                  <Check size={16} color="#07110D" />
                 )}
                 <Text style={s.submitBtnText}>
                   {editItem ? "Save Changes" : "Create Alert"}

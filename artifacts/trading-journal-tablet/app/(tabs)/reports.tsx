@@ -1117,7 +1117,7 @@ export default function Reports() {
             label:      "Largest Win",
             value:      fc(stats.largestWin),
             valueColor: GREEN,
-            iconName:   "arrow-up-outline" as IoniconName,
+            Icon:       ArrowUp,
             iconBg:     "rgba(52,211,153,0.10)",
             iconColor:  GREEN,
             sub:        undefined as string | undefined,
@@ -1126,7 +1126,7 @@ export default function Reports() {
             label:      "Largest Loss",
             value:      fc(stats.largestLoss),
             valueColor: RED,
-            iconName:   "arrow-down-outline" as IoniconName,
+            Icon:       ArrowDown,
             iconBg:     "rgba(248,113,113,0.10)",
             iconColor:  RED,
             sub:        undefined as string | undefined,
@@ -1135,7 +1135,7 @@ export default function Reports() {
             label:      "Current Streak",
             value:      `${Math.abs(stats.currentStreak)}${stats.currentStreak >= 0 ? "W" : "L"}`,
             valueColor: stats.currentStreak >= 0 ? GREEN : RED,
-            iconName:   "flash-outline" as IoniconName,
+            Icon:       Zap,
             iconBg:     undefined as string | undefined,
             iconColor:  undefined as string | undefined,
             sub:        (stats.currentStreak >= 0 ? "Winning streak" : "Losing streak") as string | undefined,
@@ -1144,16 +1144,16 @@ export default function Reports() {
             label:      "Total Volume",
             value:      `${stats.totalTrades}`,
             valueColor: TEXT_PRI,
-            iconName:   "layers-outline" as IoniconName,
+            Icon:       Layers,
             iconBg:     undefined as string | undefined,
             iconColor:  undefined as string | undefined,
             sub:        `${stats.winCount + stats.lossCount} decisive` as string | undefined,
           },
         ] : [
-          { label: "Largest Win",    value: "", valueColor: undefined, iconName: "arrow-up-outline"   as IoniconName, iconBg: "rgba(52,211,153,0.10)",  iconColor: GREEN,      sub: undefined as string | undefined },
-          { label: "Largest Loss",   value: "", valueColor: undefined, iconName: "arrow-down-outline" as IoniconName, iconBg: "rgba(248,113,113,0.10)", iconColor: RED,        sub: undefined as string | undefined },
-          { label: "Current Streak", value: "", valueColor: undefined, iconName: "flash-outline"      as IoniconName, iconBg: undefined,                iconColor: undefined,  sub: undefined as string | undefined },
-          { label: "Total Volume",   value: "", valueColor: undefined, iconName: "layers-outline"     as IoniconName, iconBg: undefined,                iconColor: undefined,  sub: undefined as string | undefined },
+          { label: "Largest Win",    value: "", valueColor: undefined, Icon: ArrowUp,  iconBg: "rgba(52,211,153,0.10)",  iconColor: GREEN,      sub: undefined as string | undefined },
+          { label: "Largest Loss",   value: "", valueColor: undefined, Icon: ArrowDown, iconBg: "rgba(248,113,113,0.10)", iconColor: RED,        sub: undefined as string | undefined },
+          { label: "Current Streak", value: "", valueColor: undefined, Icon: Zap,      iconBg: undefined,                iconColor: undefined,  sub: undefined as string | undefined },
+          { label: "Total Volume",   value: "", valueColor: undefined, Icon: Layers,   iconBg: undefined,                iconColor: undefined,  sub: undefined as string | undefined },
         ]).map((c, i) => (
           <MetricCard
             key={c.label}
@@ -1162,7 +1162,7 @@ export default function Reports() {
             label={c.label}
             value={c.value}
             sub={c.sub}
-            iconName={c.iconName}
+            Icon={c.Icon}
             valueColor={c.valueColor}
             iconBg={c.iconBg}
             iconColor={c.iconColor}

@@ -1115,11 +1115,9 @@ export function CtraderWidget() {
                             },
                           ]}
                         >
-                          <Ionicons
-                            name={isSelected ? "checkmark-circle" : "person-circle-outline"}
-                            size={13}
-                            color={isSelected ? "#34d399" : "#60a5fa"}
-                          />
+                          {isSelected
+                            ? <CheckCircle2 size={13} color="#34d399" />
+                            : <User size={13} color="#60a5fa" />}
                           <Text style={[ss.selectBtnText, { color: isSelected ? "#34d399" : "#60a5fa" }]}>
                             {isSelected ? "Selected" : "Select Account"}
                           </Text>
@@ -1172,7 +1170,7 @@ export function CtraderWidget() {
                 </Text>
               </Pressable>
               <ActionBtn onClick={() => fetchSymbols()} loading={symbolsLoading} disabled={!accountIdInput.trim()}>
-                <BtnContent icon="book-outline" label="Fetch" color="#60a5fa" />
+                <BtnContent icon={BookOpen} label="Fetch" color="#60a5fa" />
               </ActionBtn>
             </View>
 
@@ -1192,7 +1190,7 @@ export function CtraderWidget() {
                   )}
                   {symbols.ok && (symbols.totalSymbols ?? 0) > 0 && !wiredCount && (
                     <ActionBtn onClick={wireSymbols} loading={wireLoading} variant="success">
-                      <BtnContent icon="power-outline" label="Wire to Watchlist" color="#34d399" />
+                      <BtnContent icon={Power} label="Wire to Watchlist" color="#34d399" />
                     </ActionBtn>
                   )}
                   {wiredCount && (

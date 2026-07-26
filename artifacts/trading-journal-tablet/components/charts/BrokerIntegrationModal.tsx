@@ -272,11 +272,9 @@ function InlineMt5Form({ onBack: _onBack }: { onBack: () => void }) {
                 onPress={() => setShowPass(!showPass)}
                 style={{ paddingRight: 10 }}
               >
-                <Ionicons
-                  name={showPass ? "eye-off" : "eye"}
-                  size={14}
-                  color="rgba(255,255,255,0.4)"
-                />
+                {showPass
+                  ? <EyeOff size={14} color="rgba(255,255,255,0.4)" />
+                  : <Eye size={14} color="rgba(255,255,255,0.4)" />}
               </Pressable>
             </View>
           </View>
@@ -308,7 +306,7 @@ function InlineMt5Form({ onBack: _onBack }: { onBack: () => void }) {
             borderColor:     "rgba(239,68,68,0.2)",
           }}>
             <View style={{ flexDirection: "row", alignItems: "flex-start", gap: 8 }}>
-              <Ionicons name="close-circle" size={15} color="#EF4444" style={{ marginTop: 1, flexShrink: 0 } as any} />
+              <XCircle size={15} color="#EF4444" style={{ marginTop: 1, flexShrink: 0 } as any} />
               <Text style={{ fontSize: 13, color: "#EF4444", lineHeight: 20 }}>{errorMsg}</Text>
             </View>
           </View>
@@ -330,7 +328,7 @@ function InlineMt5Form({ onBack: _onBack }: { onBack: () => void }) {
                 borderColor:     "rgba(255,255,255,0.08)",
               }}
             >
-              <Ionicons name="refresh" size={13} color="rgba(255,255,255,0.6)" />
+              <RefreshCw size={13} color="rgba(255,255,255,0.6)" />
               <Text style={{ fontSize: 13, color: "rgba(255,255,255,0.6)" }}>Retry</Text>
             </Pressable>
           )}
@@ -390,7 +388,7 @@ function FusionTabContent() {
         borderWidth:     1,
         borderColor:     "rgba(96,165,250,0.18)",
       }}>
-        <Ionicons name="globe-outline" size={22} color="#60a5fa" />
+        <Globe size={22} color="#60a5fa" />
       </View>
       <View style={{ alignItems: "center" }}>
         <Text style={{ marginBottom: 6, fontSize: 15, fontWeight: "700", color: "rgba(255,255,255,0.82)" }}>
@@ -521,7 +519,7 @@ export function BrokerIntegrationModal({ onClose, initialTab = "ctrader" }: Brok
                     borderColor:     "rgba(255,255,255,0.10)",
                   }}
                 >
-                  <Ionicons name="chevron-back" size={18} color="rgba(255,255,255,0.70)" />
+                  <ChevronLeft size={18} color="rgba(255,255,255,0.70)" />
                 </Pressable>
               )}
 
@@ -562,7 +560,7 @@ export function BrokerIntegrationModal({ onClose, initialTab = "ctrader" }: Brok
                   borderColor:     "rgba(255,255,255,0.10)",
                 }}
               >
-                <Ionicons name="close" size={15} color="rgba(255,255,255,0.55)" />
+                <X size={15} color="rgba(255,255,255,0.55)" />
               </Pressable>
             </View>
 
@@ -599,8 +597,7 @@ export function BrokerIntegrationModal({ onClose, initialTab = "ctrader" }: Brok
                           borderColor:     active ? "rgba(245,158,11,0.25)" : "transparent",
                         }}
                       >
-                        <Ionicons
-                          name={tab.iconName as any}
+                        <tab.Icon
                           size={12}
                           color={active ? "#f59e0b" : "rgba(148,163,184,0.38)"}
                         />
