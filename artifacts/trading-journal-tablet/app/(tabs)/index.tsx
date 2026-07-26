@@ -1250,6 +1250,7 @@ const calStyles = StyleSheet.create({
     fontFamily: "Inter_600SemiBold",
     fontWeight: "600",
     lineHeight: 14,
+    textAlign:  "center",
   },
   cellPnl: {
     fontSize:   8,
@@ -1257,5 +1258,6 @@ const calStyles = StyleSheet.create({
     fontWeight: "700",
     lineHeight: 11,
     marginTop:  1,
+    textAlign:  "center",
   },
 });
