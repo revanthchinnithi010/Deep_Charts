@@ -505,7 +505,8 @@ const CalendarHeatmap = memo(function CalendarHeatmap({
       </View>
 
       {/* ── Day-of-week labels ── */}
-      <View style={[calStyles.grid, { width: gridWidth }]}>
+      {/* Same container style as data rows so left edges are pixel-identical */}
+      <View style={{ flexDirection: "row", paddingHorizontal: CAL_H_PAD, marginBottom: 4 }}>
         {CALENDAR_DAYS.map((d) => (
           <View
             key={d}
