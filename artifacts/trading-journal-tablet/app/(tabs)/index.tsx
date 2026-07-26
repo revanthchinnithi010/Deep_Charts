@@ -31,7 +31,6 @@
  *   useCurrencyAxisFormatter — compact axis tick format
  */
 
-import { useFonts } from "expo-font";
 import { X, ChevronLeft, ChevronRight } from "lucide-react-native";
 import {
   useGetCalendarHeatmap,
@@ -618,14 +617,6 @@ export default function HomeScreen() {
     s => (s.brokerOrders["delta"]?.length ?? 0) + (s.brokerOrders["ctrader"]?.length ?? 0)
   );
 
-  // ── [DEBUG] Font diagnostic — remove after confirming font load on device ──
-  const [__fontsLoaded, __fontError] = useFonts({
-    "SFProDisplay-Regular":  require("../../assets/fonts/SF-Pro-Display-Regular.otf"),
-    "SFProDisplay-Medium":   require("../../assets/fonts/SF-Pro-Display-Medium.otf"),
-    "SFProDisplay-Semibold": require("../../assets/fonts/SF-Pro-Display-Semibold.otf"),
-    "SFProDisplay-Bold":     require("../../assets/fonts/SF-Pro-Display-Bold.otf"),
-  });
-
   // Collapse loading state once data arrives or timeout fires
   useEffect(() => {
     if (!tradesLoading && !timedOut) {
@@ -722,24 +713,6 @@ export default function HomeScreen() {
   return (
     <View style={styles.container}>
       <DashboardTopBar />
-
-      {/* ── [DEBUG] Font diagnostic block — remove after device verification ── */}
-      <View style={{ backgroundColor: "#1a1a2e", padding: 10, margin: 8, borderRadius: 6, borderWidth: 1, borderColor: "#444" }}>
-        <Text style={{ color: "#aaa", fontSize: 10, marginBottom: 4 }}>── FONT DEBUG ──</Text>
-        <Text style={{ color: "#fff", fontSize: 11, marginBottom: 2 }}>
-          {"fontsLoaded: "}<Text style={{ color: __fontsLoaded ? "#4ade80" : "#f87171" }}>{String(__fontsLoaded)}</Text>
-        </Text>
-        <Text style={{ color: "#fff", fontSize: 11, marginBottom: 6 }}>
-          {"fontError: "}<Text style={{ color: __fontError ? "#f87171" : "#4ade80" }}>{__fontError ? String(__fontError) : "null"}</Text>
-        </Text>
-        <Text style={{ fontFamily: "SFProDisplay-Semibold", fontSize: 14, color: "#facc15" }}>
-          TEST: SF Pro Semibold
-        </Text>
-        <Text style={{ fontSize: 14, color: "#94a3b8" }}>
-          COMPARE: system default font
-        </Text>
-      </View>
-      {/* ── [/DEBUG] ── */}
 
       <ScrollView
         style={styles.scroll}
