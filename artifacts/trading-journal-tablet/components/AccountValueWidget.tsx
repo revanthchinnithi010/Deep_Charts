@@ -563,19 +563,15 @@ const styles = StyleSheet.create({
   // web: linear-gradient(135deg,#f97316,#ea580c), boxShadow rgba(249,115,22,0.35)
   //      px-3 py-1.5 rounded-full
   chipShadowWrapper: {
-    // borderRadius = CHIP_HEIGHT / 2 = 28 / 2 = 14 — perfect pill
     borderRadius: 14,
-    flexShrink: 0, // never compress the chip
-    // minWidth guarantees the pill always fits "Show Positions" + icon at
-    // fontSize:12 across all Android screen widths without squeezing.
-    minWidth: 130,
-    // Android elevation intentionally omitted here.
-    // Nesting an elevated child (elevation:6) inside an elevated parent
-    // (card elevation:20) causes Android to clip the child's hardware-
-    // accelerated surface at the parent card's borderRadius:24 corner,
-    // producing the partial-clip overflow bug.  Android elevation also
-    // cannot render coloured shadows (always dark grey), so the orange
-    // glow from C.chipShadow only works on iOS anyway.
+    flexShrink: 0,       // never compress the chip
+    minWidth: 130,       // floor: fits "Show Positions" + icon at fontSize:12
+    marginRight: 16,     // 16px gap between chip right edge and card content boundary
+    // Android elevation intentionally omitted: nesting an elevated child inside
+    // an elevated parent (card elevation:20) causes Android to clip the child's
+    // hardware-accelerated surface at the parent's borderRadius:24 corner.
+    // Android elevation also can't render coloured shadows (always dark grey),
+    // so the orange glow from C.chipShadow only applies on iOS anyway.
     ...Platform.select({
       ios: {
         shadowColor: C.chipShadow,
@@ -586,28 +582,17 @@ const styles = StyleSheet.create({
     }),
   },
   positionsChip: {
-    // borderRadius matches chipShadowWrapper — both must equal CHIP_HEIGHT / 2
     borderRadius: 14,
-    // overflow:"hidden" intentionally removed.
-    // On Android, expo-linear-gradient renders a bitmap gradient.
-    // overflow:"hidden" + borderRadius tells Android to clip that bitmap via
-    // a rounded-rect path — on API < 28 (and inconsistently above) this causes
-    // the entire child tree (Pressable + Text) to become invisible.
-    // Explicit height + matching borderRadius gives the pill shape without clipping.
+    // overflow:"hidden" intentionally removed — see chipShadowWrapper note.
+    // borderRadius alone shapes the pill; children are sized to fit within.
   },
   chipInner: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    gap: 5,
-    paddingHorizontal: 12,
-    // Explicit height instead of paddingVertical: Android Text without lineHeight
-    // uses platform font metrics that inflate the measured height to ~18–20px
-    // (vs ~14px on web/iOS), making the chip grow to ~30px and the borderRadius
-    // (20) overshoot height/2, distorting the pill shape. Fixing to 28px and
-    // setting lineHeight on the text gives a deterministic, correct pill on both
-    // platforms — matching the web's py-1.5 + text-[12px] = ~26px height.
-    height: 28,
+    gap: 8,              // 8px between Layers icon and "Show Positions" text
+    paddingHorizontal: 16,
+    paddingVertical: 8,  // symmetric vertical breathing room; height floats naturally
   },
   // web: text-[12px] font-semibold color #fff
   positionsChipText: {
