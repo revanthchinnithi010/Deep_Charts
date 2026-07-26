@@ -38,7 +38,7 @@ export interface ChartContainerProps {
   /** Show the empty state with this message when data is empty. */
   isEmpty?:   boolean;
   emptyMessage?: string;
-  emptyIcon?: React.ComponentProps<typeof ChartEmptyState>["icon"];
+  emptyIcon?: React.ComponentProps<typeof ChartEmptyState>["Icon"];
   /** Additional container styles. */
   style?:     ViewStyle;
   children?:  React.ReactNode;
@@ -72,7 +72,7 @@ export const ChartContainer = memo(function ChartContainer({
       <ChartEmptyState
         height={height}
         message={emptyMessage}
-        icon={emptyIcon}
+        Icon={emptyIcon}
       />
     );
     return children;

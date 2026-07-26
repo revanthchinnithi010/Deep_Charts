@@ -71,9 +71,9 @@ import {
   Modal, ScrollView, ActivityIndicator, KeyboardAvoidingView, Platform,
 } from "react-native";
 import {
-  ShieldCheck, X, Lock, CloudUpload, Clipboard, AlertTriangle,
+  ShieldCheck, X, Lock, CloudUpload, Clipboard as ClipboardIcon, AlertTriangle,
   ChevronRight, FileText, CheckCircle2, XCircle, EyeOff, Eye,
-  Server, Wifi, RefreshCw, Check,
+  Server, Wifi, Key, RefreshCw, Check,
 } from "lucide-react-native";
 import * as Clipboard from "expo-clipboard";
 import { useBrokerStore } from "@/store/brokerStore";
@@ -380,7 +380,7 @@ function UploadScreen({
           onPress={handlePasteClipboard}
           style={({ pressed }) => [uploadStyles.pasteBtn, pressed && { opacity: 0.8 }]}
         >
-          <Clipboard size={14} color="#00FFB4" />
+          <ClipboardIcon size={14} color="#00FFB4" />
           <Text style={uploadStyles.pasteBtnText}>Paste from Clipboard</Text>
         </Pressable>
       </View>
@@ -850,7 +850,7 @@ export function ConnectionStatusPanel({ onImport: _onImport }: ConnectionStatusP
                 <CheckChip
                   label="API Key"
                   status={deltaApiStatus}
-                  ionIcon="key-outline"
+                  Icon={Key}
                 />
                 <CheckChip
                   label="WebSocket"
@@ -859,7 +859,7 @@ export function ConnectionStatusPanel({ onImport: _onImport }: ConnectionStatusP
                       ? "idle"
                       : deltaWsConnected ? "ok" : "fail"
                   }
-                  ionIcon="wifi-outline"
+                  Icon={Wifi}
                 />
                 <CheckChip
                   label="Account Data"
