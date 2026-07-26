@@ -355,14 +355,19 @@ function AccountValueWidget({
                 accessibilityRole="button"
                 accessibilityLabel="Show positions"
               >
-                <Layers size={12} color="#fff" />
-                <Text
-                  style={styles.positionsChipText}
-                  numberOfLines={1}
-                  adjustsFontSizeToFit={false}
-                >
-                  Show Positions
-                </Text>
+                <View style={styles.chipContentRow}>
+                  <View style={styles.chipIconWrap}>
+                    <Layers size={12} color="#fff" />
+                  </View>
+                  <Text
+                    style={styles.positionsChipText}
+                    numberOfLines={1}
+                    adjustsFontSizeToFit={false}
+                    textAlignVertical="center"
+                  >
+                    Show Positions
+                  </Text>
+                </View>
               </Pressable>
             </LinearGradient>
           </View>
@@ -587,12 +592,22 @@ const styles = StyleSheet.create({
     // borderRadius alone shapes the pill; children are sized to fit within.
   },
   chipInner: {
+    alignItems: "center",
+    justifyContent: "center",
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+  },
+  // Inner row: explicit View so flexDirection:"row" is isolated from the
+  // Pressable, giving Android a clean single-level flex context to measure.
+  chipContentRow: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    gap: 8,              // 8px between Layers icon and "Show Positions" text
-    paddingHorizontal: 16,
-    paddingVertical: 8,  // symmetric vertical breathing room; height floats naturally
+  },
+  // Icon wrapper: marginRight instead of gap (more reliable on older Android).
+  chipIconWrap: {
+    marginRight: 8,
+    flexShrink: 0,
   },
   // web: text-[12px] font-semibold color #fff
   positionsChipText: {
