@@ -36,7 +36,6 @@ import {
   Pressable,
   StyleSheet,
   Text,
-  useWindowDimensions,
   View,
 } from "react-native";
 
@@ -254,10 +253,6 @@ function AccountValueWidget({
 }: AccountValueWidgetProps) {
   const [masked, setMasked] = useState(false);
   const currency = useCurrencyStore((s) => s.currency);
-  const { width: screenWidth } = useWindowDimensions();
-  // On very narrow screens (< 380px) shrink the chip text slightly
-  const chipFontSize = screenWidth < 380 ? 11 : 12;
-  const chipPadH = screenWidth < 380 ? 9 : 12;
 
   const resolvedNetPnlDisplay =
     netPnlDisplay ?? upnlDisplay + realizedPnlDisplay;
@@ -355,7 +350,6 @@ function AccountValueWidget({
                 onPress={onShowPositions}
                 style={({ pressed }) => [
                   styles.chipInner,
-                  { paddingHorizontal: chipPadH },
                   pressed && styles.pressed,
                 ]}
                 accessibilityRole="button"
@@ -363,7 +357,9 @@ function AccountValueWidget({
               >
                 <Layers size={12} color="#fff" />
                 <Text
-                  style={[styles.positionsChipText, { fontSize: chipFontSize }]}
+                  style={styles.positionsChipText}
+                  numberOfLines={1}
+                  adjustsFontSizeToFit={false}
                 >
                   Show Positions
                 </Text>
@@ -569,16 +565,23 @@ const styles = StyleSheet.create({
   chipShadowWrapper: {
     // borderRadius = CHIP_HEIGHT / 2 = 28 / 2 = 14 — perfect pill
     borderRadius: 14,
-    flexShrink: 0, // never let the chip be compressed or clipped
+    flexShrink: 0, // never compress the chip
+    // minWidth guarantees the pill always fits "Show Positions" + icon at
+    // fontSize:12 across all Android screen widths without squeezing.
+    minWidth: 130,
+    // Android elevation intentionally omitted here.
+    // Nesting an elevated child (elevation:6) inside an elevated parent
+    // (card elevation:20) causes Android to clip the child's hardware-
+    // accelerated surface at the parent card's borderRadius:24 corner,
+    // producing the partial-clip overflow bug.  Android elevation also
+    // cannot render coloured shadows (always dark grey), so the orange
+    // glow from C.chipShadow only works on iOS anyway.
     ...Platform.select({
       ios: {
         shadowColor: C.chipShadow,
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 1,
         shadowRadius: 10,
-      },
-      android: {
-        elevation: 6,
       },
     }),
   },
