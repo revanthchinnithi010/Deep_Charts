@@ -48,7 +48,6 @@ import React, {
   useState,
 } from "react";
 import {
-  LayoutChangeEvent,
   Modal,
   Platform,
   Pressable,
@@ -56,6 +55,7 @@ import {
   StyleSheet,
   Text,
   View,
+  useWindowDimensions,
 } from "react-native";
 import AccountValueWidget from "@/components/AccountValueWidget";
 import DashboardSegmentedControl from "@/components/DashboardSegmentedControl";
@@ -348,20 +348,22 @@ const CalendarHeatmap = memo(function CalendarHeatmap({
   const fc            = useCurrencyFormatter();
   const axisFormatter = useCurrencyAxisFormatter();
 
-  // Measure the grid container to compute cell sizes
-  const [gridWidth, setGridWidth] = useState(0);
-  const handleGridLayout = useCallback((e: LayoutChangeEvent) => {
-    setGridWidth(e.nativeEvent.layout.width);
-  }, []);
+  // Derive grid width from the window dimensions rather than onLayout.
+  // Using onLayout on a flexWrap:"row" grid inside a %-sized parent fails on
+  // Android/Yoga: the %-chain collapses to ~padding-only width before the
+  // first layout pass, so onLayout fires with ~24px, cellSize goes negative,
+  // cells become 0×0, and only the Text nodes are visible ("1234567...").
+  // useWindowDimensions is always available immediately and avoids the issue.
+  //   scrollContent paddingHorizontal: 16px × 2 = 32px
+  //   calendarCard  borderWidth:        1px × 2 =  2px
+  const { width: windowWidth } = useWindowDimensions();
+  const gridWidth = windowWidth - 34; // 32 (scroll pad) + 2 (card border)
 
   // Cell size: (available width − 2×horizontal padding − 7×per-cell margin) ÷ 7
   // Each cell carries margin: CELL_GAP/2 on all sides, so each cell consumes
   // CELL_GAP total horizontal space.  The grid's paddingHorizontal (CAL_H_PAD)
-  // is included in the onLayout width and must be subtracted explicitly, otherwise
-  // the cells are too wide and the 7th column wraps to the next line on Android.
-  const cellSize = gridWidth > 0
-    ? Math.floor((gridWidth - 2 * CAL_H_PAD - 7 * CELL_GAP) / 7)
-    : 40;
+  // must be subtracted explicitly so the 7th column never wraps to the next line.
+  const cellSize = Math.floor((gridWidth - 2 * CAL_H_PAD - 7 * CELL_GAP) / 7);
 
   // Indexed by dateString for O(1) lookup
   const dayMap = useMemo(() => {
@@ -489,10 +491,7 @@ const CalendarHeatmap = memo(function CalendarHeatmap({
       </View>
 
       {/* ── Day-of-week labels ── */}
-      <View
-        style={calStyles.grid}
-        onLayout={handleGridLayout}
-      >
+      <View style={[calStyles.grid, { width: gridWidth }]}>
         {CALENDAR_DAYS.map((d) => (
           <View
             key={d}
@@ -504,7 +503,7 @@ const CalendarHeatmap = memo(function CalendarHeatmap({
       </View>
 
       {/* ── Calendar cells ── */}
-      <View style={calStyles.grid}>
+      <View style={[calStyles.grid, { width: gridWidth }]}>
         {cells.map(({ key, day, dateStr }) => {
           if (day === null || dateStr === null) {
             // Empty spacer
