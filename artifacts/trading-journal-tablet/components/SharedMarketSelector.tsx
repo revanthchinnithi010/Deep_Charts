@@ -203,11 +203,9 @@ const PriceCell = memo(function PriceCell({ symbol, broker }: { symbol: string; 
           ? (isUp ? styles.changePillUp : styles.changePillDown)
           : styles.changePillIdle,
       ]}>
-        {isLive && (
-          {isUp
-            ? <ArrowUp size={8} color="#10b981" />
-            : <ArrowDown size={8} color="#ef4444" />}
-        )}
+        {isLive && (isUp
+          ? <ArrowUp size={8} color="#10b981" />
+          : <ArrowDown size={8} color="#ef4444" />)}
         <Text style={[styles.changeText, { color: changeColor }]}>
           {isLive ? `${Math.abs(changePct).toFixed(2)}%` : "—"}
         </Text>

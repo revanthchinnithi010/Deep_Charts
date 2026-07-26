@@ -45,7 +45,7 @@ import {
   ActivityIndicator, RefreshControl,
 } from "react-native";
 import { FlashList, type ListRenderItem } from "@shopify/flash-list";
-import { Ionicons } from "@expo/vector-icons";
+import { TrendingUp, TrendingDown, AlertTriangle, X } from "lucide-react-native";
 import { useBrokerStore } from "@/store/brokerStore";
 import { useTickStore } from "@/store/tickStore";
 import { useCurrencyFormatter } from "@/store/currencyStore";

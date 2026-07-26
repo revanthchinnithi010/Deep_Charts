@@ -79,7 +79,7 @@ import {
   ScrollView, ActivityIndicator,
   KeyboardAvoidingView, Platform,
 } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
+import { ShoppingCart, RefreshCw, X, Minus, Plus, CheckCircle2, XCircle } from "lucide-react-native";
 import { useBrokerStore } from "@/store/brokerStore";
 import { useTickStore } from "@/store/tickStore";
 import { getApiBase } from "@/lib/apiBase";

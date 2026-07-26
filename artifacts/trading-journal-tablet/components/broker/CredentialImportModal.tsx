@@ -70,7 +70,11 @@ import {
   View, Text, Pressable, TextInput, StyleSheet,
   Modal, ScrollView, ActivityIndicator, KeyboardAvoidingView, Platform,
 } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
+import {
+  ShieldCheck, X, Lock, CloudUpload, Clipboard, AlertTriangle,
+  ChevronRight, FileText, CheckCircle2, XCircle, EyeOff, Eye,
+  Server, Wifi, RefreshCw, Check,
+} from "lucide-react-native";
 import * as Clipboard from "expo-clipboard";
 import { useBrokerStore } from "@/store/brokerStore";
 import { getApiBase } from "@/lib/apiBase";
@@ -242,7 +246,7 @@ export function CredentialImportModal({ onClose, onImported }: Props) {
           {/* Header */}
           <View style={styles.header}>
             <View style={styles.headerIcon}>
-              <Ionicons name="shield-checkmark-outline" size={17} color="#00FFB4" />
+              <ShieldCheck size={17} color="#00FFB4" />
             </View>
             <View style={styles.headerText}>
               <Text style={styles.headerTitle}>Import Credentials</Text>
@@ -251,7 +255,7 @@ export function CredentialImportModal({ onClose, onImported }: Props) {
               </Text>
             </View>
             <Pressable onPress={onClose} style={({ pressed }) => [styles.closeBtn, pressed && { opacity: 0.7 }]} hitSlop={8}>
-              <Ionicons name="close" size={16} color="rgba(255,255,255,0.5)" />
+              <X size={16} color="rgba(255,255,255,0.5)" />
             </Pressable>
           </View>
 
@@ -343,7 +347,7 @@ function UploadScreen({
     <View style={uploadStyles.container}>
       {/* Security note */}
       <View style={uploadStyles.securityNote}>
-        <Ionicons name="lock-closed-outline" size={14} color="#00FFB4" style={{ flexShrink: 0, marginTop: 1 }} />
+        <Lock size={14} color="#00FFB4" style={{ flexShrink: 0, marginTop: 1 }} />
         <Text style={uploadStyles.securityText}>
           Credentials are encrypted with AES-256-CBC before storage. They are never displayed or logged after import.
         </Text>
@@ -352,7 +356,7 @@ function UploadScreen({
       {/* Paste area */}
       <View style={uploadStyles.pasteArea}>
         <View style={uploadStyles.pasteHeader}>
-          <Ionicons name="cloud-upload-outline" size={22} color="#00FFB4" />
+          <CloudUpload size={22} color="#00FFB4" />
           <Text style={uploadStyles.pasteTitle}>Paste your .env content</Text>
           <Text style={uploadStyles.pasteSub}>
             Copy your credentials file and paste below, or use the button.
@@ -376,14 +380,14 @@ function UploadScreen({
           onPress={handlePasteClipboard}
           style={({ pressed }) => [uploadStyles.pasteBtn, pressed && { opacity: 0.8 }]}
         >
-          <Ionicons name="clipboard-outline" size={14} color="#00FFB4" />
+          <Clipboard size={14} color="#00FFB4" />
           <Text style={uploadStyles.pasteBtnText}>Paste from Clipboard</Text>
         </Pressable>
       </View>
 
       {fileError ? (
         <View style={uploadStyles.errorBox}>
-          <Ionicons name="warning-outline" size={14} color="#EF4444" style={{ flexShrink: 0, marginTop: 1 }} />
+          <AlertTriangle size={14} color="#EF4444" style={{ flexShrink: 0, marginTop: 1 }} />
           <Text style={uploadStyles.errorText}>{fileError}</Text>
         </View>
       ) : null}
@@ -404,7 +408,7 @@ function UploadScreen({
         <Text style={[uploadStyles.importBtnText, !text.trim() && uploadStyles.importBtnTextDisabled]}>
           Review Credentials
         </Text>
-        <Ionicons name="chevron-forward" size={15} color={text.trim() ? "#00FFB4" : "rgba(0,255,180,0.3)"} />
+        <ChevronRight size={15} color={text.trim() ? "#00FFB4" : "rgba(0,255,180,0.3)"} />
       </Pressable>
     </View>
   );
@@ -429,7 +433,7 @@ function ReviewScreen({
     <View style={reviewStyles.container}>
       {/* File info */}
       <View style={reviewStyles.fileInfo}>
-        <Ionicons name="document-text-outline" size={15} color="rgba(255,255,255,0.5)" style={{ flexShrink: 0 }} />
+        <FileText size={15} color="rgba(255,255,255,0.5)" style={{ flexShrink: 0 }} />
         <Text style={reviewStyles.fileName} numberOfLines={1}>{fileName}</Text>
         <View style={reviewStyles.keysBadge}>
           <Text style={reviewStyles.keysBadgeText}>{totalDetected} keys</Text>
@@ -449,8 +453,8 @@ function ReviewScreen({
           >
             <View style={[reviewStyles.groupIconWrap, { backgroundColor: g.detected ? g.color + "20" : "rgba(255,255,255,0.05)" }]}>
               {g.detected
-                ? <Ionicons name="checkmark-circle-outline" size={14} color={g.color} />
-                : <Ionicons name="close-circle-outline"     size={14} color="rgba(255,255,255,0.2)" />}
+                ? <CheckCircle2 size={14} color={g.color} />
+                : <XCircle      size={14} color="rgba(255,255,255,0.2)" />}
             </View>
             <Text style={[reviewStyles.groupLabel, { fontWeight: g.detected ? "600" : "400", color: g.detected ? "rgba(255,255,255,0.85)" : "rgba(255,255,255,0.35)" }]}>
               {g.label}
@@ -471,7 +475,10 @@ function ReviewScreen({
           onPress={onToggleValues}
           style={({ pressed }) => [reviewStyles.toggleBtn, pressed && { opacity: 0.7 }]}
         >
-          <Ionicons name={showValues ? "eye-off-outline" : "eye-outline"} size={12} color="rgba(255,255,255,0.5)" />
+          {showValues
+            ? <EyeOff size={12} color="rgba(255,255,255,0.5)" />
+            : <Eye    size={12} color="rgba(255,255,255,0.5)" />
+          }
           <Text style={reviewStyles.toggleBtnText}>{showValues ? "Hide" : "Show"}</Text>
         </Pressable>
       </View>
@@ -502,7 +509,7 @@ function ReviewScreen({
           style={({ pressed }) => [reviewStyles.nextBtn, pressed && { opacity: 0.85 }]}
         >
           <Text style={reviewStyles.nextBtnText}>Review & Confirm</Text>
-          <Ionicons name="chevron-forward" size={15} color="#00FFB4" />
+          <ChevronRight size={15} color="#00FFB4" />
         </Pressable>
       </View>
     </View>
@@ -526,7 +533,7 @@ function ConfirmScreen({
     <View style={confirmStyles.container}>
       {/* Warning */}
       <View style={confirmStyles.warningBox}>
-        <Ionicons name="warning-outline" size={15} color="#F97316" style={{ flexShrink: 0, marginTop: 1 }} />
+        <AlertTriangle size={15} color="#F97316" style={{ flexShrink: 0, marginTop: 1 }} />
         <View style={{ flex: 1 }}>
           <Text style={confirmStyles.warningTitle}>Confirm Import</Text>
           <Text style={confirmStyles.warningBody}>
@@ -541,12 +548,12 @@ function ConfirmScreen({
       <View style={confirmStyles.infoBox}>
         <Text style={confirmStyles.infoLabel}>WHAT HAPPENS AFTER IMPORT</Text>
         {[
-          { icon: "lock-closed-outline" as const, text: "All secrets encrypted with AES-256-CBC before storage" },
-          { icon: "server-outline"      as const, text: "Credentials never displayed again after this screen" },
-          { icon: "wifi-outline"        as const, text: "Delta Exchange: one-click connect using imported key" },
+          { Icon: Lock,   text: "All secrets encrypted with AES-256-CBC before storage" },
+          { Icon: Server, text: "Credentials never displayed again after this screen" },
+          { Icon: Wifi,   text: "Delta Exchange: one-click connect using imported key" },
         ].map((item, i) => (
           <View key={i} style={[confirmStyles.infoRow, i < 2 && { marginBottom: 8 }]}>
-            <Ionicons name={item.icon} size={13} color="#00FFB4" style={{ flexShrink: 0, marginTop: 1 }} />
+            <item.Icon size={13} color="#00FFB4" style={{ flexShrink: 0, marginTop: 1 }} />
             <Text style={confirmStyles.infoText}>{item.text}</Text>
           </View>
         ))}
@@ -554,7 +561,7 @@ function ConfirmScreen({
 
       {saveError ? (
         <View style={confirmStyles.errorBox}>
-          <Ionicons name="close-circle-outline" size={14} color="#EF4444" style={{ flexShrink: 0, marginTop: 1 }} />
+          <XCircle size={14} color="#EF4444" style={{ flexShrink: 0, marginTop: 1 }} />
           <Text style={confirmStyles.errorText}>{saveError}</Text>
         </View>
       ) : null}
@@ -584,7 +591,7 @@ function ConfirmScreen({
             </>
           ) : (
             <>
-              <Ionicons name="shield-checkmark-outline" size={15} color="#0B1017" style={{ marginRight: 6 }} />
+              <ShieldCheck size={15} color="#0B1017" style={{ marginRight: 6 }} />
               <Text style={confirmStyles.confirmBtnText}>Encrypt & Save Credentials</Text>
             </>
           )}
@@ -600,7 +607,7 @@ function DoneScreen({ onClose }: { onClose: () => void }) {
   return (
     <View style={doneStyles.container}>
       <View style={doneStyles.iconWrap}>
-        <Ionicons name="checkmark-circle-outline" size={32} color="#00FFB4" />
+        <CheckCircle2 size={32} color="#00FFB4" />
       </View>
       <View style={doneStyles.textWrap}>
         <Text style={doneStyles.title}>Credentials Imported</Text>
@@ -645,12 +652,13 @@ interface DeltaTestResult {
 
 // ── CheckChip (sub-component for ConnectionStatusPanel) ───────────────────────
 
+type LucideIcon = React.ComponentType<{ size?: number; color?: string; strokeWidth?: number }>;
 function CheckChip({
-  label, status, ionIcon,
+  label, status, Icon,
 }: {
   label: string;
   status: CheckStatus;
-  ionIcon: React.ComponentProps<typeof Ionicons>["name"];
+  Icon: LucideIcon;
 }) {
   const color =
     status === "ok"      ? "#00FFB4"               :
@@ -670,16 +678,11 @@ function CheckChip({
     <View style={[chipStyles.chip, { backgroundColor: bg, borderColor }]}>
       {status === "running" ? (
         <ActivityIndicator size={9} color={color} />
-      ) : (
-        <Ionicons
-          name={
-            status === "ok"   ? "checkmark-circle-outline" :
-            status === "fail" ? "close-circle-outline"     :
-            ionIcon
-          }
-          size={9}
-          color={color}
-        />
+      ) : (status === "ok"
+          ? <CheckCircle2 size={9} color={color} />
+          : status === "fail"
+          ? <XCircle      size={9} color={color} />
+          : <Icon         size={9} color={color} />
       )}
       <Text style={[chipStyles.chipLabel, { color }]}>{label}</Text>
     </View>
@@ -784,7 +787,7 @@ export function ConnectionStatusPanel({ onImport: _onImport }: ConnectionStatusP
       {/* Panel header */}
       <View style={panelStyles.panelHeader}>
         <View style={panelStyles.panelHeaderIcon}>
-          <Ionicons name="shield-checkmark-outline" size={13} color="#00FFB4" />
+          <ShieldCheck size={13} color="#00FFB4" />
         </View>
         <Text style={panelStyles.panelHeaderTitle}>Connection Status</Text>
       </View>
@@ -824,7 +827,7 @@ export function ConnectionStatusPanel({ onImport: _onImport }: ConnectionStatusP
                       >
                         {telegramTesting
                           ? <ActivityIndicator size={10} color="rgba(255,255,255,0.4)" />
-                          : <Ionicons name="wifi-outline" size={10} color="rgba(255,255,255,0.4)" />}
+                          : <Wifi size={10} color="rgba(255,255,255,0.4)" />}
                         <Text style={panelStyles.testBtnText}>Test</Text>
                       </Pressable>
                       {telegramResult !== null && (
@@ -865,7 +868,7 @@ export function ConnectionStatusPanel({ onImport: _onImport }: ConnectionStatusP
                       ? "idle"
                       : deltaHasBalance ? "ok" : "fail"
                   }
-                  ionIcon="server-outline"
+                  Icon={Server}
                 />
                 {/* Retry button */}
                 <Pressable
@@ -873,8 +876,7 @@ export function ConnectionStatusPanel({ onImport: _onImport }: ConnectionStatusP
                   disabled={deltaApiStatus === "running"}
                   style={({ pressed }) => [panelStyles.retryBtn, pressed && { opacity: 0.7 }]}
                 >
-                  <Ionicons
-                    name="refresh-outline"
+                  <RefreshCw
                     size={9}
                     color="rgba(255,255,255,0.3)"
                     style={{ opacity: deltaApiStatus === "running" ? 0.4 : 1 }}
@@ -907,7 +909,7 @@ export function ConnectionStatusPanel({ onImport: _onImport }: ConnectionStatusP
       {/* No credentials banner */}
       {st.loaded && !anyConfigured && (
         <View style={panelStyles.noneConfigured}>
-          <Ionicons name="warning-outline" size={12} color="rgba(249,115,22,0.7)" style={{ flexShrink: 0 }} />
+          <AlertTriangle size={12} color="rgba(249,115,22,0.7)" style={{ flexShrink: 0 }} />
           <Text style={panelStyles.noneConfiguredText}>
             No credentials configured. Import a file to enable broker connections.
           </Text>

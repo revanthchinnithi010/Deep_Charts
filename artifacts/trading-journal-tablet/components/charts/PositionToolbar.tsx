@@ -30,7 +30,9 @@ import {
   View, Text, Pressable, TextInput, Modal, ScrollView,
   StyleSheet, Dimensions, PanResponder,
 } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
+import {
+  X, Copy, ArrowUpDown, Lock, LockOpen, EyeOff, GitBranch, Type, Bell, Settings, Trash2,
+} from "lucide-react-native";
 import Svg, { Path, Rect, Line, Circle } from "react-native-svg";
 import type { Drawing, DrawingStyle, DrawingPoint } from "@/types/drawing";
 
@@ -156,7 +158,7 @@ function ColorPickerModal({
         <View style={styles.colorModalHeader}>
           <Text style={styles.colorModalTitle}>{title}</Text>
           <Pressable onPress={onClose} hitSlop={8}>
-            <Ionicons name="close" size={14} color="rgba(167,184,169,0.5)" />
+            <X size={14} color="rgba(167,184,169,0.5)" />
           </Pressable>
         </View>
         <View style={styles.colorGrid}>
@@ -190,12 +192,13 @@ function MoreMenu({
   onDuplicate: () => void; onHide: () => void;
   onReverse: () => void; onLock: () => void; onClose: () => void;
 }) {
-  const items = [
-    { label: "Clone",            icon: "copy-outline",                   action: onDuplicate, highlight: false },
-    { label: "Reverse",          icon: "swap-vertical-outline",          action: onReverse,   highlight: false },
-    { label: isLocked ? "Unlock" : "Lock", icon: isLocked ? "lock-open-outline" : "lock-closed-outline",
+  type LucideIcon = React.ComponentType<{ size?: number; color?: string }>;
+  const items: { label: string; Icon: LucideIcon; action: () => void; highlight: boolean }[] = [
+    { label: "Clone",                          Icon: Copy,      action: onDuplicate, highlight: false     },
+    { label: "Reverse",                        Icon: ArrowUpDown, action: onReverse,   highlight: false   },
+    { label: isLocked ? "Unlock" : "Lock",     Icon: isLocked ? LockOpen : Lock,
       action: onLock, highlight: isLocked },
-    { label: "Hide",             icon: "eye-off-outline",                action: onHide,      highlight: false },
+    { label: "Hide",                           Icon: EyeOff,   action: onHide,      highlight: false     },
   ];
 
   return (
@@ -208,8 +211,7 @@ function MoreMenu({
             style={({ pressed }) => [styles.moreMenuItem, pressed && styles.moreMenuItemPressed]}
             onPress={() => { item.action(); onClose(); }}
           >
-            <Ionicons
-              name={item.icon as any}
+            <item.Icon
               size={15}
               color={item.highlight ? "#B7FF5A" : "rgba(200,205,215,0.8)"}
             />
@@ -330,7 +332,7 @@ function PositionSettingsModal({
               {drawing.toolType === "position_long" ? "Long" : "Short"} Position
             </Text>
             <Pressable onPress={onClose} style={styles.settingsCloseBtn} hitSlop={8}>
-              <Ionicons name="close" size={13} color="rgba(255,255,255,0.5)" />
+              <X size={13} color="rgba(255,255,255,0.5)" />
             </Pressable>
           </View>
 
@@ -538,12 +540,12 @@ export const PositionToolbar = memo(function PositionToolbar({
 
         {/* Object list icon */}
         <PtBtn>
-          <Ionicons name="git-branch-outline" size={17} color="rgba(255,255,255,0.82)" />
+          <GitBranch size={17} color="rgba(255,255,255,0.82)" />
         </PtBtn>
 
         {/* Text style icon */}
         <PtBtn>
-          <Ionicons name="text-outline" size={17} color="rgba(255,255,255,0.82)" />
+          <Type size={17} color="rgba(255,255,255,0.82)" />
         </PtBtn>
 
         <PtSep />
@@ -573,7 +575,7 @@ export const PositionToolbar = memo(function PositionToolbar({
 
         {/* Alert */}
         <PtBtn>
-          <Ionicons name="notifications-outline" size={17} color="rgba(255,255,255,0.82)" />
+          <Bell size={17} color="rgba(255,255,255,0.82)" />
         </PtBtn>
 
         {/* Settings */}
@@ -581,14 +583,14 @@ export const PositionToolbar = memo(function PositionToolbar({
           active={showSettings}
           onPress={() => { setShowSettings(v => !v); closeAllPickers(); }}
         >
-          <Ionicons name="settings-outline" size={17} color={showSettings ? "#B7FF5A" : "rgba(255,255,255,0.82)"} />
+          <Settings size={17} color={showSettings ? "#B7FF5A" : "rgba(255,255,255,0.82)"} />
         </PtBtn>
 
         <PtSep />
 
         {/* Delete */}
         <PtBtn danger onPress={onDelete}>
-          <Ionicons name="trash-outline" size={17} color="rgba(220,80,80,0.85)" />
+          <Trash2 size={17} color="rgba(220,80,80,0.85)" />
         </PtBtn>
 
         <PtSep />

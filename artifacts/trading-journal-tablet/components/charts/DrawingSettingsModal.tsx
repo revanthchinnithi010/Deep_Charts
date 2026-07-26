@@ -28,7 +28,7 @@ import {
   View, Text, Pressable, TextInput, ScrollView,
   Modal, StyleSheet,
 } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
+import { X } from "lucide-react-native";
 import Svg, { Rect, Line, Path } from "react-native-svg";
 import type { Drawing, DrawingStyle, DrawingPoint } from "@/types/drawing";
 

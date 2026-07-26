@@ -200,7 +200,7 @@ const SubCell = memo(function SubCell({
           {label}
         </Text>
         {onPress && (
-          <Ionicons name="chevron-forward" size={10} color={C.statIcon} />
+          <ChevronRight size={10} color={C.statIcon} />
         )}
       </View>
 
@@ -450,7 +450,6 @@ function AccountValueWidget({
               </Text>
               {onShowPositions && (
                 <ChevronRight size={10} color={C.statIcon} />
-          {/* duplicate removed */}
               )}
             </Pressable>
             {loading ? (

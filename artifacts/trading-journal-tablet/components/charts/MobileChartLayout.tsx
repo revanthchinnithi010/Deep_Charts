@@ -72,7 +72,12 @@ import {
 } from "react-native";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { useFocusEffect } from "expo-router";
-import { Ionicons } from "@expo/vector-icons";
+import {
+  X, Pencil, Undo2, SlidersHorizontal, Trash2, Check, ChevronLeft, ChevronRight,
+  ChevronUp, BarChart2, TrendingUp, Activity, LineChart, Layers, Circle,
+  Server, Maximize2, Minimize2, MoreHorizontal, Bell, LayoutGrid, Shapes,
+  Camera, PlayCircle, RefreshCw, RefreshCcw, RotateCcw,
+} from "lucide-react-native";
 import { Gesture, GestureDetector } from "react-native-gesture-handler";
 import Reanimated, {
   useSharedValue,
@@ -153,13 +158,14 @@ const LAYOUT_OPTIONS = [
 ];
 
 // ── Chart type options ───────────────────────────────────────────────────────
-const CHART_TYPE_OPTIONS: { type: ChartType; label: string; icon: string }[] = [
-  { type: "candles",           label: "Candlestick",    icon: "bar-chart-outline"  },
-  { type: "line",              label: "Line",           icon: "trending-up-outline" },
-  { type: "bars",              label: "Bars",           icon: "stats-chart-outline" },
-  { type: "area",              label: "Area",           icon: "analytics-outline"  },
-  { type: "heikin_ashi",       label: "Heikin Ashi",   icon: "albums-outline"     },
-  { type: "line_with_markers", label: "Line + Markers", icon: "ellipse-outline"   },
+type LucideIcon = React.ComponentType<{ size?: number; color?: string; strokeWidth?: number }>;
+const CHART_TYPE_OPTIONS: { type: ChartType; label: string; Icon: LucideIcon }[] = [
+  { type: "candles",           label: "Candlestick",    Icon: BarChart2   },
+  { type: "line",              label: "Line",           Icon: TrendingUp  },
+  { type: "bars",              label: "Bars",           Icon: Activity    },
+  { type: "area",              label: "Area",           Icon: LineChart   },
+  { type: "heikin_ashi",       label: "Heikin Ashi",   Icon: Layers      },
+  { type: "line_with_markers", label: "Line + Markers", Icon: Circle     },
 ];
 
 // ── Timeframe list ───────────────────────────────────────────────────────────
@@ -301,7 +307,7 @@ const BottomSheet = memo(function BottomSheet({
             <View style={bs.titleRow}>
               <Text style={bs.titleText}>{title}</Text>
               <Pressable onPress={onClose} hitSlop={12} style={bs.closeBtn}>
-                <Ionicons name="close" size={20} color={TEXT_MED} />
+                <X size={20} color={TEXT_MED} />
               </Pressable>
             </View>
           )}
@@ -377,12 +383,12 @@ const FloatingDrawingPill = memo(function FloatingDrawingPill({
   return (
     <View style={fp.pill} pointerEvents="box-none">
       <Pressable style={fp.toolBtn} onPress={onOpenTools}>
-        <Ionicons name="pencil" size={14} color={NEON} />
+        <Pencil size={14} color={NEON} />
         <Text style={fp.toolName} numberOfLines={1}>{toolTypeName(activeTool)}</Text>
       </Pressable>
       <View style={fp.divider} />
       <Pressable style={fp.clearBtn} onPress={onClear} hitSlop={8}>
-        <Ionicons name="close" size={14} color={TEXT_MED} />
+        <X size={14} color={TEXT_MED} />
       </Pressable>
     </View>
   );
@@ -448,7 +454,7 @@ const DrawingMiniBar = memo(function DrawingMiniBar({
   return (
     <View style={[dm.bar, { paddingBottom: bottomInset + 4 }]}>
       <View style={dm.toolInfo}>
-        <Ionicons name="pencil" size={14} color={NEON} />
+        <Pencil size={14} color={NEON} />
         <Text style={dm.toolLabel}>{toolTypeName(drawing.toolType)}</Text>
       </View>
 
@@ -461,22 +467,22 @@ const DrawingMiniBar = memo(function DrawingMiniBar({
         disabled={!canUndo}
         hitSlop={8}
       >
-        <Ionicons name="arrow-undo-outline" size={19} color={canUndo ? TEXT_HI : TEXT_DIM} />
+        <Undo2 size={19} color={canUndo ? TEXT_HI : TEXT_DIM} />
       </Pressable>
 
       {/* Settings */}
       <Pressable style={dm.iconBtn} onPress={onOpenSettings} hitSlop={8}>
-        <Ionicons name="options-outline" size={19} color={TEXT_MED} />
+        <SlidersHorizontal size={19} color={TEXT_MED} />
       </Pressable>
 
       {/* Delete */}
       <Pressable style={dm.iconBtn} onPress={onDelete} hitSlop={8}>
-        <Ionicons name="trash-outline" size={19} color={DANGER} />
+        <Trash2 size={19} color={DANGER} />
       </Pressable>
 
       {/* Done */}
       <Pressable style={[dm.iconBtn, dm.doneBtn]} onPress={onDone} hitSlop={8}>
-        <Ionicons name="checkmark" size={19} color={ACCENT} />
+        <Check size={19} color={ACCENT} />
         <Text style={dm.doneText}>Done</Text>
       </Pressable>
     </View>
@@ -599,18 +605,18 @@ const MiniControlBar = memo(function MiniControlBar({
 
       {/* Prev */}
       <Pressable style={mc.iconBtn} onPress={onPrev} hitSlop={6}>
-        <Ionicons name="chevron-back" size={18} color={TEXT_MED} />
+        <ChevronLeft size={18} color={TEXT_MED} />
       </Pressable>
 
       {/* Next */}
       <Pressable style={mc.iconBtn} onPress={onNext} hitSlop={6}>
-        <Ionicons name="chevron-forward" size={18} color={TEXT_MED} />
+        <ChevronRight size={18} color={TEXT_MED} />
       </Pressable>
 
       {/* Timeframe pill */}
       <Pressable style={mc.tfPill} onPress={onTFPress}>
         <Text style={mc.tfText}>{tfLabel(interval)}</Text>
-        <Ionicons name="chevron-up" size={10} color={TEXT_DIM} />
+        <ChevronUp size={10} color={TEXT_DIM} />
       </Pressable>
 
       {/* Separator */}
@@ -622,8 +628,7 @@ const MiniControlBar = memo(function MiniControlBar({
         onPress={onDrawPress}
         hitSlop={6}
       >
-        <Ionicons
-          name={isDrawingActive ? "pencil" : "pencil-outline"}
+        <Pencil
           size={18}
           color={isDrawingActive ? NEON : TEXT_MED}
         />
@@ -631,7 +636,7 @@ const MiniControlBar = memo(function MiniControlBar({
 
       {/* Chart type */}
       <Pressable style={mc.iconBtn} onPress={onChartType} hitSlop={6}>
-        <Ionicons name="bar-chart-outline" size={18} color={TEXT_MED} />
+        <BarChart2 size={18} color={TEXT_MED} />
       </Pressable>
 
       {/* Separator */}
@@ -647,23 +652,22 @@ const MiniControlBar = memo(function MiniControlBar({
       {/* Broker status dot + icon */}
       <Pressable style={mc.iconBtn} onPress={onBroker} hitSlop={6}>
         <View style={mc.brokerWrap}>
-          <Ionicons name="server-outline" size={18} color={TEXT_MED} />
+          <Server size={18} color={TEXT_MED} />
           <View style={[mc.brokerDot, { backgroundColor: brokerConnected ? SUCCESS : "#6b7280" }]} />
         </View>
       </Pressable>
 
       {/* Fullscreen */}
       <Pressable style={mc.iconBtn} onPress={onFullscreen} hitSlop={6}>
-        <Ionicons
-          name={isFullscreen ? "contract-outline" : "expand-outline"}
-          size={18}
-          color={TEXT_MED}
-        />
+        {isFullscreen
+          ? <Minimize2 size={18} color={TEXT_MED} />
+          : <Maximize2 size={18} color={TEXT_MED} />
+        }
       </Pressable>
 
       {/* More */}
       <Pressable style={mc.iconBtn} onPress={onMore} hitSlop={6}>
-        <Ionicons name="ellipsis-horizontal" size={18} color={TEXT_MED} />
+        <MoreHorizontal size={18} color={TEXT_MED} />
       </Pressable>
     </View>
   );
@@ -877,13 +881,12 @@ const ChartTypeSheet = memo(function ChartTypeSheet({
               style={[ct.row, active && ct.rowActive]}
               onPress={() => { onSelect(opt.type); onClose(); }}
             >
-              <Ionicons
-                name={opt.icon as never}
+              <opt.Icon
                 size={20}
                 color={active ? ACCENT : TEXT_MED}
               />
               <Text style={[ct.label, active && ct.labelActive]}>{opt.label}</Text>
-              {active && <Ionicons name="checkmark" size={16} color={ACCENT} style={ct.check} />}
+              {active && <Check size={16} color={ACCENT} style={ct.check} />}
             </Pressable>
           );
         })}
@@ -964,23 +967,23 @@ const MoreOptionsSheet = memo(function MoreOptionsSheet({
   type Option = {
     id: string;
     label: string;
-    icon: string;
+    Icon: LucideIcon;
     color?: string;
     onPress: () => void;
   };
 
   const options: Option[] = [
-    { id: "indicators", label: "Indicators",   icon: "trending-up-outline",      onPress: () => { onClose(); onIndicators(); } },
-    { id: "alerts",     label: "Alerts",        icon: "notifications-outline",    onPress: () => { onClose(); onAlerts(); } },
-    { id: "layout",     label: "Layout",        icon: "grid-outline",             onPress: () => { onClose(); onLayout(); } },
-    { id: "objects",    label: "Objects",       icon: "shapes-outline",           onPress: () => { onClose(); onObjects(); } },
-    { id: "screenshot", label: "Screenshot",   icon: "camera-outline",           onPress: () => { onClose(); onScreenshot(); } },
-    { id: "replay",     label: "Bar Replay",   icon: "play-circle-outline",      onPress: () => { onClose(); onReplay(); } },
-    { id: "reset",      label: "Reset Chart",  icon: "refresh-outline",          onPress: () => { onClose(); onReset(); } },
+    { id: "indicators", label: "Indicators",                            Icon: TrendingUp,                          onPress: () => { onClose(); onIndicators(); } },
+    { id: "alerts",     label: "Alerts",                                Icon: Bell,                                onPress: () => { onClose(); onAlerts(); } },
+    { id: "layout",     label: "Layout",                                Icon: LayoutGrid,                          onPress: () => { onClose(); onLayout(); } },
+    { id: "objects",    label: "Objects",                               Icon: Shapes,                              onPress: () => { onClose(); onObjects(); } },
+    { id: "screenshot", label: "Screenshot",                            Icon: Camera,                              onPress: () => { onClose(); onScreenshot(); } },
+    { id: "replay",     label: "Bar Replay",                            Icon: PlayCircle,                          onPress: () => { onClose(); onReplay(); } },
+    { id: "reset",      label: "Reset Chart",                           Icon: RotateCcw,                           onPress: () => { onClose(); onReset(); } },
     {
       id: "fullscreen",
       label: isFullscreen ? "Exit Fullscreen" : "Fullscreen",
-      icon: isFullscreen ? "contract-outline" : "expand-outline",
+      Icon: isFullscreen ? Minimize2 : Maximize2,
       onPress: () => { onClose(); onFullscreen(); },
     },
   ];
@@ -990,7 +993,7 @@ const MoreOptionsSheet = memo(function MoreOptionsSheet({
       <ScrollView contentContainerStyle={mo.container} keyboardShouldPersistTaps="handled">
         {/* Sync TF toggle row */}
         <View style={mo.toggleRow}>
-          <Ionicons name="sync-outline" size={18} color={syncTF ? ACCENT : TEXT_MED} style={{ marginRight: 10 }} />
+          <RefreshCw size={18} color={syncTF ? ACCENT : TEXT_MED} style={{ marginRight: 10 }} />
           <Text style={[mo.toggleLabel, syncTF && { color: TEXT_HI }]}>Sync Timeframe</Text>
           <Switch
             value={syncTF}
@@ -1004,7 +1007,7 @@ const MoreOptionsSheet = memo(function MoreOptionsSheet({
 
         {/* Market feed broker tabs */}
         <View style={mo.feedRow}>
-          <Ionicons name="pulse-outline" size={15} color={TEXT_DIM} style={{ marginRight: 8 }} />
+          <Activity size={15} color={TEXT_DIM} style={{ marginRight: 8 }} />
           <Text style={mo.feedLabel}>Market Feed</Text>
           <BrokerTabs />
         </View>
@@ -1016,7 +1019,7 @@ const MoreOptionsSheet = memo(function MoreOptionsSheet({
           {options.map(opt => (
             <Pressable key={opt.id} style={mo.cell} onPress={opt.onPress}>
               <View style={mo.cellIcon}>
-                <Ionicons name={opt.icon as never} size={22} color={opt.color ?? TEXT_MED} />
+                <opt.Icon size={22} color={opt.color ?? TEXT_MED} />
               </View>
               <Text style={mo.cellLabel} numberOfLines={1}>{opt.label}</Text>
             </Pressable>
@@ -1179,7 +1182,7 @@ const LayoutBottomSheet = memo(function LayoutBottomSheet({
 
         {/* Sync TF toggle */}
         <View style={lb.toggleRow}>
-          <Ionicons name="sync-outline" size={16} color={syncTF ? ACCENT : TEXT_MED} style={{ marginRight: 10 }} />
+          <RefreshCw size={16} color={syncTF ? ACCENT : TEXT_MED} style={{ marginRight: 10 }} />
           <Text style={[lb.toggleLabel, syncTF && { color: TEXT_HI }]}>Sync Timeframe across charts</Text>
           <Switch
             value={syncTF}
@@ -1242,15 +1245,15 @@ const LayoutBottomSheet = memo(function LayoutBottomSheet({
                 <View style={lb.layoutRowActions}>
                   {renamingId === layout.id ? (
                     <Pressable onPress={handleCommitRename} hitSlop={8}>
-                      <Ionicons name="checkmark" size={18} color={ACCENT} />
+                      <Check size={18} color={ACCENT} />
                     </Pressable>
                   ) : (
                     <Pressable onPress={() => handleStartRename(layout)} hitSlop={8}>
-                      <Ionicons name="pencil-outline" size={17} color={TEXT_DIM} />
+                      <Pencil size={17} color={TEXT_DIM} />
                     </Pressable>
                   )}
                   <Pressable onPress={() => onDeleteNamedLayout(layout.id)} hitSlop={8}>
-                    <Ionicons name="trash-outline" size={17} color={DANGER} />
+                    <Trash2 size={17} color={DANGER} />
                   </Pressable>
                 </View>
               </View>

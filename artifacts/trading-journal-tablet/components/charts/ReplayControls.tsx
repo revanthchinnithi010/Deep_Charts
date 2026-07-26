@@ -26,7 +26,7 @@ import { memo, useState } from "react";
 import {
   View, Text, Pressable, StyleSheet,
 } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
+import { SkipBack, Pause, Play, SkipForward, ChevronUp, ChevronDown, X } from "lucide-react-native";
 import type { OHLCBar } from "@/store/chartStore";
 
 // ── Types (preserved exactly) ─────────────────────────────────────────────────
@@ -76,7 +76,7 @@ export const ReplayControls = memo(function ReplayControls({
 
       {/* ── Step back ── */}
       <RpBtn onPress={onStepBack} disabled={atStart}>
-        <Ionicons name="play-skip-back" size={13} color="rgba(183,220,190,0.8)" />
+        <SkipBack size={13} color="rgba(183,220,190,0.8)" />
       </RpBtn>
 
       {/* ── Play / Pause ── */}
@@ -90,14 +90,14 @@ export const ReplayControls = memo(function ReplayControls({
         ]}
       >
         {playing
-          ? <Ionicons name="pause"    size={15} color="#B7FF5A" />
-          : <Ionicons name="play"     size={15} color="#B7FF5A" />
+          ? <Pause size={15} color="#B7FF5A" />
+          : <Play  size={15} color="#B7FF5A" />
         }
       </Pressable>
 
       {/* ── Step forward ── */}
       <RpBtn onPress={onStepForward} disabled={atEnd}>
-        <Ionicons name="play-skip-forward" size={13} color="rgba(183,220,190,0.8)" />
+        <SkipForward size={13} color="rgba(183,220,190,0.8)" />
       </RpBtn>
 
       {/* ── Divider ── */}
@@ -110,11 +110,10 @@ export const ReplayControls = memo(function ReplayControls({
           style={ss.speedBtn}
         >
           <Text style={ss.speedLabel}>×{speed}</Text>
-          <Ionicons
-            name={showSpeeds ? "chevron-down" : "chevron-up"}
-            size={9}
-            color="rgba(200,228,204,0.85)"
-          />
+          {showSpeeds
+            ? <ChevronDown size={9} color="rgba(200,228,204,0.85)" />
+            : <ChevronUp   size={9} color="rgba(200,228,204,0.85)" />
+          }
         </Pressable>
 
         {showSpeeds && (
@@ -147,7 +146,7 @@ export const ReplayControls = memo(function ReplayControls({
         onPress={onExit}
         style={({ pressed }) => [ss.exitBtn, pressed && ss.exitBtnPressed]}
       >
-        <Ionicons name="close" size={13} color="rgba(248,113,113,0.7)" />
+        <X size={13} color="rgba(248,113,113,0.7)" />
       </Pressable>
     </View>
   );

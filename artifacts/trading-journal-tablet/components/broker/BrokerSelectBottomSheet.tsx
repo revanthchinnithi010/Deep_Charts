@@ -47,7 +47,9 @@ import { useEffect, useRef, useCallback, useMemo, memo } from "react";
 import {
   View, Text, Pressable, StyleSheet, ActivityIndicator,
 } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
+import {
+  CheckCircle2, RefreshCw, MinusCircle, AlertCircle, Wifi, StopCircle, Trash2,
+} from "lucide-react-native";
 import {
   BottomSheetModal,
   BottomSheetScrollView,
@@ -61,19 +63,21 @@ import type { ConnectionStatus } from "@/types/broker";
 
 // ── Status badge ──────────────────────────────────────────────────────────────
 
+type LucideIcon = React.ComponentType<{ size?: number; color?: string; strokeWidth?: number }>;
+
 const STATUS_BADGE_CONFIG: Record<
   ConnectionStatus,
-  { label: string; color: string; bg: string; iconName: React.ComponentProps<typeof Ionicons>["name"] }
+  { label: string; color: string; bg: string; Icon: LucideIcon }
 > = {
-  connected:    { label: "Connected",    color: "#22C55E",              bg: "rgba(34,197,94,0.12)",   iconName: "checkmark-circle"    },
-  connecting:   { label: "Connecting…",  color: "#F59E0B",              bg: "rgba(245,158,11,0.12)",  iconName: "sync-outline"        },
-  disconnected: { label: "Disconnected", color: "rgba(167,184,169,0.5)", bg: "rgba(255,255,255,0.05)", iconName: "remove-circle-outline" },
-  error:        { label: "Error",        color: "#EF4444",              bg: "rgba(239,68,68,0.12)",   iconName: "alert-circle-outline" },
+  connected:    { label: "Connected",    color: "#22C55E",              bg: "rgba(34,197,94,0.12)",   Icon: CheckCircle2  },
+  connecting:   { label: "Connecting…",  color: "#F59E0B",              bg: "rgba(245,158,11,0.12)",  Icon: RefreshCw     },
+  disconnected: { label: "Disconnected", color: "rgba(167,184,169,0.5)", bg: "rgba(255,255,255,0.05)", Icon: MinusCircle   },
+  error:        { label: "Error",        color: "#EF4444",              bg: "rgba(239,68,68,0.12)",   Icon: AlertCircle   },
 };
 
 const StatusBadge = memo(function StatusBadge({ status }: { status: ConnectionStatus }) {
   const cfg = STATUS_BADGE_CONFIG[status] ?? {
-    label: status, color: "rgba(167,184,169,0.5)", bg: "rgba(255,255,255,0.05)", iconName: "wifi-outline" as const,
+    label: status, color: "rgba(167,184,169,0.5)", bg: "rgba(255,255,255,0.05)", Icon: Wifi,
   };
 
   return (
@@ -86,7 +90,7 @@ const StatusBadge = memo(function StatusBadge({ status }: { status: ConnectionSt
       {status === "connecting" ? (
         <ActivityIndicator size={10} color={cfg.color} />
       ) : (
-        <Ionicons name={cfg.iconName} size={11} color={cfg.color} />
+        <cfg.Icon size={11} color={cfg.color} />
       )}
       <Text style={[styles.statusBadgeText, { color: cfg.color }]}>{cfg.label}</Text>
     </View>
@@ -171,7 +175,7 @@ export function BrokerListContent({ onClose, onConnectBroker }: BrokerListConten
                   onPress={() => disconnectBroker(broker.id)}
                   style={({ pressed }) => [styles.disconnectBtn, pressed && { opacity: 0.7 }]}
                 >
-                  <Ionicons name="stop-circle-outline" size={11} color="#EF4444" />
+                  <StopCircle size={11} color="#EF4444" />
                   <Text style={styles.disconnectBtnText}>Disconnect</Text>
                 </Pressable>
               </View>
@@ -181,7 +185,7 @@ export function BrokerListContent({ onClose, onConnectBroker }: BrokerListConten
             {!isConnected && status === "error" && (
               <View style={styles.errorRow}>
                 <View style={styles.errorBox}>
-                  <Ionicons name="alert-circle-outline" size={13} color="#EF4444" style={{ flexShrink: 0, marginTop: 1 }} />
+                  <AlertCircle size={13} color="#EF4444" style={{ flexShrink: 0, marginTop: 1 }} />
                   <Text style={styles.errorText}>
                     Connection error — check credentials
                   </Text>
@@ -210,7 +214,7 @@ export function BrokerListContent({ onClose, onConnectBroker }: BrokerListConten
                           style={({ pressed }) => [styles.deleteBtn, pressed && { opacity: 0.7 }]}
                           hitSlop={8}
                         >
-                          <Ionicons name="trash-outline" size={12} color="rgba(239,68,68,0.55)" />
+                          <Trash2 size={12} color="rgba(239,68,68,0.55)" />
                         </Pressable>
                       </View>
                     ))}
@@ -250,7 +254,7 @@ export function BrokerListContent({ onClose, onConnectBroker }: BrokerListConten
       {/* Connected broker count summary */}
       {Object.keys(connectedAccounts).length > 0 && (
         <View style={styles.summaryRow}>
-          <Ionicons name="wifi-outline" size={13} color="#22C55E" style={{ flexShrink: 0 }} />
+          <Wifi size={13} color="#22C55E" style={{ flexShrink: 0 }} />
           <Text style={styles.summaryText}>
             <Text style={styles.summaryCount}>
               {Object.keys(connectedAccounts).length}

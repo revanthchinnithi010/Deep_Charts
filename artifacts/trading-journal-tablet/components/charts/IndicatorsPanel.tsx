@@ -35,7 +35,7 @@ import {
   View, Text, Pressable, ScrollView,
   StyleSheet, Modal, TextInput,
 } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
+import { Trash2, TrendingUp, X, Plus } from "lucide-react-native";
 import { useIndicatorStore, type IndicatorType } from "@/store/indicatorStore";
 
 // ── WaveTrend built-in Pine Script ────────────────────────────────────────────

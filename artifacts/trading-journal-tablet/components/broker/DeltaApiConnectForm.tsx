@@ -49,7 +49,7 @@ import {
   View, Text, Pressable, TextInput, StyleSheet,
   ActivityIndicator, Linking,
 } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
+import { CheckCircle2, Shield, Zap, Key, Lock, Eye, EyeOff, Tag, XCircle, ExternalLink } from "lucide-react-native";
 import * as WebBrowser from "expo-web-browser";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useBrokerStore } from "@/store/brokerStore";

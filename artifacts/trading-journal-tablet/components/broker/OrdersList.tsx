@@ -40,7 +40,7 @@ import {
   ActivityIndicator, RefreshControl,
 } from "react-native";
 import { FlashList, type ListRenderItem } from "@shopify/flash-list";
-import { Ionicons } from "@expo/vector-icons";
+import { AlertTriangle, BarChart2, X } from "lucide-react-native";
 import { useBrokerStore } from "@/store/brokerStore";
 import { BROKERS } from "@/types/broker";
 import type { BrokerOrder } from "@/types/broker";

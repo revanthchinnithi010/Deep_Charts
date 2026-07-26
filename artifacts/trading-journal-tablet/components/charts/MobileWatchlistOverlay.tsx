@@ -69,7 +69,7 @@ import {
   Modal, FlatList, Animated, Dimensions,
   type ListRenderItem,
 } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
+import { Plus, X as XIcon, Menu, TrendingUp } from "lucide-react-native";
 import { useTickStore } from "@/store/tickStore";
 import { useWatchlist, SYMBOL_CATALOG, type WatchlistEntry } from "@/contexts/WatchlistContext";
 import { fmtPrice } from "@/lib/fmtPrice";
@@ -405,13 +405,13 @@ export const MobileWatchlistOverlay = memo(function MobileWatchlistOverlay({
         <View style={overlayStyles.header}>
           {/* Menu button (decorative) */}
           <Pressable style={overlayStyles.headerIconBtn} hitSlop={8}>
-            <Ionicons name="menu-outline" size={18} color="rgba(255,255,255,0.55)" />
+            <Menu size={18} color="rgba(255,255,255,0.55)" />
           </Pressable>
 
           {/* Logo */}
           <View style={overlayStyles.logoRow}>
             <View style={overlayStyles.logoIcon}>
-              <Ionicons name="trending-up-outline" size={11} color="#07110D" />
+              <TrendingUp size={11} color="#07110D" />
             </View>
             <Text style={overlayStyles.logoText}>TradingJournal</Text>
           </View>
@@ -419,10 +419,10 @@ export const MobileWatchlistOverlay = memo(function MobileWatchlistOverlay({
           {/* Right buttons */}
           <View style={overlayStyles.headerRight}>
             <Pressable style={overlayStyles.headerRoundBtn} hitSlop={8}>
-              <Ionicons name="add-outline" size={14} color="rgba(255,255,255,0.65)" />
+              <Plus size={14} color="rgba(255,255,255,0.65)" />
             </Pressable>
             <Pressable onPress={onClose} style={overlayStyles.headerRoundBtn} hitSlop={8}>
-              <Ionicons name="close" size={13} color="rgba(255,255,255,0.5)" />
+              <XIcon size={13} color="rgba(255,255,255,0.5)" />
             </Pressable>
           </View>
         </View>

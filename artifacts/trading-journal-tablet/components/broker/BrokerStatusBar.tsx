@@ -49,7 +49,10 @@ import { useEffect, useRef, memo } from "react";
 import {
   View, Text, Pressable, StyleSheet, Animated, Easing,
 } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
+import {
+  Wifi, Activity, AlertCircle, AlertTriangle, RefreshCw,
+  TrendingUp, TrendingDown, BarChart2, ShoppingCart, Power,
+} from "lucide-react-native";
 import { BROKERS } from "@/types/broker";
 import { useBrokerStore } from "@/store/brokerStore";
 import type { PrivateWsStatus } from "@/store/brokerStore";
@@ -131,18 +134,19 @@ const LiveDot = memo(function LiveDot({ color, pulse }: LiveDotProps) {
 
 // ── Private WS feed badge ─────────────────────────────────────────────────────
 
+type LucideIcon = React.ComponentType<{ size?: number; color?: string; strokeWidth?: number }>;
 type FeedBadgeCfg = {
-  label:    string;
-  color:    string;
-  iconName: React.ComponentProps<typeof Ionicons>["name"];
+  label: string;
+  color: string;
+  Icon:  LucideIcon;
 };
 
 const FEED_BADGE_MAP: Record<PrivateWsStatus, FeedBadgeCfg> = {
-  idle:         { label: "",                    color: "transparent",  iconName: "wifi-outline"    },
-  connecting:   { label: "WS…",                color: "#f59e0b",      iconName: "pulse-outline"   },
-  connected:    { label: "WS Live",             color: "#4ade80",      iconName: "wifi-outline"    },
-  reconnecting: { label: "WS reconnecting",     color: "#f59e0b",      iconName: "pulse-outline"   },
-  failed:       { label: "WS failed",           color: "#ef4444",      iconName: "alert-circle-outline" },
+  idle:         { label: "",                    color: "transparent", Icon: Wifi          },
+  connecting:   { label: "WS…",                color: "#f59e0b",     Icon: Activity      },
+  connected:    { label: "WS Live",             color: "#4ade80",     Icon: Wifi          },
+  reconnecting: { label: "WS reconnecting",     color: "#f59e0b",     Icon: Activity      },
+  failed:       { label: "WS failed",           color: "#ef4444",     Icon: AlertCircle   },
 };
 
 interface FeedBadgeProps {
@@ -161,7 +165,7 @@ const FeedBadge = memo(function FeedBadge({ status }: FeedBadgeProps) {
         { backgroundColor: cfg.color + "18", borderColor: cfg.color + "30" },
       ]}
     >
-      <Ionicons name={cfg.iconName} size={10} color={cfg.color} />
+      <cfg.Icon size={10} color={cfg.color} />
       <Text style={[styles.feedBadgeText, { color: cfg.color }]}>{cfg.label}</Text>
     </View>
   );
@@ -232,7 +236,7 @@ export function BrokerStatusBar() {
       {/* Error banner */}
       {isError && (
         <View style={styles.errorBanner}>
-          <Ionicons name="warning-outline" size={12} color="#f87171" style={{ flexShrink: 0 }} />
+          <AlertTriangle size={12} color="#f87171" style={{ flexShrink: 0 }} />
           <Text style={styles.errorBannerText}>
             Broker connection error
             {reconnectAttempts > 0 ? ` — attempt ${reconnectAttempts}` : ""}
@@ -241,7 +245,7 @@ export function BrokerStatusBar() {
             onPress={() => reconnect()}
             style={({ pressed }) => [styles.retryBtn, pressed && { opacity: 0.7 }]}
           >
-            <Ionicons name="refresh-outline" size={10} color="#f87171" />
+            <RefreshCw size={10} color="#f87171" />
             <Text style={styles.retryBtnText}>Retry</Text>
           </Pressable>
         </View>
@@ -304,11 +308,10 @@ export function BrokerStatusBar() {
                 {hasFeedPnl ? "Live PnL" : "Unr. PnL"}
               </Text>
               <View style={styles.pnlRow}>
-                <Ionicons
-                  name={pnlPositive ? "trending-up-outline" : "trending-down-outline"}
-                  size={12}
-                  color={pnlColor}
-                />
+                {pnlPositive
+                  ? <TrendingUp   size={12} color={pnlColor} />
+                  : <TrendingDown size={12} color={pnlColor} />
+                }
                 <Text style={[styles.pnlValue, { color: pnlColor }]}>
                   {pnlPositive ? "+" : ""}{fmtMoney(pnlValue)}
                 </Text>
@@ -335,8 +338,7 @@ export function BrokerStatusBar() {
               showPositions ? styles.actionBtnActive : styles.actionBtnIdle,
             ]}
           >
-            <Ionicons
-              name="trending-up-outline"
+            <TrendingUp
               size={12}
               color={showPositions ? "#B7FF5A" : "rgba(167,184,169,0.75)"}
             />
@@ -370,8 +372,7 @@ export function BrokerStatusBar() {
               showOrders ? styles.actionBtnActive : styles.actionBtnIdle,
             ]}
           >
-            <Ionicons
-              name="bar-chart-outline"
+            <BarChart2
               size={12}
               color={showOrders ? "#B7FF5A" : "rgba(167,184,169,0.75)"}
             />
@@ -405,8 +406,7 @@ export function BrokerStatusBar() {
               showPlaceOrder ? styles.tradeBtnActive : styles.tradeBtnIdle,
             ]}
           >
-            <Ionicons
-              name="cart-outline"
+            <ShoppingCart
               size={12}
               color={showPlaceOrder ? "#07110D" : "#B7FF5A"}
             />
@@ -424,7 +424,7 @@ export function BrokerStatusBar() {
             style={({ pressed }) => [styles.disconnectBtn, pressed && { opacity: 0.6 }]}
             accessibilityLabel="Disconnect broker"
           >
-            <Ionicons name="power-outline" size={14} color="rgba(239,68,68,0.55)" />
+            <Power size={14} color="rgba(239,68,68,0.55)" />
           </Pressable>
         </View>
       </View>

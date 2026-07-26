@@ -40,7 +40,7 @@ import {
   Type, FileText, Paintbrush, Highlighter, PenLine, Spline,
   List, Bell, GitBranch, LayoutGrid, Calculator, Camera, Minimize2, Maximize2, Settings,
   Eye, EyeOff, Lock, Trash2, ChevronRight as ChevronRightIcon, ChevronDown as ChevronDownIcon,
-  Link2, Unlink, LayoutDashboard,
+  Link2, Unlink, LayoutDashboard, X,
 } from "lucide-react-native";
 import { useDrawingStore } from "@/store/drawingStore";
 import { useTickStore } from "@/store/tickStore";
@@ -251,7 +251,7 @@ const ObjectsSlide = memo(function ObjectsSlide({
           </View>
         ) : (
           Object.entries(byType).map(([type, items]) => {
-            const iconName = TOOL_ICON_NAMES[type] ?? "pencil-outline";
+            const ToolTypeIcon = TOOL_ICON_NAMES[type] ?? Minus;
             const label = TOOL_LABELS[type] ?? type.replace(/_/g, " ");
             const isCollapsed = collapsed[type];
             const allVisible = items.every(d => d.isVisible !== false);
@@ -689,32 +689,32 @@ const RightToolbar = memo(function RightToolbar({
           bounces={false}
         >
           <ToolBtn
-            iconName="list-outline"
+            Icon={List}
             label="Watchlist"
             active={openPanel === "watchlist"}
             onClick={() => toggle("watchlist")}
           />
           <ToolBtn
-            iconName="notifications-outline"
+            Icon={Bell}
             label="Alerts"
             onClick={onAlertClick}
           />
           <ToolBtn
-            iconName="git-branch-outline"
+            Icon={GitBranch}
             label="Object Tree"
             active={openPanel === "objects"}
             badge={drawingCount > 0 ? drawingCount : undefined}
             onClick={() => toggle("objects")}
           />
           <ToolBtn
-            iconName="grid-outline"
+            Icon={LayoutGrid}
             label="Layout"
             active={openPanel === "layout"}
             badge={layoutCount > 1 ? layoutCount : undefined}
             onClick={() => toggle("layout")}
           />
           <ToolBtn
-            iconName="calculator-outline"
+            Icon={Calculator}
             label="Calculator"
             onClick={() => console.log("[RightToolbar] Calculator panel coming soon")}
           />
@@ -722,18 +722,18 @@ const RightToolbar = memo(function RightToolbar({
           <View style={styles.railDivider} />
 
           <ToolBtn
-            iconName="camera-outline"
+            Icon={Camera}
             label="Screenshot"
             active={showCameraMenu}
             onClick={() => setShowCameraMenu(v => !v)}
           />
           <ToolBtn
-            iconName={isFullscreen ? "contract-outline" : "expand-outline"}
+            Icon={isFullscreen ? Minimize2 : Maximize2}
             label={isFullscreen ? "Exit Fullscreen" : "Fullscreen"}
             onClick={onFullscreen}
           />
           <ToolBtn
-            iconName="settings-outline"
+            Icon={Settings}
             label="Settings"
             active={showSettings}
             onClick={onSettings}

@@ -163,10 +163,9 @@ export default function AccountCard({ account }: Props) {
           <View style={styles.statusRow}>
             {isConnecting ? (
               <ActivityIndicator size={12} color={CONNECTED_CLR} />
-            ) : (
-              {isConnected
+            ) : (isConnected
                 ? <Wifi size={14} color={CONNECTED_CLR} />
-                : <WifiOff size={14} color="#6b7280" />}
+                : <WifiOff size={14} color="#6b7280" />
             )}
             <Text style={[styles.statusText, isConnected && styles.statusTextConnected]}>
               {isConnected

@@ -20,7 +20,7 @@
  */
 import { useState, useEffect, useRef, useCallback } from "react";
 import { View, Text, Pressable, ScrollView } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
+import { Wifi, ChevronDown, ChevronUp } from "lucide-react-native";
 import {
   getAssetClass, getAssetClassLabel, getProviderLabel, getRoutingReason,
   updateSymbolProviderRouting,
