@@ -342,7 +342,7 @@ export function DeltaApiConnectForm({ onSuccess, onError }: DeltaApiConnectFormP
     return (
       <View style={styles.successContainer}>
         <View style={styles.successIconWrap}>
-          <Ionicons name="checkmark-circle" size={32} color="#00FFB4" />
+          <CheckCircle2 size={32} color="#00FFB4" />
         </View>
         <View>
           <Text style={styles.successTitle}>Connected to Delta Exchange</Text>
@@ -365,7 +365,7 @@ export function DeltaApiConnectForm({ onSuccess, onError }: DeltaApiConnectFormP
       {oauthConfigured && (
         <View style={styles.oauthBox}>
           <View style={styles.oauthHeader}>
-            <Ionicons name="shield-outline" size={14} color="#B7FF5A" style={styles.oauthIcon} />
+            <Shield size={14} color="#B7FF5A" style={styles.oauthIcon} />
             <View>
               <Text style={styles.oauthTitle}>Connect via OAuth 2.0</Text>
               <Text style={styles.oauthSub}>
@@ -399,7 +399,7 @@ export function DeltaApiConnectForm({ onSuccess, onError }: DeltaApiConnectFormP
       {hasImported && (
         <View style={styles.importedBox}>
           <View style={styles.importedHeader}>
-            <Ionicons name="flash-outline" size={14} color="#00FFB4" style={styles.importedIcon} />
+            <Zap size={14} color="#00FFB4" style={styles.importedIcon} />
             <View>
               <Text style={styles.importedTitle}>Imported credentials found</Text>
               <Text style={styles.importedSub}>
@@ -435,7 +435,7 @@ export function DeltaApiConnectForm({ onSuccess, onError }: DeltaApiConnectFormP
       <View style={styles.fieldGroup}>
         <Text style={styles.fieldLabel}>API KEY</Text>
         <View style={[styles.inputRow, apiKey ? styles.inputRowActive : null]}>
-          <Ionicons name="key-outline" size={14} color="rgba(255,255,255,0.35)" style={styles.inputIcon} />
+          <Key size={14} color="rgba(255,255,255,0.35)" style={styles.inputIcon} />
           <TextInput
             value={apiKey}
             onChangeText={setApiKey}
@@ -454,7 +454,7 @@ export function DeltaApiConnectForm({ onSuccess, onError }: DeltaApiConnectFormP
       <View style={styles.fieldGroup}>
         <Text style={styles.fieldLabel}>API SECRET</Text>
         <View style={[styles.inputRow, apiSecret ? styles.inputRowActive : null]}>
-          <Ionicons name="lock-closed-outline" size={14} color="rgba(255,255,255,0.35)" style={styles.inputIcon} />
+          <Lock size={14} color="rgba(255,255,255,0.35)" style={styles.inputIcon} />
           <TextInput
             value={apiSecret}
             onChangeText={setApiSecret}
@@ -472,11 +472,9 @@ export function DeltaApiConnectForm({ onSuccess, onError }: DeltaApiConnectFormP
             hitSlop={8}
             style={styles.eyeBtn}
           >
-            <Ionicons
-              name={showSecret ? "eye-off-outline" : "eye-outline"}
-              size={14}
-              color="rgba(255,255,255,0.35)"
-            />
+            {showSecret
+              ? <EyeOff size={14} color="rgba(255,255,255,0.35)" />
+              : <Eye size={14} color="rgba(255,255,255,0.35)" />}
           </Pressable>
         </View>
         <Text style={styles.fieldHint}>
@@ -491,7 +489,7 @@ export function DeltaApiConnectForm({ onSuccess, onError }: DeltaApiConnectFormP
           <Text style={styles.fieldLabelOptional}>(optional)</Text>
         </Text>
         <View style={styles.inputRow}>
-          <Ionicons name="pricetag-outline" size={14} color="rgba(255,255,255,0.35)" style={styles.inputIcon} />
+          <Tag size={14} color="rgba(255,255,255,0.35)" style={styles.inputIcon} />
           <TextInput
             value={label}
             onChangeText={setLabel}
@@ -506,7 +504,7 @@ export function DeltaApiConnectForm({ onSuccess, onError }: DeltaApiConnectFormP
       {/* ── Error banner */}
       {status === "error" && (
         <View style={styles.errorBox}>
-          <Ionicons name="close-circle-outline" size={15} color="#EF4444" style={styles.errorIcon} />
+          <XCircle size={15} color="#EF4444" style={styles.errorIcon} />
           <Text style={styles.errorMsg}>{errorMsg}</Text>
         </View>
       )}
@@ -540,7 +538,7 @@ export function DeltaApiConnectForm({ onSuccess, onError }: DeltaApiConnectFormP
           }
           style={({ pressed }) => [styles.externalLink, pressed && { opacity: 0.7 }]}
         >
-          <Ionicons name="open-outline" size={11} color="rgba(255,255,255,0.35)" />
+          <ExternalLink size={11} color="rgba(255,255,255,0.35)" />
           <Text style={styles.externalLinkText}>Create API keys on delta.exchange</Text>
         </Pressable>
       </View>

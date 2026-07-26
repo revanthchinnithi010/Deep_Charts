@@ -28,7 +28,11 @@ import {
   View, Text, Pressable, ScrollView, FlatList,
   StyleSheet, Modal, Animated, ActivityIndicator,
 } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
+import {
+  TrendingUp, ArrowRight, Minus, Square, LayoutGrid, AlertCircle,
+  Activity, CheckCircle2, Timer, MoreHorizontal, Pencil, Copy, RefreshCw,
+  Play, Pause, Trash2, Clock, Globe, Plus,
+} from "lucide-react-native";
 import { DrawingAlertModal, type DrawingAlertRow } from "./DrawingAlertModal";
 import { fmtPrice } from "@/lib/fmtPrice";
 import { getApiBase } from "@/lib/apiBase";
@@ -37,12 +41,13 @@ const BASE = getApiBase();
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 
-const DRAWING_ICON_NAMES: Record<string, string> = {
-  trendline:       "trending-up-outline",
-  ray:             "arrow-forward-outline",
-  horizontal_line: "remove-outline",
-  rectangle:       "square-outline",
-  channel:         "grid-outline",
+type LucideIcon = React.ComponentType<{ size: number; color: string }>;
+const DRAWING_ICONS: Record<string, LucideIcon> = {
+  trendline:       TrendingUp,
+  ray:             ArrowRight,
+  horizontal_line: Minus,
+  rectangle:       Square,
+  channel:         LayoutGrid,
 };
 
 const DRAWING_LABELS: Record<string, string> = {
@@ -125,7 +130,7 @@ function StatusBadge({ status, isTriggered }: { status: string; isTriggered: boo
   if (isTriggered || status === "triggered") {
     return (
       <View style={[s.badge, { backgroundColor: "rgba(239,68,68,0.15)" }]}>
-        <Ionicons name="checkmark-circle-outline" size={10} color="#f87171" />
+        <CheckCircle2 size={10} color="#f87171" />
         <Text style={[s.badgeText, { color: "#f87171" }]}>Triggered</Text>
       </View>
     );
@@ -133,7 +138,7 @@ function StatusBadge({ status, isTriggered }: { status: string; isTriggered: boo
   if (status === "paused") {
     return (
       <View style={[s.badge, { backgroundColor: "rgba(251,191,36,0.15)" }]}>
-        <Ionicons name="time-outline" size={10} color="#fbbf24" />
+        <Clock size={10} color="#fbbf24" />
         <Text style={[s.badgeText, { color: "#fbbf24" }]}>Paused</Text>
       </View>
     );
@@ -141,7 +146,7 @@ function StatusBadge({ status, isTriggered }: { status: string; isTriggered: boo
   if (status === "expired") {
     return (
       <View style={[s.badge, { backgroundColor: "rgba(107,114,128,0.2)" }]}>
-        <Ionicons name="alert-circle-outline" size={10} color="#9ca3af" />
+        <AlertCircle size={10} color="#9ca3af" />
         <Text style={[s.badgeText, { color: "#9ca3af" }]}>Expired</Text>
       </View>
     );
@@ -182,7 +187,7 @@ function RowMenu({
         hitSlop={8}
         style={s.menuBtn}
       >
-        <Ionicons name="ellipsis-horizontal" size={14} color="rgba(167,184,169,0.5)" />
+        <MoreHorizontal size={14} color="rgba(167,184,169,0.5)" />
       </Pressable>
 
       <Modal
@@ -201,7 +206,7 @@ function RowMenu({
             onPress={() => { close(); onEdit(); }}
             style={s.menuItem}
           >
-            <Ionicons name="pencil-outline" size={12} color="rgba(167,184,169,0.9)" />
+            <Pencil size={12} color="rgba(167,184,169,0.9)" />
             <Text style={s.menuItemText}>Edit Alert</Text>
           </Pressable>
 
@@ -209,7 +214,7 @@ function RowMenu({
             onPress={() => { close(); onClone(); }}
             style={s.menuItem}
           >
-            <Ionicons name="copy-outline" size={12} color="rgba(167,184,169,0.9)" />
+            <Copy size={12} color="rgba(167,184,169,0.9)" />
             <Text style={s.menuItemText}>Clone</Text>
           </Pressable>
 
@@ -218,7 +223,7 @@ function RowMenu({
               onPress={() => { close(); onReset(); }}
               style={s.menuItem}
             >
-              <Ionicons name="refresh-outline" size={12} color="rgba(167,184,169,0.9)" />
+              <RefreshCw size={12} color="rgba(167,184,169,0.9)" />
               <Text style={s.menuItemText}>Reset Alert</Text>
             </Pressable>
           ) : (
@@ -226,11 +231,9 @@ function RowMenu({
               onPress={() => { close(); onTogglePause(); }}
               style={s.menuItem}
             >
-              <Ionicons
-                name={isPaused ? "play-circle-outline" : "pause-circle-outline"}
-                size={12}
-                color="rgba(167,184,169,0.9)"
-              />
+              {isPaused
+                ? <Play size={12} color="rgba(167,184,169,0.9)" />
+                : <Pause size={12} color="rgba(167,184,169,0.9)" />}
               <Text style={s.menuItemText}>{isPaused ? "Resume" : "Pause"}</Text>
             </Pressable>
           )}
@@ -241,7 +244,7 @@ function RowMenu({
             onPress={() => { close(); onDelete(); }}
             style={s.menuItem}
           >
-            <Ionicons name="trash-outline" size={12} color="rgba(248,113,113,0.8)" />
+            <Trash2 size={12} color="rgba(248,113,113,0.8)" />
             <Text style={[s.menuItemText, { color: "rgba(248,113,113,0.8)" }]}>Delete</Text>
           </Pressable>
         </View>

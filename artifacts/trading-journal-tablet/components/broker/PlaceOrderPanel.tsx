@@ -485,7 +485,7 @@ export function PlaceOrderPanel({ symbol }: Props) {
       {/* Header */}
       <View style={styles.header}>
         <View style={styles.headerLeft}>
-          <Ionicons name="cart-outline" size={14} color={ACCENT} />
+          <ShoppingCart size={14} color={ACCENT} />
           <Text style={styles.headerTitle}>Place Order</Text>
           <View style={styles.symbolBadge}>
             <Text style={styles.symbolBadgeText}>{symbol}</Text>
@@ -499,14 +499,14 @@ export function PlaceOrderPanel({ symbol }: Props) {
             hitSlop={8}
             accessibilityLabel="Refresh symbol spec"
           >
-            <Ionicons name="refresh-outline" size={12} color={TEXT_DIM} />
+            <RefreshCw size={12} color={TEXT_DIM} />
           </Pressable>
           <Pressable
             onPress={() => setShowPlaceOrder(false)}
             style={({ pressed }) => [styles.iconBtn, pressed && { opacity: 0.6 }]}
             hitSlop={8}
           >
-            <Ionicons name="close" size={14} color={TEXT_DIM} />
+            <X size={14} color={TEXT_DIM} />
           </Pressable>
         </View>
       </View>
@@ -606,7 +606,7 @@ export function PlaceOrderPanel({ symbol }: Props) {
                   pressed && !specDisabled && { opacity: 0.7 },
                 ]}
               >
-                <Ionicons name="remove-outline" size={18} color={TEXT_HI} />
+                <Minus size={18} color={TEXT_HI} />
               </Pressable>
 
               <TextInput
@@ -631,7 +631,7 @@ export function PlaceOrderPanel({ symbol }: Props) {
                   pressed && !specDisabled && { opacity: 0.7 },
                 ]}
               >
-                <Ionicons name="add-outline" size={18} color={TEXT_HI} />
+                <Plus size={18} color={TEXT_HI} />
               </Pressable>
             </View>
 
@@ -760,13 +760,13 @@ export function PlaceOrderPanel({ symbol }: Props) {
           {/* Status messages */}
           {status === "success" && (
             <View style={styles.successMsg}>
-              <Ionicons name="checkmark-circle-outline" size={14} color={ACCENT} style={{ flexShrink: 0 }} />
+              <CheckCircle2 size={14} color={ACCENT} style={{ flexShrink: 0 }} />
               <Text style={[styles.statusMsgText, { color: ACCENT }]}>{msg}</Text>
             </View>
           )}
           {status === "error" && (
             <View style={styles.errorMsg}>
-              <Ionicons name="close-circle-outline" size={14} color="#ef4444" style={{ flexShrink: 0 }} />
+              <XCircle size={14} color="#ef4444" style={{ flexShrink: 0 }} />
               <Text style={[styles.statusMsgText, { color: SELL_CLR }]}>{msg}</Text>
             </View>
           )}

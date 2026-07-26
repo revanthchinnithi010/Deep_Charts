@@ -20,7 +20,7 @@ import { useState, useCallback, memo } from "react";
 import {
   View, Text, Pressable, TextInput, StyleSheet,
 } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
+import { X, TrendingUp, TrendingDown, AlertCircle } from "lucide-react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { fmtPrice } from "@/lib/fmtPrice";
 
@@ -103,7 +103,7 @@ const BuySellPanel = memo(function BuySellPanel({ symbol, currentPrice, onClose 
           <Text style={s.livePrice}>{fmtPrice(currentPrice, symbol)}</Text>
         )}
         <Pressable onPress={onClose} style={s.closeBtn} hitSlop={8}>
-          <Ionicons name="close" size={13} color="rgba(167,184,169,0.45)" />
+          <X size={13} color="rgba(167,184,169,0.45)" />
         </Pressable>
       </View>
 
@@ -126,11 +126,9 @@ const BuySellPanel = memo(function BuySellPanel({ symbol, currentPrice, onClose 
                   : "transparent",
               }}
             >
-              <Ionicons
-                name={s_ === "buy" ? "trending-up" : "trending-down"}
-                size={11}
-                color={side === s_ ? (s_ === "buy" ? "#B7FF5A" : "#ef4444") : "rgba(167,184,169,0.5)"}
-              />
+              {s_ === "buy"
+                ? <TrendingUp size={11} color={side === s_ ? "#B7FF5A" : "rgba(167,184,169,0.5)"} />
+                : <TrendingDown size={11} color={side === s_ ? "#ef4444" : "rgba(167,184,169,0.5)"} />}
               <Text style={{
                 fontWeight: "800",
                 fontSize:   11,
@@ -341,12 +339,7 @@ const BuySellPanel = memo(function BuySellPanel({ symbol, currentPrice, onClose 
 
         {/* Disclaimer */}
         <View style={{ flexDirection: "row", alignItems: "flex-start", gap: 4 }}>
-          <Ionicons
-            name="alert-circle"
-            size={9}
-            color="rgba(167,184,169,0.3)"
-            style={{ marginTop: 1 }}
-          />
+          <AlertCircle size={9} color="rgba(167,184,169,0.3)" style={{ marginTop: 1 }} />
           <Text style={{ fontSize: 8.5, color: "rgba(167,184,169,0.3)", lineHeight: 12, flex: 1 }}>
             Paper trading only. No real orders placed.
           </Text>

@@ -29,7 +29,10 @@ import {
   View, Text, Pressable, ScrollView,
   StyleSheet, Modal, TextInput,
 } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
+import {
+  Code2, Eye, EyeOff, Settings, Trash2, MoreHorizontal,
+  ChevronDown, ChevronUp, Copy,
+} from "lucide-react-native";
 import { useIndicatorStore, type AppliedIndicator } from "@/store/indicatorStore";
 
 // ── PineModal ─────────────────────────────────────────────────────────────────
@@ -54,7 +57,7 @@ function PineModal({ code, name, onClose }: PineModalProps) {
         {/* Header */}
         <View style={pm.header}>
           <View style={pm.headerLeft}>
-            <Ionicons name="code-slash-outline" size={13} color="#22c55e" />
+            <Code2 size={13} color="#22c55e" />
             <Text style={pm.headerTitle}>{name} — Pine Script</Text>
           </View>
           <Pressable onPress={onClose} hitSlop={8} style={pm.closeBtn}>
@@ -149,13 +152,14 @@ interface MoreMenuProps {
 }
 
 function MoreMenu({ indicator, onClose, onDelete, onShowPine, onDuplicate }: MoreMenuProps) {
-  const items: { iconName: string; label: string; action: () => void; danger?: boolean }[] = [
-    { iconName: "eye-outline",    label: "Toggle visibility", action: () => { onClose(); } },
-    { iconName: "copy-outline",   label: "Duplicate",         action: () => { onDuplicate(); onClose(); } },
+  type MenuItem = { Icon: React.ComponentType<{ size: number; color: string }>; label: string; action: () => void; danger?: boolean };
+  const items: MenuItem[] = [
+    { Icon: Eye,    label: "Toggle visibility", action: () => { onClose(); } },
+    { Icon: Copy,   label: "Duplicate",         action: () => { onDuplicate(); onClose(); } },
     ...(indicator.type === "CUSTOM" ? [
-      { iconName: "code-slash-outline", label: "Show PineScript", action: () => { onShowPine(); onClose(); } },
+      { Icon: Code2, label: "Show PineScript", action: () => { onShowPine(); onClose(); } } as MenuItem,
     ] : []),
-    { iconName: "trash-outline",  label: "Remove",            action: () => { onDelete(); onClose(); }, danger: true },
+    { Icon: Trash2, label: "Remove",            action: () => { onDelete(); onClose(); }, danger: true },
   ];
 
   return (
@@ -174,8 +178,7 @@ function MoreMenu({ indicator, onClose, onDelete, onShowPine, onDuplicate }: Mor
             onPress={item.action}
             style={mm.item}
           >
-            <Ionicons
-              name={item.iconName as any}
+            <item.Icon
               size={12}
               color={item.danger ? "#f87171" : "rgba(200,228,204,0.85)"}
             />
@@ -257,32 +260,30 @@ function IndicatorTag({ indicator, onToggleVisible, onDelete }: {
             onPress={onToggleVisible}
             style={t.iconBtn}
           >
-            <Ionicons
-              name={indicator.visible ? "eye-outline" : "eye-off-outline"}
-              size={12}
-              color="rgba(183,220,190,0.55)"
-            />
+            {indicator.visible
+              ? <Eye size={12} color="rgba(183,220,190,0.55)" />
+              : <EyeOff size={12} color="rgba(183,220,190,0.55)" />}
           </Pressable>
           <Pressable
             hitSlop={6}
             onPress={() => {}}
             style={t.iconBtn}
           >
-            <Ionicons name="settings-outline" size={12} color="rgba(183,220,190,0.55)" />
+            <Settings size={12} color="rgba(183,220,190,0.55)" />
           </Pressable>
           <Pressable
             hitSlop={6}
             onPress={onDelete}
             style={t.iconBtn}
           >
-            <Ionicons name="trash-outline" size={12} color="rgba(183,220,190,0.55)" />
+            <Trash2 size={12} color="rgba(183,220,190,0.55)" />
           </Pressable>
           <Pressable
             hitSlop={6}
             onPress={() => setShowMore(true)}
             style={t.iconBtn}
           >
-            <Ionicons name="ellipsis-horizontal" size={12} color="rgba(183,220,190,0.55)" />
+            <MoreHorizontal size={12} color="rgba(183,220,190,0.55)" />
           </Pressable>
         </View>
       </View>
@@ -375,11 +376,9 @@ const IndicatorTags = memo(function IndicatorTags({ topOffset = 8 }: { topOffset
           style={s.collapseBtn}
           hitSlop={6}
         >
-          <Ionicons
-            name={collapsed ? "chevron-down-outline" : "chevron-up-outline"}
-            size={10}
-            color="rgba(183,220,190,0.6)"
-          />
+          {collapsed
+            ? <ChevronDown size={10} color="rgba(183,220,190,0.6)" />
+            : <ChevronUp size={10} color="rgba(183,220,190,0.6)" />}
           <Text style={s.collapseBtnText}>
             {appliedIndicators.length} indicator{appliedIndicators.length !== 1 ? "s" : ""}
           </Text>

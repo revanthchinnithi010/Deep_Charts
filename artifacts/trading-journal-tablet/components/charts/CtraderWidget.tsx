@@ -68,7 +68,12 @@ import {
   View, Text, Pressable, TextInput, ScrollView,
   ActivityIndicator, Platform, StyleSheet,
 } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
+import {
+  Wifi, Key, Users, User, BookOpen,
+  CheckCircle2, XCircle, Clock, Check, Copy,
+  RefreshCw, BookMarked, Square as StopSquare, Radio,
+  Zap, CloudOff, Users2, Power, ChevronDown, ChevronRight,
+} from "lucide-react-native";
 import * as Clipboard from "expo-clipboard";
 import { useBrokerStore } from "@/store/brokerStore";
 import type { BrokerAccount } from "@/types/broker";
@@ -203,13 +208,14 @@ const LOG_COLORS: Record<LogLevel, string> = {
   step:    "#60a5fa",
 };
 
-// Ionicons names for each step (replaces Lucide React.ElementType map)
-const STEP_ICON: Record<string, string> = {
-  config:   "wifi-outline",
-  token:    "key-outline",
-  accounts: "people-outline",
-  auth:     "person-circle-outline",
-  symbols:  "book-outline",
+type LucideIcon = React.ComponentType<{ size: number; color: string }>;
+// Icon map for each step card
+const STEP_ICON: Record<string, LucideIcon> = {
+  config:   Wifi,
+  token:    Key,
+  accounts: Users,
+  auth:     User,
+  symbols:  BookOpen,
 };
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
@@ -224,12 +230,12 @@ function fmtTime(epoch: number): string {
 
 // ─── Sub-components ──────────────────────────────────────────────────────────
 
-function StepCard({ icon, title, state, children }: {
-  icon: string; title: string; state: StepState; children: React.ReactNode;
+function StepCard({ icon: Icon, title, state, children }: {
+  icon: LucideIcon; title: string; state: StepState; children: React.ReactNode;
 }) {
   const [expanded, setExpanded] = useState(true);
   const stateColor = state === "success" ? "#34d399" : state === "error" ? "#f87171" : state === "loading" ? "#fbbf24" : "rgba(148,163,184,0.50)";
-  const stateIconName = state === "success" ? "checkmark-circle" : state === "error" ? "close-circle" : "time-outline";
+  const StateIcon = state === "success" ? CheckCircle2 : state === "error" ? XCircle : Clock;
   const borderOpacity = state === "idle" ? "0.06" : "0.10";
   return (
     <View style={[ss.card, { borderColor: `rgba(255,255,255,${borderOpacity})` }]}>
@@ -238,11 +244,11 @@ function StepCard({ icon, title, state, children }: {
         style={ss.cardHeader}
       >
         <View style={ss.stepIconBox}>
-          <Ionicons name={icon as any} size={14} color="rgba(148,163,184,0.70)" />
+          <Icon size={14} color="rgba(148,163,184,0.70)" />
         </View>
         <Text style={ss.cardTitle}>{title}</Text>
-        <Ionicons name={stateIconName as any} size={15} color={stateColor} />
-        <Ionicons name={expanded ? "chevron-down" : "chevron-forward"} size={13} color="rgba(148,163,184,0.40)" />
+        <StateIcon size={15} color={stateColor} />
+        {expanded ? <ChevronDown size={13} color="rgba(148,163,184,0.40)" /> : <ChevronRight size={13} color="rgba(148,163,184,0.40)" />}
       </Pressable>
       {expanded && (
         <View style={ss.cardBody}>
@@ -267,11 +273,9 @@ function MonoBox({ label, value, copyable = false }: { label: string; value: str
         <Text style={ss.monoBoxValue} selectable>{value}</Text>
         {copyable && (
           <Pressable onPress={doCopy} hitSlop={8}>
-            <Ionicons
-              name={copied ? "checkmark" : "copy-outline"}
-              size={12}
-              color={copied ? "#34d399" : "rgba(148,163,184,0.40)"}
-            />
+            {copied
+              ? <Check size={12} color="#34d399" />
+              : <Copy size={12} color="rgba(148,163,184,0.40)" />}
           </Pressable>
         )}
       </View>
@@ -323,10 +327,10 @@ function ActionBtn({ onClick, loading, disabled, children, variant = "primary" }
 }
 
 // Helper: renders icon + label row inside ActionBtn
-function BtnContent({ icon, label, color }: { icon: string; label: string; color: string }) {
+function BtnContent({ icon: Icon, label, color }: { icon: LucideIcon; label: string; color: string }) {
   return (
     <View style={ss.btnContentRow}>
-      <Ionicons name={icon as any} size={11} color={color} />
+      <Icon size={11} color={color} />
       <Text style={[ss.actionBtnText, { color }]}>{label}</Text>
     </View>
   );
@@ -794,7 +798,7 @@ export function CtraderWidget() {
         </View>
       ) : sessionOk ? (
         <View style={[ss.bannerRow, ss.bannerSuccess]}>
-          <Ionicons name="checkmark-circle" size={14} color="#34d399" />
+          <CheckCircle2 size={14} color="#34d399" />
           <Text style={[ss.bannerLabel, { color: "#34d399" }]}>Session Restored</Text>
           {restoreResult?.tokenRefreshed && (
             <CWBadge label="Token Refreshed" color="#fbbf24" bg="rgba(245,158,11,0.10)" />
@@ -803,12 +807,12 @@ export function CtraderWidget() {
             <CWBadge label={`Live Feed · ${restoreResult?.subscriptionsRestored ?? 0} subs`} color="#60a5fa" bg="rgba(59,130,246,0.10)" />
           )}
           <ActionBtn onClick={() => restoreSession()} variant="ghost" loading={restoreLoading}>
-            <BtnContent icon="refresh-outline" label="Re-check" color="rgba(255,255,255,0.65)" />
+            <BtnContent icon={RefreshCw} label="Re-check" color="rgba(255,255,255,0.65)" />
           </ActionBtn>
         </View>
       ) : sessionInfo?.tokenExists ? (
         <View style={[ss.bannerRow, ss.bannerWarn]}>
-          <Ionicons name="time-outline" size={14} color="#fbbf24" />
+          <Clock size={14} color="#fbbf24" />
           <Text style={[ss.bannerLabel, { color: "#fbbf24" }]}>
             {sessionInfo.tokenExpired ? "Token Expired — Re-authorize below" : "Partial Session — Complete setup below"}
           </Text>
@@ -839,11 +843,9 @@ export function CtraderWidget() {
       {/* ── Status banner ── */}
       <View style={[ss.bannerRow, connected ? ss.statusConnected : ss.statusDisconnected]}>
         <View style={ss.statusLeft}>
-          <Ionicons
-            name={connected ? "power-outline" : "flash-outline"}
-            size={14}
-            color={connected ? "#34d399" : "rgba(148,163,184,0.50)"}
-          />
+          {connected
+            ? <Power size={14} color="#34d399" />
+            : <Zap size={14} color="rgba(148,163,184,0.50)" />}
           <Text style={[ss.bannerLabel, { color: connected ? "#34d399" : "rgba(148,163,184,0.70)" }]}>
             {connected ? "Connected" : oaStatus?.connected ? "Token Expired" : "Not Connected"}
           </Text>
@@ -868,27 +870,27 @@ export function CtraderWidget() {
       {/* ── Quick actions ── */}
       <View style={ss.actionsRow}>
         <ActionBtn onClick={() => { loadConfig(); loadStatus(); loadSpotsStatus(); }} variant="ghost">
-          <BtnContent icon="refresh-outline" label="Reload Status" color="rgba(255,255,255,0.65)" />
+          <BtnContent icon={RefreshCw} label="Reload Status" color="rgba(255,255,255,0.65)" />
         </ActionBtn>
         <ActionBtn onClick={handleRefreshSymbols} loading={symbolsLoading} disabled={!connected} variant="ghost">
-          <BtnContent icon="book-outline" label="Refresh Symbols" color="rgba(255,255,255,0.65)" />
+          <BtnContent icon={BookMarked} label="Refresh Symbols" color="rgba(255,255,255,0.65)" />
         </ActionBtn>
         {spotsStatus?.running ? (
           <ActionBtn onClick={handleStopFeed} loading={feedLoading} variant="danger">
-            <BtnContent icon="stop-circle-outline" label="Stop Live Feed" color="#f87171" />
+            <BtnContent icon={StopSquare} label="Stop Live Feed" color="#f87171" />
           </ActionBtn>
         ) : (
           <ActionBtn onClick={handleStartFeed} loading={feedLoading} disabled={!connected} variant="success">
-            <BtnContent icon="radio-outline" label="Start Live Feed" color="#34d399" />
+            <BtnContent icon={Radio} label="Start Live Feed" color="#34d399" />
           </ActionBtn>
         )}
         {connected && (
           <>
             <ActionBtn onClick={handleRefresh} loading={refreshLoading} variant="ghost">
-              <BtnContent icon="refresh-outline" label="Refresh Token" color="rgba(255,255,255,0.65)" />
+              <BtnContent icon={RefreshCw} label="Refresh Token" color="rgba(255,255,255,0.65)" />
             </ActionBtn>
             <ActionBtn onClick={handleDisconnect} loading={disconnectLoading} variant="danger">
-              <BtnContent icon="cloud-offline-outline" label="Disconnect" color="#f87171" />
+              <BtnContent icon={CloudOff} label="Disconnect" color="#f87171" />
             </ActionBtn>
           </>
         )}
@@ -962,7 +964,7 @@ export function CtraderWidget() {
                 disabled={!config?.configured || !config.authUrl}
                 variant="ghost"
               >
-                <BtnContent icon="refresh-outline" label="Reconnect (new OAuth flow)" color="rgba(255,255,255,0.65)" />
+                <BtnContent icon={RefreshCw} label="Reconnect (new OAuth flow)" color="rgba(255,255,255,0.65)" />
               </ActionBtn>
             </View>
           </>
@@ -977,7 +979,7 @@ export function CtraderWidget() {
               disabled={!config?.configured || !config?.authUrl}
             >
               <BtnContent
-                icon="flash-outline"
+                icon={Zap}
                 label={oauthLoading ? "Waiting for OAuth…" : "Start OAuth →"}
                 color="#60a5fa"
               />
@@ -993,7 +995,7 @@ export function CtraderWidget() {
         ) : (
           <>
             <ActionBtn onClick={fetchAccounts} loading={accountsLoading}>
-              <BtnContent icon="people-outline" label="Fetch Accounts" color="#60a5fa" />
+              <BtnContent icon={Users2} label="Fetch Accounts" color="#60a5fa" />
             </ActionBtn>
 
             {accounts?.error && (
@@ -1051,7 +1053,7 @@ export function CtraderWidget() {
                             </View>
                             {isSelected && (
                               <View style={ss.selectedBadge}>
-                                <Ionicons name="checkmark-circle" size={9} color="#34d399" />
+                                <CheckCircle2 size={9} color="#34d399" />
                                 <Text style={ss.selectedBadgeText}>Selected</Text>
                               </View>
                             )}
@@ -1249,11 +1251,9 @@ export function CtraderWidget() {
           <Text style={ss.logHeaderLabel}>Verbose Log</Text>
           <View style={ss.logHeaderRight}>
             <Text style={ss.logCount}>{logs.length} entries</Text>
-            <Ionicons
-              name={logOpen ? "chevron-down" : "chevron-forward"}
-              size={13}
-              color="rgba(148,163,184,0.40)"
-            />
+            {logOpen
+              ? <ChevronDown size={13} color="rgba(148,163,184,0.40)" />
+              : <ChevronRight size={13} color="rgba(148,163,184,0.40)" />}
           </View>
         </Pressable>
         {logOpen && (

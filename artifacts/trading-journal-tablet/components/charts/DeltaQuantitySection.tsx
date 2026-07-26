@@ -21,7 +21,7 @@
  */
 import { useState, useMemo, useEffect } from "react";
 import { View, Text, Pressable, TextInput } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
+import { Minus, ChevronDown, Plus } from "lucide-react-native";
 import {
   type DeltaQtySpec,
   contractsToDisplayQty,
@@ -205,7 +205,7 @@ export function DeltaQuantitySection({ dq, lotQty, setLotQty, livePrice, onTypin
             opacity:         atMin ? 0.35 : 1,
           }}
         >
-          <Ionicons name="remove" size={13} color={TEXT_HI} />
+          <Minus size={13} color={TEXT_HI} />
         </Pressable>
 
         {/* Input + unit selector */}
@@ -278,7 +278,7 @@ export function DeltaQuantitySection({ dq, lotQty, setLotQty, livePrice, onTypin
             <Text style={{ color: TEXT_HI, fontSize: 11, fontWeight: "700" }}>
               {unitLabel(unit, dq)}
             </Text>
-            <Ionicons name="chevron-down" size={11} color={TEXT_DIM} />
+            <ChevronDown size={11} color={TEXT_DIM} />
           </Pressable>
         </View>
 
@@ -299,7 +299,7 @@ export function DeltaQuantitySection({ dq, lotQty, setLotQty, livePrice, onTypin
             opacity:         atMax ? 0.35 : 1,
           }}
         >
-          <Ionicons name="add" size={13} color={TEXT_HI} />
+          <Plus size={13} color={TEXT_HI} />
         </Pressable>
       </View>
 

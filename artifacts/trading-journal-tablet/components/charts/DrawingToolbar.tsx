@@ -30,7 +30,7 @@ import {
   StyleSheet, Platform,
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { Ionicons } from "@expo/vector-icons";
+import { Star, Undo2, Redo2 } from "lucide-react-native";
 import Svg, {
   Line, Circle, Path, Rect, Polyline, Text as SvgText,
 } from "react-native-svg";
@@ -476,10 +476,10 @@ function ToolRow({ tool, activeToolKey, favorites, onSelect, onToggleFav }: {
         onPress={() => onToggleFav(tool.key)}
         hitSlop={8}
       >
-        <Ionicons
-          name={fav ? "star" : "star-outline"}
+        <Star
           size={13}
           color={fav ? "#f59e0b" : "rgba(255,255,255,0.3)"}
+          fill={fav ? "#f59e0b" : "transparent"}
         />
       </Pressable>
     </View>
@@ -756,12 +756,12 @@ const DrawingToolbar = memo(function DrawingToolbar() {
 
           {/* Undo */}
           <Pressable style={[styles.btn, !canUndo && styles.btnDisabled]} onPress={undo} disabled={!canUndo}>
-            <Ionicons name="arrow-undo-outline" size={18} color="rgba(232,240,237,0.85)" />
+            <Undo2 size={18} color="rgba(232,240,237,0.85)" />
           </Pressable>
 
           {/* Redo */}
           <Pressable style={[styles.btn, !canRedo && styles.btnDisabled]} onPress={redo} disabled={!canRedo}>
-            <Ionicons name="arrow-redo-outline" size={18} color="rgba(232,240,237,0.85)" />
+            <Redo2 size={18} color="rgba(232,240,237,0.85)" />
           </Pressable>
 
           {/* Separator */}

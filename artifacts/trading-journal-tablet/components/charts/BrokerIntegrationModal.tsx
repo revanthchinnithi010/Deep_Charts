@@ -36,7 +36,10 @@ import {
   useWindowDimensions,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { Ionicons } from "@expo/vector-icons";
+import {
+  ShieldCheck, Server, Wifi, Zap, Globe, CheckCircle2,
+  Eye, EyeOff, XCircle, RefreshCw, ChevronLeft, X,
+} from "lucide-react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { CtraderWidget } from "@/components/charts/CtraderWidget";
 import { BrokerListContent } from "@/components/broker/BrokerSelectBottomSheet";
@@ -51,23 +54,24 @@ import type { BrokerId } from "@/types/broker";
 type BrokerTab    = "ctrader" | "delta" | "fusion";
 type ActiveBroker = "delta" | "mt5" | null;
 
-const TABS: { id: BrokerTab; label: string; iconName: string; badge?: string }[] = [
-  { id: "ctrader", label: "cTrader", iconName: "wifi"    },
-  { id: "delta",   label: "Delta",   iconName: "flash",   badge: "Δ" },
-  { id: "fusion",  label: "Fusion",  iconName: "globe-outline" },
+type LucideIcon = React.ComponentType<{ size: number; color: string }>;
+const TABS: { id: BrokerTab; label: string; Icon: LucideIcon; badge?: string }[] = [
+  { id: "ctrader", label: "cTrader", Icon: Wifi              },
+  { id: "delta",   label: "Delta",   Icon: Zap,   badge: "Δ" },
+  { id: "fusion",  label: "Fusion",  Icon: Globe             },
 ];
 
 // ── Security badges ────────────────────────────────────────────────────────────
 function SecurityBadges() {
   return (
     <View style={{ flexDirection: "row", alignItems: "center", gap: 16, marginBottom: 24, flexWrap: "wrap" }}>
-      {[
-        { iconName: "shield-checkmark",  label: "AES-256 encrypted"   },
-        { iconName: "server",            label: "Backend-only signing" },
-        { iconName: "wifi",              label: "Live WS sync"         },
-      ].map((item, i) => (
+      {([
+        { Icon: ShieldCheck, label: "AES-256 encrypted"   },
+        { Icon: Server,      label: "Backend-only signing" },
+        { Icon: Wifi,        label: "Live WS sync"         },
+      ] as { Icon: LucideIcon; label: string }[]).map((item, i) => (
         <View key={i} style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
-          <Ionicons name={item.iconName as any} size={13} color="rgba(0,255,180,0.7)" />
+          <item.Icon size={13} color="rgba(0,255,180,0.7)" />
           <Text style={{ fontSize: 12, color: "rgba(255,255,255,0.35)" }}>{item.label}</Text>
         </View>
       ))}
@@ -95,7 +99,7 @@ function SuccessBanner({ brokerName, onBack }: { brokerName: string; onBack: () 
         justifyContent:  "center",
         alignItems:      "center",
       }}>
-        <Ionicons name="checkmark-circle" size={32} color="#00FFB4" />
+        <CheckCircle2 size={32} color="#00FFB4" />
       </View>
       <View style={{ alignItems: "center" }}>
         <Text style={{ fontSize: 15, fontWeight: "600", color: "#00FFB4" }}>

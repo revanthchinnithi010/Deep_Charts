@@ -73,7 +73,7 @@ import {
   ActivityIndicator,
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { Ionicons } from "@expo/vector-icons";
+import { Star, Search, XCircle } from "lucide-react-native";
 import { useMarketStore, type BrokerName, type SymbolInfo } from "@/store/marketStore";
 import { useTickStore } from "@/store/tickStore";
 import { useCtraderSpotStore, useCtraderSpot } from "@/store/ctraderSpotStore";
@@ -402,10 +402,10 @@ const SymbolRow = memo(function SymbolRow({
           style={rowStyles.starBtn}
           accessibilityLabel={item.isFav ? "Remove from favorites" : "Add to favorites"}
         >
-          <Ionicons
-            name={item.isFav ? "star" : "star-outline"}
+          <Star
             size={15}
             color={item.isFav ? "#f59e0b" : "rgba(255,255,255,0.2)"}
+            fill={item.isFav ? "#f59e0b" : "transparent"}
           />
         </Pressable>
       </Pressable>
@@ -676,7 +676,7 @@ export const BrokerWatchlist = memo(function BrokerWatchlist({
 
       {/* ── Search input ── */}
       <View style={mainStyles.searchWrap}>
-        <Ionicons name="search-outline" size={13} color="rgba(255,255,255,0.25)" />
+        <Search size={13} color="rgba(255,255,255,0.25)" />
         <TextInput
           ref={searchRef}
           value={query}
@@ -690,7 +690,7 @@ export const BrokerWatchlist = memo(function BrokerWatchlist({
         />
         {query.length > 0 && (
           <Pressable onPress={() => setQuery("")} hitSlop={8}>
-            <Ionicons name="close-circle" size={14} color="rgba(255,255,255,0.3)" />
+            <XCircle size={14} color="rgba(255,255,255,0.3)" />
           </Pressable>
         )}
       </View>

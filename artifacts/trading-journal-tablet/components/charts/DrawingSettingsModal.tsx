@@ -98,7 +98,7 @@ function PresetColorModal({
         <View style={s.colorModalHeader}>
           <Text style={s.colorModalTitle}>Line Color</Text>
           <Pressable onPress={onClose} hitSlop={8}>
-            <Ionicons name="close" size={14} color="rgba(255,255,255,0.4)" />
+            <X size={14} color="rgba(255,255,255,0.4)" />
           </Pressable>
         </View>
         <View style={s.colorGrid}>
@@ -377,7 +377,7 @@ export const DrawingSettingsModal = memo(function DrawingSettingsModal({
             {TOOL_NAMES[drawing.toolType] ?? "Drawing"} Settings
           </Text>
           <Pressable onPress={onClose} style={s.headerClose} hitSlop={8}>
-            <Ionicons name="close" size={13} color="rgba(255,255,255,0.55)" />
+            <X size={13} color="rgba(255,255,255,0.55)" />
           </Pressable>
         </View>
 

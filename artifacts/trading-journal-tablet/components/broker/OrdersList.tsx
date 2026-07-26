@@ -140,7 +140,7 @@ const OrderRow = memo(function OrderRow({ ord }: OrderRowProps) {
             <ActivityIndicator size={12} color={SELL_CLR} />
           ) : confirm ? (
             <>
-              <Ionicons name="warning-outline" size={12} color={SELL_CLR} />
+              <AlertTriangle size={12} color={SELL_CLR} />
               <Text style={[rowStyles.cancelBtnText, rowStyles.cancelBtnTextConfirm]}>
                 Confirm Cancel
               </Text>
@@ -191,7 +191,7 @@ export function OrdersList() {
     }
     return (
       <View style={listStyles.emptyContainer}>
-        <Ionicons name="bar-chart-outline" size={32} color="rgba(57,91,67,0.4)" />
+        <BarChart2 size={32} color="rgba(57,91,67,0.4)" />
         <Text style={listStyles.emptyTextBold}>No open orders</Text>
       </View>
     );
@@ -202,7 +202,7 @@ export function OrdersList() {
       {/* Header */}
       <View style={listStyles.header}>
         <View style={listStyles.headerLeft}>
-          <Ionicons name="bar-chart-outline" size={16} color={ACCENT} />
+          <BarChart2 size={16} color={ACCENT} />
           <Text style={listStyles.headerTitle}>Open Orders</Text>
           {broker && (
             <View style={[
@@ -228,7 +228,7 @@ export function OrdersList() {
             style={({ pressed }) => [listStyles.closeBtn, pressed && { opacity: 0.7 }]}
             hitSlop={8}
           >
-            <Ionicons name="close" size={14} color={TEXT_MUTED} />
+            <X size={14} color={TEXT_MUTED} />
           </Pressable>
         </View>
       </View>

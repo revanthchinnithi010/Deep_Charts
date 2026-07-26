@@ -358,7 +358,7 @@ function PresetRow({ color, label, applied, isDeleting, onAdd, onDelete, customB
           hitSlop={6}
           style={pr.deleteBtn}
         >
-          <Ionicons name="trash-outline" size={12} color="rgba(255,255,255,0.25)" />
+          <Trash2 size={12} color="rgba(255,255,255,0.25)" />
         </Pressable>
       )}
     </View>
@@ -479,11 +479,11 @@ const IndicatorsPanel = memo(function IndicatorsPanel({ anchorEl, onClose }: Pro
           {/* Sticky header — sits above ScrollView */}
           <View style={p.header}>
             <View style={p.headerLeft}>
-              <Ionicons name="trending-up-outline" size={13} color="#2962FF" />
+              <TrendingUp size={13} color="#2962FF" />
               <Text style={p.headerTitle}>Indicators</Text>
             </View>
             <Pressable onPress={onClose} hitSlop={8} style={p.closeBtn}>
-              <Ionicons name="close-outline" size={12} color="rgba(255,255,255,0.4)" />
+              <X size={12} color="rgba(255,255,255,0.4)" />
             </Pressable>
           </View>
 
@@ -602,7 +602,7 @@ const IndicatorsPanel = memo(function IndicatorsPanel({ anchorEl, onClose }: Pro
                 onPress={() => setShowCustomModal(true)}
                 style={p.addCustomBtn}
               >
-                <Ionicons name="add-outline" size={12} color="#22c55e" />
+                <Plus size={12} color="#22c55e" />
                 <Text style={p.addCustomText}>Add Custom Indicator</Text>
               </Pressable>
             </View>

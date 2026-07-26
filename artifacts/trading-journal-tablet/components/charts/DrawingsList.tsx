@@ -20,7 +20,10 @@ import { memo, useState, useCallback } from "react";
 import {
   View, Text, Pressable, FlatList, StyleSheet,
 } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
+import {
+  TrendingUp, ArrowRight, Minus, AlignJustify, Square, GitMerge,
+  Eye, EyeOff, Trash2, Layers,
+} from "lucide-react-native";
 import { useDrawingStore } from "@/store/drawingStore";
 import type { Drawing } from "@/types/drawing";
 import { getApiBase } from "@/lib/apiBase";
@@ -28,13 +31,14 @@ import { getApiBase } from "@/lib/apiBase";
 const BASE = getApiBase();
 
 // ── Icon + label maps (matching web TOOL_ICONS / TOOL_LABELS) ─────────────────
-const TOOL_ICON_NAMES: Record<string, string> = {
-  trendline: "trending-up-outline",
-  ray:       "arrow-forward-outline",
-  hline:     "remove-outline",
-  vline:     "reorder-two-outline",
-  rect:      "square-outline",
-  fib:       "git-merge-outline",
+type LucideIcon = React.ComponentType<{ size: number; color: string }>;
+const TOOL_ICONS: Record<string, LucideIcon> = {
+  trendline: TrendingUp,
+  ray:       ArrowRight,
+  hline:     Minus,
+  vline:     AlignJustify,
+  rect:      Square,
+  fib:       GitMerge,
 };
 
 const TOOL_LABELS: Record<string, string> = {
@@ -63,7 +67,7 @@ const DrawingRow = memo(function DrawingRow({ drawing }: { drawing: Drawing }) {
   const { updateDrawing, removeDrawing } = useDrawingStore();
   const [deleting, setDeleting] = useState(false);
 
-  const iconName = TOOL_ICON_NAMES[drawing.toolType] ?? "trending-up-outline";
+  const DrawingIcon = TOOL_ICONS[drawing.toolType] ?? TrendingUp;
   const label    = TOOL_LABELS[drawing.toolType]    ?? drawing.toolType;
   const anchor   = drawing.points[0];
   const priceStr = anchor
@@ -97,7 +101,7 @@ const DrawingRow = memo(function DrawingRow({ drawing }: { drawing: Drawing }) {
     <View style={[s.row, drawing.isVisible === false && s.rowHidden]}>
       {/* Tool icon */}
       <View style={[s.iconBox, { backgroundColor: colorBg, borderColor: colorBdr }]}>
-        <Ionicons name={iconName as any} size={12} color={drawing.style.color} />
+        <DrawingIcon size={12} color={drawing.style.color} />
       </View>
 
       {/* Info */}
@@ -128,11 +132,9 @@ const DrawingRow = memo(function DrawingRow({ drawing }: { drawing: Drawing }) {
           style={s.actionBtn}
           hitSlop={6}
         >
-          <Ionicons
-            name={drawing.isVisible !== false ? "eye-outline" : "eye-off-outline"}
-            size={12}
-            color="rgba(167,184,169,0.5)"
-          />
+          {drawing.isVisible !== false
+            ? <Eye size={12} color="rgba(167,184,169,0.5)" />
+            : <EyeOff size={12} color="rgba(167,184,169,0.5)" />}
         </Pressable>
         <Pressable
           onPress={handleDelete}
@@ -140,7 +142,7 @@ const DrawingRow = memo(function DrawingRow({ drawing }: { drawing: Drawing }) {
           style={[s.actionBtn, deleting && s.actionBtnDisabled]}
           hitSlop={6}
         >
-          <Ionicons name="trash-outline" size={12} color="rgba(248,113,113,0.6)" />
+          <Trash2 size={12} color="rgba(248,113,113,0.6)" />
         </Pressable>
       </View>
     </View>
@@ -163,7 +165,7 @@ export const DrawingsList = memo(function DrawingsList({ symbol, timeframe }: Pr
   if (filtered.length === 0) {
     return (
       <View style={s.emptyState}>
-        <Ionicons name="layers-outline" size={24} color="rgba(167,184,169,0.2)" />
+        <Layers size={24} color="rgba(167,184,169,0.2)" />
         <Text style={s.emptyTitle}>No drawings on this chart</Text>
         <Text style={s.emptySubtitle}>
           Use the toolbar on the left to draw trendlines, Fibonacci, and more

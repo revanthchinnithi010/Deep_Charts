@@ -268,19 +268,11 @@ export function FeedDiagnostics({ symbol }: Props) {
           borderColor:     pillBorder,
         }}
       >
-        <Ionicons
-          name={pillLive && !pillClosed ? "wifi" : "wifi-outline"}
-          size={9}
-          color={pillColor}
-        />
+        <Wifi size={9} color={pillColor} />
         <Text style={{ color: "rgba(255,255,255,0.5)", fontSize: 10, fontFamily: "Courier New" }}>
           {pillLabel}
         </Text>
-        <Ionicons
-          name={open ? "chevron-down" : "chevron-up"}
-          size={9}
-          color={pillColor}
-        />
+        {open ? <ChevronDown size={9} color={pillColor} /> : <ChevronUp size={9} color={pillColor} />}
       </Pressable>
 
       {/* Expanded panel */}

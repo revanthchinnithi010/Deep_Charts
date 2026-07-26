@@ -49,6 +49,7 @@ import {
 } from "react-native";
 import {
   CheckCircle2, RefreshCw, MinusCircle, AlertCircle, Wifi, StopCircle, Trash2,
+  Link2, X,
 } from "lucide-react-native";
 import {
   BottomSheetModal,
@@ -323,14 +324,14 @@ export function BrokerSelectBottomSheet() {
     >
       {/* Header */}
       <View style={styles.sheetHeader}>
-        <Ionicons name="link-outline" size={16} color="#B7FF5A" />
+        <Link2 size={16} color="#B7FF5A" />
         <Text style={styles.sheetTitle}>Connect Brokers</Text>
         <Pressable
           onPress={closeSelectModal}
           style={({ pressed }) => [styles.closeBtn, pressed && { opacity: 0.7 }]}
           hitSlop={8}
         >
-          <Ionicons name="close" size={18} color="rgba(167,184,169,0.6)" />
+          <X size={18} color="rgba(167,184,169,0.6)" />
         </Pressable>
       </View>
 

@@ -27,7 +27,10 @@ import {
   View, Text, Pressable, Modal, StyleSheet,
   Dimensions, TouchableWithoutFeedback,
 } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
+import {
+  Zap, RefreshCw, EyeOff, Lock, Trash2, Camera,
+  TrendingUp, TrendingDown, LineChart, Settings,
+} from "lucide-react-native";
 import { useChartStore } from "@/store/chartStore";
 import { useDrawingStore } from "@/store/drawingStore";
 import { chartApiRef } from "@/lib/chartApiRef";
@@ -152,7 +155,7 @@ const ChartContextMenu = memo(function ChartContextMenu({
               onPress={() => run(() => onSelectInterval(tf.value))}
               style={[ss.tfBtn, currentInterval === tf.value && ss.tfBtnActive]}
             >
-              <Ionicons name="flash" size={7} color={currentInterval === tf.value ? NEON : "rgba(167,184,169,0.65)"} />
+              <Zap size={7} color={currentInterval === tf.value ? NEON : "rgba(167,184,169,0.65)"} />
               <Text style={[ss.tfBtnLabel, currentInterval === tf.value && ss.tfBtnLabelActive]}>
                 {tf.label}
               </Text>
@@ -164,35 +167,35 @@ const ChartContextMenu = memo(function ChartContextMenu({
 
         {/* SECTION 2 — CHART ACTIONS */}
         <Text style={ss.sectionLabel}>CHART ACTIONS</Text>
-        <Btn icon="refresh-outline"  label="Reset Chart View"     onPress={() => run(resetChart)} />
-        <Btn icon="eye-off-outline"  label="Hide Drawings"        onPress={() => run(hideAllDrawings)} />
-        <Btn icon="lock-closed-outline" label="Lock Drawings"     onPress={() => run(lockAllDrawings)} />
-        <Btn icon="trash-outline"    label="Remove All Drawings"  onPress={() => run(removeAllDrawings)} danger />
-        <Btn icon="camera-outline"   label="Screenshot Chart"     onPress={() => run(onScreenshot)} />
+        <Btn icon={RefreshCw}  label="Reset Chart View"     onPress={() => run(resetChart)} />
+        <Btn icon={EyeOff}     label="Hide Drawings"        onPress={() => run(hideAllDrawings)} />
+        <Btn icon={Lock}       label="Lock Drawings"        onPress={() => run(lockAllDrawings)} />
+        <Btn icon={Trash2}     label="Remove All Drawings"  onPress={() => run(removeAllDrawings)} danger />
+        <Btn icon={Camera}     label="Screenshot Chart"     onPress={() => run(onScreenshot)} />
 
         <View style={ss.sep} />
 
         {/* SECTION 3 — DRAWING TOOLS */}
         <Text style={ss.sectionLabel}>DRAWING TOOLS</Text>
         <Btn
-          icon="trending-up-outline"
+          icon={TrendingUp}
           label="Long Position"
           accentColor="#22c55e"
           onPress={() => run(() => useDrawingStore.getState().setActiveTool("position_long"))}
         />
         <Btn
-          icon="trending-down-outline"
+          icon={TrendingDown}
           label="Short Position"
           accentColor="#f87171"
           onPress={() => run(() => useDrawingStore.getState().setActiveTool("position_short"))}
         />
-        <Btn icon="analytics-outline" label="Measure Tool" onPress={() => run(activateRuler)} />
+        <Btn icon={LineChart} label="Measure Tool" onPress={() => run(activateRuler)} />
 
         <View style={ss.sep} />
 
         {/* SECTION 4 — SETTINGS */}
         <Text style={ss.sectionLabel}>SETTINGS</Text>
-        <Btn icon="settings-outline" label="Chart Settings" onPress={() => run(onShowSettings)} />
+        <Btn icon={Settings} label="Chart Settings" onPress={() => run(onShowSettings)} />
       </View>
     </Modal>
   );
@@ -200,9 +203,9 @@ const ChartContextMenu = memo(function ChartContextMenu({
 
 // ── Btn ───────────────────────────────────────────────────────────────────────
 function Btn({
-  icon, label, onPress, danger, accentColor,
+  icon: Icon, label, onPress, danger, accentColor,
 }: {
-  icon: keyof typeof Ionicons.glyphMap;
+  icon: React.ComponentType<{ size: number; color: string; style?: object }>;
   label: string;
   onPress: () => void;
   danger?: boolean;
@@ -218,8 +221,7 @@ function Btn({
     >
       {({ pressed }) => (
         <>
-          <Ionicons
-            name={icon}
+          <Icon
             size={12}
             color={
               accentColor

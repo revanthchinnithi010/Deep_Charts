@@ -74,11 +74,9 @@ function PnlBadge({ pnl }: PnlBadgeProps) {
   const pos = pnl >= 0;
   return (
     <View style={pnlStyles.badge}>
-      <Ionicons
-        name={pos ? "trending-up-outline" : "trending-down-outline"}
-        size={12}
-        color={pos ? BUY_CLR : SELL_CLR}
-      />
+      {pos
+        ? <TrendingUp size={12} color={BUY_CLR} />
+        : <TrendingDown size={12} color={SELL_CLR} />}
       <Text style={[pnlStyles.text, { color: pos ? BUY_CLR : SELL_CLR }]}>
         {pos ? "+" : ""}{fc(pnl)}
       </Text>
@@ -183,7 +181,7 @@ const PositionRow = memo(function PositionRow({ pos }: PositionRowProps) {
             <ActivityIndicator size={12} color={SELL_CLR} />
           ) : confirm ? (
             <>
-              <Ionicons name="warning-outline" size={12} color={SELL_CLR} />
+              <AlertTriangle size={12} color={SELL_CLR} />
               <Text style={[rowStyles.closeBtnText, rowStyles.closeBtnTextConfirm]}>
                 Confirm Close
               </Text>
@@ -234,7 +232,7 @@ export function PositionsList() {
     }
     return (
       <View style={listStyles.emptyContainer}>
-        <Ionicons name="trending-up-outline" size={32} color="rgba(57,91,67,0.4)" />
+        <TrendingUp size={32} color="rgba(57,91,67,0.4)" />
         <Text style={listStyles.emptyTextBold}>No open positions</Text>
       </View>
     );
@@ -245,7 +243,7 @@ export function PositionsList() {
       {/* Header */}
       <View style={listStyles.header}>
         <View style={listStyles.headerLeft}>
-          <Ionicons name="trending-up-outline" size={16} color={ACCENT} />
+          <TrendingUp size={16} color={ACCENT} />
           <Text style={listStyles.headerTitle}>Open Positions</Text>
           {broker && (
             <View style={[
@@ -271,7 +269,7 @@ export function PositionsList() {
             style={({ pressed }) => [listStyles.closeBtn, pressed && { opacity: 0.7 }]}
             hitSlop={8}
           >
-            <Ionicons name="close" size={14} color={TEXT_MUTED} />
+            <X size={14} color={TEXT_MUTED} />
           </Pressable>
         </View>
       </View>

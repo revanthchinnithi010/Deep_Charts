@@ -34,7 +34,10 @@ import {
   Modal, StyleSheet, Animated, KeyboardAvoidingView,
   Platform, ActivityIndicator,
 } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
+import {
+  TrendingUp, ArrowRight, Minus, Square, LayoutGrid,
+  ChevronUp, ChevronDown, X, Clock, AlertTriangle,
+} from "lucide-react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import type { Drawing } from "@/types/drawing";
 import { useAlertStore } from "@/store/alertStore";
@@ -68,12 +71,13 @@ export interface DrawingAlertRow {
 
 // ── Config ────────────────────────────────────────────────────────────────────
 
-const DRAWING_OPTIONS: { value: DrawingType; label: string; iconName: string }[] = [
-  { value: "trendline",       label: "Trendline", iconName: "trending-up-outline" },
-  { value: "ray",             label: "Ray",        iconName: "arrow-forward-outline" },
-  { value: "horizontal_line", label: "H. Line",    iconName: "remove-outline" },
-  { value: "rectangle",       label: "Zone",       iconName: "square-outline" },
-  { value: "channel",         label: "Channel",    iconName: "grid-outline" },
+type LucideIcon = React.ComponentType<{ size: number; color: string }>;
+const DRAWING_OPTIONS: { value: DrawingType; label: string; Icon?: LucideIcon }[] = [
+  { value: "trendline",       label: "Trendline", Icon: TrendingUp   },
+  { value: "ray",             label: "Ray",        Icon: ArrowRight   },
+  { value: "horizontal_line", label: "H. Line",    Icon: Minus        },
+  { value: "rectangle",       label: "Zone",       Icon: Square       },
+  { value: "channel",         label: "Channel",    Icon: LayoutGrid   },
 ];
 
 const CONDITIONS: Record<DrawingType, { value: string; label: string }[]> = {
@@ -305,11 +309,11 @@ function NumberStepper({
         />
         <View style={s.stepperBtns}>
           <Pressable onPress={inc} style={s.stepperBtn}>
-            <Ionicons name="chevron-up" size={12} color="rgba(167,184,169,0.5)" />
+            <ChevronUp size={12} color="rgba(167,184,169,0.5)" />
           </Pressable>
           <View style={s.stepperDivider} />
           <Pressable onPress={dec} style={s.stepperBtn}>
-            <Ionicons name="chevron-down" size={12} color="rgba(167,184,169,0.5)" />
+            <ChevronDown size={12} color="rgba(167,184,169,0.5)" />
           </Pressable>
         </View>
       </View>
@@ -323,7 +327,7 @@ function PillSelector<T extends string>({
   label, options, value, onChange, accent = "#B7FF5A",
 }: {
   label: string;
-  options: { value: T; label: string; iconName?: string }[];
+  options: { value: T; label: string; Icon?: LucideIcon }[];
   value: T;
   onChange: (v: T) => void;
   accent?: string;
@@ -347,8 +351,8 @@ function PillSelector<T extends string>({
                 pressed && s.pillPressed,
               ]}
             >
-              {opt.iconName && (
-                <Ionicons name={opt.iconName as "trending-up-outline"} size={12} color={active ? accent : "rgba(167,184,169,0.65)"} />
+              {opt.Icon && (
+                <opt.Icon size={12} color={active ? accent : "rgba(167,184,169,0.65)"} />
               )}
               <Text style={[s.pillText, { color: active ? accent : "rgba(167,184,169,0.65)" }]}>
                 {opt.label}
@@ -607,7 +611,7 @@ export function DrawingAlertModal({
             <View style={s.header}>
               <View style={s.headerLeft}>
                 <View style={s.headerIconBox}>
-                  <Ionicons name="trending-up-outline" size={14} color="#B7FF5A" />
+                  <TrendingUp size={14} color="#B7FF5A" />
                 </View>
                 <View>
                   <Text style={s.headerTitle}>
@@ -619,12 +623,12 @@ export function DrawingAlertModal({
               {/* Live UTC */}
               <View style={s.headerRight}>
                 <View style={s.utcChip}>
-                  <Ionicons name="time-outline" size={10} color="rgba(167,184,169,0.5)" />
+                  <Clock size={10} color="rgba(167,184,169,0.5)" />
                   <Text style={s.utcChipTime}>{utcClock.hh}:{utcClock.mm}</Text>
                   <Text style={s.utcChipLabel}>UTC</Text>
                 </View>
                 <Pressable onPress={onClose} hitSlop={8} style={s.headerCloseBtn}>
-                  <Ionicons name="close" size={16} color="rgba(167,184,169,0.5)" />
+                  <X size={16} color="rgba(167,184,169,0.5)" />
                 </Pressable>
               </View>
             </View>
@@ -720,7 +724,7 @@ export function DrawingAlertModal({
                   {/* Validation warning */}
                   {!!timeOrderError && (
                     <View style={s.warnBox}>
-                      <Ionicons name="warning-outline" size={14} color="#fbbf24" />
+                      <AlertTriangle size={14} color="#fbbf24" />
                       <Text style={s.warnText}>{timeOrderError}</Text>
                     </View>
                   )}

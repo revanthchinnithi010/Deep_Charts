@@ -31,7 +31,11 @@ import {
   View, Text, Pressable, TextInput, ScrollView,
   Modal, StyleSheet,
 } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
+import {
+  Circle, Layers, GitBranch, Clock, CheckCircle2,
+  Bell, Plus, X, Search, ChevronRight, ChevronDown,
+  Play, Pause, Pencil, Trash2,
+} from "lucide-react-native";
 import {
   TIMEFRAMES,
   type AnyAlert, type AlertStatus, type AlertType,
@@ -49,10 +53,11 @@ const STATUS_CFG: Record<AlertStatus, { label: string; dot: string; text: string
   expired:   { label: "Expired",   dot: "#9ca3af", text: "#9ca3af", bg: "rgba(156,163,175,0.10)" },
 };
 
-const TYPE_CFG: Record<AlertType, { label: string; iconName: string; color: string; bg: string }> = {
-  price:     { label: "Price",     iconName: "radio-button-on-outline", color: "#60a5fa", bg: "rgba(96,165,250,0.12)"  },
-  zone:      { label: "Zone",      iconName: "layers-outline",          color: "#fb923c", bg: "rgba(251,146,60,0.12)"  },
-  trendline: { label: "Trendline", iconName: "git-branch-outline",      color: "#B7FF5A", bg: "rgba(183,255,90,0.12)"  },
+type LucideIcon = React.ComponentType<{ size: number; color: string }>;
+const TYPE_CFG: Record<AlertType, { label: string; Icon: LucideIcon; color: string; bg: string }> = {
+  price:     { label: "Price",     Icon: Circle,    color: "#60a5fa", bg: "rgba(96,165,250,0.12)"  },
+  zone:      { label: "Zone",      Icon: Layers,    color: "#fb923c", bg: "rgba(251,146,60,0.12)"  },
+  trendline: { label: "Trendline", Icon: GitBranch, color: "#B7FF5A", bg: "rgba(183,255,90,0.12)"  },
 };
 
 const FILTER_OPTIONS = [
@@ -119,24 +124,24 @@ function TypeBadge({ type }: { type: AlertType }) {
   const cfg = TYPE_CFG[type];
   return (
     <View style={[s.typeBadge, { backgroundColor: cfg.bg }]}>
-      <Ionicons name={cfg.iconName as "layers-outline"} size={10} color={cfg.color} />
+      <cfg.Icon size={10} color={cfg.color} />
       <Text style={[s.typeBadgeText, { color: cfg.color }]}>{cfg.label}</Text>
     </View>
   );
 }
 
 function ActionBtn({
-  label, bg, color, iconName, onPress,
+  label, bg, color, Icon, onPress,
 }: {
   label?: string; bg: string; color: string;
-  iconName: string; onPress: () => void;
+  Icon: LucideIcon; onPress: () => void;
 }) {
   return (
     <Pressable
       onPress={onPress}
       style={({ pressed }) => [s.actionBtn, { backgroundColor: pressed ? bg.replace("0.12", "0.22") : bg }]}
     >
-      <Ionicons name={iconName as "play"} size={11} color={color} />
+      <Icon size={11} color={color} />
       {label ? <Text style={[s.actionBtnLabel, { color }]}>{label}</Text> : null}
     </Pressable>
   );
@@ -181,7 +186,7 @@ const AlertCard = memo(function AlertCard({
           )}
           {alert.status === "triggered" && alert.triggeredAt && (
             <View style={s.cardTriggeredRow}>
-              <Ionicons name="checkmark-circle" size={10} color="#B7FF5A" />
+              <CheckCircle2 size={10} color="#B7FF5A" />
               <Text style={s.cardTriggeredText}>Triggered {fmtTime(alert.triggeredAt)}</Text>
             </View>
           )}
@@ -191,13 +196,13 @@ const AlertCard = memo(function AlertCard({
       {/* Action buttons */}
       <View style={s.cardActions}>
         {alert.status === "paused" && (
-          <ActionBtn iconName="play" label="Resume" bg="rgba(183,255,90,0.12)" color="#B7FF5A" onPress={onResume} />
+          <ActionBtn Icon={Play}   label="Resume" bg="rgba(183,255,90,0.12)" color="#B7FF5A" onPress={onResume} />
         )}
         {(alert.status === "active" || alert.status === "triggered") && (
-          <ActionBtn iconName="pause" label="Pause" bg="rgba(255,200,0,0.12)" color="#FFC857" onPress={onPause} />
+          <ActionBtn Icon={Pause}  label="Pause" bg="rgba(255,200,0,0.12)" color="#FFC857" onPress={onPause} />
         )}
-        <ActionBtn iconName="create-outline" label="Edit" bg="rgba(171,185,182,0.10)" color="#D3DEDA" onPress={onEdit} />
-        <ActionBtn iconName="trash-outline" label="Delete" bg="rgba(255,80,80,0.12)" color="#FF5C5C" onPress={onDelete} />
+        <ActionBtn Icon={Pencil}  label="Edit"   bg="rgba(171,185,182,0.10)" color="#D3DEDA" onPress={onEdit} />
+        <ActionBtn Icon={Trash2}  label="Delete" bg="rgba(255,80,80,0.12)"  color="#FF5C5C" onPress={onDelete} />
       </View>
     </View>
   );
