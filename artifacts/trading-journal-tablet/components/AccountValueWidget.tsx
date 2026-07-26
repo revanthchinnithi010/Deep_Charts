@@ -87,8 +87,8 @@ export interface AccountValueWidgetProps {
 
   // ── Navigation callbacks (replaces wouter useLocation) ───────────────────
   onShowPositions?: () => void;
-  onShowPnl?:       () => void;
-  onShowBalances?:  () => void;
+  onShowPnl?: () => void;
+  onShowBalances?: () => void;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -97,31 +97,31 @@ export interface AccountValueWidgetProps {
 
 const C = {
   // card surface
-  cardBg:        "#060608",                   // rgba(6,6,8,0.97)
-  cardBorder:    "rgba(255,255,255,0.12)",     // web: border rgba(255,255,255,0.12)
-  cardRadius:    24,                           // web: border-radius 24px
+  cardBg: "#060608", // rgba(6,6,8,0.97)
+  cardBorder: "rgba(255,255,255,0.12)", // web: border rgba(255,255,255,0.12)
+  cardRadius: 24, // web: border-radius 24px
 
   // sub-widget panel
-  subBg:         "rgba(255,255,255,0.04)",     // web: rgba(255,255,255,0.04)
-  divider:       "rgba(255,255,255,0.08)",     // web: DIVIDER const
+  subBg: "rgba(255,255,255,0.04)", // web: rgba(255,255,255,0.04)
+  divider: "rgba(255,255,255,0.08)", // web: DIVIDER const
 
   // text — mapped from CSS custom properties
-  statTitle:     "rgba(255,255,255,0.72)",     // --stat-title
-  statValue:     "#FFFFFF",                   // --stat-value
-  statSub:       "#A7A7A7",                   // --stat-sub
-  statIcon:      "#6E7578",                   // --stat-icon
+  statTitle: "rgba(255,255,255,0.72)", // --stat-title
+  statValue: "#FFFFFF", // --stat-value
+  statSub: "#A7A7A7", // --stat-sub
+  statIcon: "#6E7578", // --stat-icon
 
   // PnL colours — matched from web PROFIT/LOSS constants
-  profit:        "#22C55E",                   // PROFIT = "#22C55E"
-  loss:          "#EF4444",                   // LOSS   = "#EF4444"
+  profit: "#22C55E", // PROFIT = "#22C55E"
+  loss: "#EF4444", // LOSS   = "#EF4444"
 
   // privacy mask dots — web: bg-white/25 = rgba(255,255,255,0.25)
-  maskDot:       "rgba(255,255,255,0.25)",
+  maskDot: "rgba(255,255,255,0.25)",
 
   // positions chip — web: linear-gradient(135deg,#f97316 0%,#ea580c 100%)
-  chipFrom:      "#f97316" as const,
-  chipTo:        "#ea580c" as const,
-  chipShadow:    "rgba(249,115,22,0.35)",     // web: boxShadow rgba(249,115,22,0.35)
+  chipFrom: "#f97316" as const,
+  chipTo: "#ea580c" as const,
+  chipShadow: "rgba(249,115,22,0.35)", // web: boxShadow rgba(249,115,22,0.35)
 } as const;
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -156,15 +156,15 @@ function formatValue(v: number, currency: Currency, masked: boolean): string {
 // ─────────────────────────────────────────────────────────────────────────────
 
 interface SubCellProps {
-  label:         string;
-  value:         number;
-  currency:      Currency;
-  masked:        boolean;
-  isPositive?:   boolean;
+  label: string;
+  value: number;
+  currency: Currency;
+  masked: boolean;
+  isPositive?: boolean;
   useSignColor?: boolean;
-  loading?:      boolean;
-  onPress?:      () => void;
-  borderRight?:  boolean;
+  loading?: boolean;
+  onPress?: () => void;
+  borderRight?: boolean;
   borderBottom?: boolean;
 }
 
@@ -173,20 +173,22 @@ const SubCell = memo(function SubCell({
   value,
   currency,
   masked,
-  isPositive   = true,
+  isPositive = true,
   useSignColor = true,
-  loading      = false,
+  loading = false,
   onPress,
-  borderRight  = false,
+  borderRight = false,
   borderBottom = false,
 }: SubCellProps) {
   const valueColor = useSignColor
-    ? (isPositive ? C.profit : C.loss)
+    ? isPositive
+      ? C.profit
+      : C.loss
     : C.statValue;
 
   const cellStyle = [
     styles.subCell,
-    borderRight  && styles.subCellBorderRight,
+    borderRight && styles.subCellBorderRight,
     borderBottom && styles.subCellBorderBottom,
   ];
 
@@ -194,7 +196,9 @@ const SubCell = memo(function SubCell({
     <View style={cellStyle}>
       {/* Label row with optional chevron */}
       <View style={styles.subLabelRow}>
-        <Text style={styles.subLabel} numberOfLines={1}>{label}</Text>
+        <Text style={styles.subLabel} numberOfLines={1}>
+          {label}
+        </Text>
         {onPress && (
           <Ionicons name="chevron-forward" size={10} color={C.statIcon} />
         )}
@@ -206,7 +210,10 @@ const SubCell = memo(function SubCell({
       ) : masked ? (
         <Dots count={5} />
       ) : (
-        <Text style={[styles.subValue, { color: valueColor }]} numberOfLines={1}>
+        <Text
+          style={[styles.subValue, { color: valueColor }]}
+          numberOfLines={1}
+        >
           {formatValue(value, currency, false)}
         </Text>
       )}
@@ -240,7 +247,7 @@ function AccountValueWidget({
   openPositions,
   openOrders,
   loading = false,
-  empty   = false,
+  empty = false,
   onShowPositions,
   onShowPnl,
   onShowBalances,
@@ -250,14 +257,14 @@ function AccountValueWidget({
   const { width: screenWidth } = useWindowDimensions();
   // On very narrow screens (< 380px) shrink the chip text slightly
   const chipFontSize = screenWidth < 380 ? 11 : 12;
-  const chipPadH    = screenWidth < 380 ? 9  : 12;
+  const chipPadH = screenWidth < 380 ? 9 : 12;
 
   const resolvedNetPnlDisplay =
-    netPnlDisplay ?? (upnlDisplay + realizedPnlDisplay);
+    netPnlDisplay ?? upnlDisplay + realizedPnlDisplay;
 
-  const upPos   = upnlDisplay >= 0;
+  const upPos = upnlDisplay >= 0;
   const realPos = realizedPnlDisplay >= 0;
-  const netPos  = resolvedNetPnlDisplay >= 0;
+  const netPos = resolvedNetPnlDisplay >= 0;
 
   const toggleMask = useCallback(() => setMasked((m) => !m), []);
 
@@ -280,14 +287,13 @@ function AccountValueWidget({
   // ── Main card ─────────────────────────────────────────────────────────────
 
   return (
-    <View style={[styles.card, { borderWidth: 3, borderColor: "lime" }]}>
-
+    <View style={styles.card}>
       {/*
-        * Gradient sheen — mirrors web .dash-account-card::before
-        * layer 1: radial ellipse burst from crown (bright centre highlight)
-        * layer 2: linear top-to-bottom fade (diffuse sheen)
-        * Purely additive, pointer-events ignored.
-        */}
+       * Gradient sheen — mirrors web .dash-account-card::before
+       * layer 1: radial ellipse burst from crown (bright centre highlight)
+       * layer 2: linear top-to-bottom fade (diffuse sheen)
+       * Purely additive, pointer-events ignored.
+       */}
       <LinearGradient
         colors={[
           "rgba(255,255,255,0.07)",
@@ -304,11 +310,9 @@ function AccountValueWidget({
       {/* ── Header section ── */}
       {/* web: px-4 pt-4 pb-3 → paddingHorizontal:16, paddingTop:16, paddingBottom:12 */}
       <View style={styles.headerSection}>
-
         {/* Title row — web: flex items-start justify-between mb-3 */}
         <View style={styles.titleRow}>
           <View style={styles.titleLeft}>
-
             {/* "Account Value" label + link chevron — web: text-[13px] font-semibold --stat-title */}
             <Pressable
               onPress={onShowBalances}
@@ -339,18 +343,12 @@ function AccountValueWidget({
           </View>
 
           {/*
-            * Show Positions chip
-            * web: linear-gradient(135deg,#f97316 0%,#ea580c 100%)
-            *      boxShadow: "0 2px 10px rgba(249,115,22,0.35)"
-            *      px-3 py-1.5 rounded-full text-[12px] font-semibold
-            */}
-          <View
-            style={[styles.chipShadowWrapper, { borderWidth: 3, borderColor: "cyan" }]}
-            onLayout={(e) => {
-              const { x, y, width, height } = e.nativeEvent.layout;
-              console.log(`[DEBUG-CHIP] chipShadowWrapper x=${x} y=${y} w=${width} h=${height}`);
-            }}
-          >
+           * Show Positions chip
+           * web: linear-gradient(135deg,#f97316 0%,#ea580c 100%)
+           *      boxShadow: "0 2px 10px rgba(249,115,22,0.35)"
+           *      px-3 py-1.5 rounded-full text-[12px] font-semibold
+           */}
+          <View style={styles.chipShadowWrapper}>
             <LinearGradient
               colors={[C.chipFrom, C.chipTo]}
               start={{ x: 0, y: 0 }}
@@ -368,23 +366,31 @@ function AccountValueWidget({
                 accessibilityLabel="Show positions"
               >
                 <Ionicons name="layers-outline" size={12} color="#fff" />
-                <Text style={[styles.positionsChipText, { fontSize: chipFontSize }]}>Show Positions</Text>
+                <Text
+                  style={[styles.positionsChipText, { fontSize: chipFontSize }]}
+                >
+                  Show Positions
+                </Text>
               </Pressable>
             </LinearGradient>
           </View>
         </View>
 
         {/*
-          * Main account value
-          * web: text-[28px] font-black tracking-tight leading-none --stat-value
-          */}
+         * Main account value
+         * web: text-[28px] font-black tracking-tight leading-none --stat-value
+         */}
         <View style={styles.mainValueRow}>
           {loading ? (
             <Skeleton style={styles.mainValueSkeleton} />
           ) : masked ? (
             <Dots count={9} />
           ) : (
-            <Text style={styles.mainValue} numberOfLines={1} adjustsFontSizeToFit>
+            <Text
+              style={styles.mainValue}
+              numberOfLines={1}
+              adjustsFontSizeToFit
+            >
               {formatAmount(accountValueDisplay, currency)}
             </Text>
           )}
@@ -392,12 +398,11 @@ function AccountValueWidget({
       </View>
 
       {/*
-        * Sub-metrics 2×2 grid
-        * web: mx-3 mb-3 rounded-xl grid grid-cols-2
-        *      background rgba(255,255,255,0.04)  border rgba(255,255,255,0.08)
-        */}
+       * Sub-metrics 2×2 grid
+       * web: mx-3 mb-3 rounded-xl grid grid-cols-2
+       *      background rgba(255,255,255,0.04)  border rgba(255,255,255,0.08)
+       */}
       <View style={styles.subGrid}>
-
         {/* Row 1: UPNL | Realized PNL */}
         <View style={styles.subRow}>
           <SubCell
@@ -467,7 +472,6 @@ function AccountValueWidget({
           </View>
         </View>
       </View>
-
     </View>
   );
 }
@@ -477,7 +481,6 @@ function AccountValueWidget({
 // ─────────────────────────────────────────────────────────────────────────────
 
 const styles = StyleSheet.create({
-
   // ── Card surface ─────────────────────────────────────────────────────────
   // web: background rgba(6,6,8,0.97), border rgba(255,255,255,0.12),
   //      border-radius 24px, box-shadow 0 18px 48px rgba(0,0,0,0.55)
@@ -489,16 +492,16 @@ const styles = StyleSheet.create({
   // self-clips without needing the parent to clip it. Safe to remove.
   card: {
     backgroundColor: C.cardBg,
-    borderRadius:    C.cardRadius,
-    borderWidth:     1,
-    borderColor:     C.cardBorder,
+    borderRadius: C.cardRadius,
+    borderWidth: 1,
+    borderColor: C.cardBorder,
     // overflow:"hidden" intentionally removed — see note above
     ...Platform.select({
       ios: {
-        shadowColor:   "#000000",
-        shadowOffset:  { width: 0, height: 18 },
+        shadowColor: "#000000",
+        shadowOffset: { width: 0, height: 18 },
         shadowOpacity: 0.55,
-        shadowRadius:  24,
+        shadowRadius: 24,
       },
       android: {
         elevation: 20,
@@ -509,59 +512,59 @@ const styles = StyleSheet.create({
   // ── Gradient sheen (::before equivalent) ─────────────────────────────────
   // web: radial ellipse from crown + linear top-to-bottom fade
   cardSheen: {
-    position:     "absolute",
-    top:          0,
-    left:         0,
-    right:        0,
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
     // covers the top ~45% of card where the sheen is visible
-    height:       "45%",
+    height: "45%",
     borderRadius: C.cardRadius,
-    zIndex:       1,
+    zIndex: 1,
   },
 
   // ── Header section ────────────────────────────────────────────────────────
   // web: px-4 pt-4 pb-3 → padding 16/16/12
   headerSection: {
     paddingHorizontal: 16,
-    paddingTop:        16,
-    paddingBottom:     12,
-    zIndex:            2,
+    paddingTop: 16,
+    paddingBottom: 12,
+    zIndex: 2,
   },
 
   // web: flex items-start justify-between mb-3
   titleRow: {
-    flexDirection:  "row",
-    alignItems:     "center",
+    flexDirection: "row",
+    alignItems: "center",
     justifyContent: "space-between",
-    marginBottom:   12,
+    marginBottom: 12,
   },
 
   // web: flex items-center gap-2 (8px)
   // flex:1 + minWidth:0 ensures this side shrinks when chip needs space
   titleLeft: {
     flexDirection: "row",
-    alignItems:    "center",
-    gap:           8,
-    flex:          1,
-    minWidth:      0,
-    flexShrink:    1,
+    alignItems: "center",
+    gap: 8,
+    flex: 1,
+    minWidth: 0,
+    flexShrink: 1,
   },
 
   titleLinkBtn: {
     flexDirection: "row",
-    alignItems:    "center",
-    gap:           2,
-    flexShrink:    1,
-    minWidth:      0,
+    alignItems: "center",
+    gap: 2,
+    flexShrink: 1,
+    minWidth: 0,
   },
 
   // web: text-[13px] font-semibold --stat-title = rgba(255,255,255,0.72)
   titleLabel: {
-    color:       C.statTitle,
-    fontSize:    13,
-    fontFamily:  "Inter_600SemiBold",
-    fontWeight:  "600",
-    flexShrink:  1,   // allow text to truncate before pushing chip off-screen
+    color: C.statTitle,
+    fontSize: 13,
+    fontFamily: "Inter_600SemiBold",
+    fontWeight: "600",
+    flexShrink: 1, // allow text to truncate before pushing chip off-screen
   },
 
   // ── Show Positions chip ───────────────────────────────────────────────────
@@ -569,13 +572,13 @@ const styles = StyleSheet.create({
   //      px-3 py-1.5 rounded-full
   chipShadowWrapper: {
     borderRadius: 20,
-    flexShrink:   0,   // never let the chip be compressed or clipped
+    flexShrink: 0, // never let the chip be compressed or clipped
     ...Platform.select({
       ios: {
-        shadowColor:   C.chipShadow,
-        shadowOffset:  { width: 0, height: 2 },
+        shadowColor: C.chipShadow,
+        shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 1,
-        shadowRadius:  10,
+        shadowRadius: 10,
       },
       android: {
         elevation: 6,
@@ -592,16 +595,16 @@ const styles = StyleSheet.create({
     // borderRadius alone is sufficient to give the pill shape visually.
   },
   chipInner: {
-    flexDirection:     "row",
-    alignItems:        "center",
-    gap:               5,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 5,
     paddingHorizontal: 12,
-    paddingVertical:   6,
+    paddingVertical: 6,
   },
   // web: text-[12px] font-semibold color #fff
   positionsChipText: {
-    color:      "#fff",
-    fontSize:   12,
+    color: "#fff",
+    fontSize: 12,
     fontFamily: "Inter_600SemiBold",
     fontWeight: "600",
   },
@@ -609,21 +612,21 @@ const styles = StyleSheet.create({
   // ── Main account value ────────────────────────────────────────────────────
   // web: text-[28px] font-black tracking-tight leading-none --stat-value=#FFFFFF
   mainValueRow: {
-    minHeight:      36,
+    minHeight: 36,
     justifyContent: "center",
   },
   mainValue: {
-    color:         C.statValue,
-    fontSize:      28,
-    fontFamily:    "Inter_900Black",
-    fontWeight:    "900",
+    color: C.statValue,
+    fontSize: 28,
+    fontFamily: "Inter_900Black",
+    fontWeight: "900",
     letterSpacing: -0.5,
-    lineHeight:    34,
+    lineHeight: 34,
   },
   mainValueSkeleton: {
-    maxWidth:     160,
-    width:        "100%",
-    height:       32,
+    maxWidth: 160,
+    width: "100%",
+    height: 32,
     borderRadius: 6,
   },
 
@@ -632,13 +635,13 @@ const styles = StyleSheet.create({
   //      background rgba(255,255,255,0.04), border rgba(255,255,255,0.08)
   subGrid: {
     marginHorizontal: 12,
-    marginBottom:     12,
-    borderRadius:     12,
-    backgroundColor:  C.subBg,
-    borderWidth:      1,
-    borderColor:      C.divider,
-    overflow:         "hidden",
-    zIndex:           2,
+    marginBottom: 12,
+    borderRadius: 12,
+    backgroundColor: C.subBg,
+    borderWidth: 1,
+    borderColor: C.divider,
+    overflow: "hidden",
+    zIndex: 2,
   },
   subRow: {
     flexDirection: "row",
@@ -646,9 +649,9 @@ const styles = StyleSheet.create({
 
   // web: px-3.5 py-3 = paddingHorizontal:14, paddingVertical:12
   subCell: {
-    flex:              1,
+    flex: 1,
     paddingHorizontal: 14,
-    paddingVertical:   12,
+    paddingVertical: 12,
   },
   subCellBorderRight: {
     borderRightWidth: 1,
@@ -662,74 +665,74 @@ const styles = StyleSheet.create({
   // web: flex items-center gap-0.5 mb-1.5 → gap:2, marginBottom:6
   subLabelRow: {
     flexDirection: "row",
-    alignItems:    "center",
-    gap:           2,
-    marginBottom:  6,
+    alignItems: "center",
+    gap: 2,
+    marginBottom: 6,
   },
 
   // web: text-[11px] font-semibold --stat-sub = #A7A7A7
   subLabel: {
-    color:      C.statSub,
-    fontSize:   11,
+    color: C.statSub,
+    fontSize: 11,
     fontFamily: "Inter_600SemiBold",
     fontWeight: "600",
   },
 
   // web: text-[15px] font-black leading-none
   subValue: {
-    fontSize:   15,
+    fontSize: 15,
     fontFamily: "Inter_700Bold",
     fontWeight: "900",
     lineHeight: 18,
   },
   subValueSkeleton: {
-    width:        72,
-    height:       16,
+    width: 72,
+    height: 16,
     borderRadius: 4,
   },
 
   // ── Positions count row ───────────────────────────────────────────────────
   positionCountRow: {
     flexDirection: "row",
-    alignItems:    "center",
-    gap:           4,
+    alignItems: "center",
+    gap: 4,
   },
 
   // ── Privacy dots ─────────────────────────────────────────────────────────
   // web: gap-[3px], w-[6px] h-[6px] rounded-full bg-white/25
   dotsRow: {
-    flexDirection:  "row",
-    alignItems:     "center",
-    gap:            3,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 3,
     paddingVertical: 2,
   },
   dot: {
-    width:           6,
-    height:          6,
-    borderRadius:    3,
+    width: 6,
+    height: 6,
+    borderRadius: 3,
     backgroundColor: C.maskDot,
   },
 
   // ── Empty state ───────────────────────────────────────────────────────────
   emptyState: {
-    alignItems:        "center",
-    justifyContent:    "center",
-    paddingVertical:   32,
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 32,
     paddingHorizontal: 24,
-    gap:               8,
+    gap: 8,
   },
   emptyTitle: {
-    color:      C.statValue,
-    fontSize:   15,
+    color: C.statValue,
+    fontSize: 15,
     fontFamily: "Inter_600SemiBold",
     fontWeight: "600",
-    marginTop:  4,
+    marginTop: 4,
   },
   emptySubtitle: {
-    color:      C.statSub,
-    fontSize:   13,
+    color: C.statSub,
+    fontSize: 13,
     fontFamily: "Inter_400Regular",
-    textAlign:  "center",
+    textAlign: "center",
     lineHeight: 18,
   },
 
