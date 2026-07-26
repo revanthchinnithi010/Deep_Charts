@@ -1207,14 +1207,14 @@ const cs = StyleSheet.create({
   phaseLabel: {
     fontSize:    10,
     color:       TEXT_DIM,
-    fontFamily:  "Inter_400Regular",
+    fontFamily:  "SFProDisplay-Regular",
     letterSpacing: 1.2,
     textTransform: "uppercase",
   },
   summary: {
     fontSize:    13,
     color:       TEXT_MUT,
-    fontFamily:  "Inter_600SemiBold",
+    fontFamily:  "SFProDisplay-Semibold",
   },
 });
 
@@ -1237,7 +1237,7 @@ const pb = StyleSheet.create({
   },
   label: {
     fontSize:    9,
-    fontFamily:  "Inter_700Bold",
+    fontFamily:  "SFProDisplay-Bold",
   },
   labelDelta: {
     color: "#f97316",
@@ -1266,7 +1266,7 @@ const mc = StyleSheet.create({
   },
   label: {
     fontSize:      10,
-    fontFamily:    "Inter_600SemiBold",
+    fontFamily:    "SFProDisplay-Semibold",
     color:         TEXT_MUT,
     letterSpacing: 1.0,
     textTransform: "uppercase",
@@ -1279,7 +1279,7 @@ const mc = StyleSheet.create({
   },
   value: {
     fontSize:    22,
-    fontFamily:  "Inter_700Bold",
+    fontFamily:  "SFProDisplay-Bold",
     color:       TEXT_PRI,
     letterSpacing: -0.5,
     marginBottom: 2,
@@ -1304,7 +1304,7 @@ const mc = StyleSheet.create({
   },
   sub: {
     fontSize:   11,
-    fontFamily: "Inter_400Regular",
+    fontFamily: "SFProDisplay-Regular",
     color:      TEXT_MUT,
   },
   subSkeleton: {
@@ -1340,13 +1340,13 @@ const s = StyleSheet.create({
   },
   headerTitle: {
     fontSize:      20,
-    fontFamily:    "Inter_700Bold",
+    fontFamily:    "SFProDisplay-Bold",
     color:         TEXT_PRI,
     letterSpacing: -0.5,
   },
   headerSub: {
     fontSize:   12,
-    fontFamily: "Inter_400Regular",
+    fontFamily: "SFProDisplay-Regular",
     color:      TEXT_DIM,
   },
   liveChip: {
@@ -1368,7 +1368,7 @@ const s = StyleSheet.create({
   },
   liveText: {
     fontSize:   11,
-    fontFamily: "Inter_400Regular",
+    fontFamily: "SFProDisplay-Regular",
     color:      TEXT_MUT,
   },
 
@@ -1409,7 +1409,7 @@ const s = StyleSheet.create({
   },
   cardTitle: {
     fontSize:   13,
-    fontFamily: "Inter_600SemiBold",
+    fontFamily: "SFProDisplay-Semibold",
     color:      TEXT_PRI,
   },
 
@@ -1424,7 +1424,7 @@ const s = StyleSheet.create({
   pillRed:   { backgroundColor: "rgba(248,113,113,0.15)" },
   pillText: {
     fontSize:   11,
-    fontFamily: "Inter_700Bold",
+    fontFamily: "SFProDisplay-Bold",
   },
   pillTextGreen: { color: "#34d399" },
   pillTextRed:   { color: "#f87171" },
@@ -1452,11 +1452,11 @@ const s = StyleSheet.create({
   },
   wlValue: {
     fontSize:   15,
-    fontFamily: "Inter_700Bold",
+    fontFamily: "SFProDisplay-Bold",
   },
   wlLabel: {
     fontSize:   10,
-    fontFamily: "Inter_400Regular",
+    fontFamily: "SFProDisplay-Regular",
     color:      TEXT_MUT,
   },
   wlDivider: {
@@ -1481,7 +1481,7 @@ const s = StyleSheet.create({
   },
   sessionName: {
     fontSize:      10,
-    fontFamily:    "Inter_600SemiBold",
+    fontFamily:    "SFProDisplay-Semibold",
     color:         TEXT_DIM,
     letterSpacing: 1.0,
     textTransform: "uppercase",
@@ -1489,12 +1489,12 @@ const s = StyleSheet.create({
   },
   sessionPnl: {
     fontSize:   17,
-    fontFamily: "Inter_700Bold",
+    fontFamily: "SFProDisplay-Bold",
     letterSpacing: -0.3,
   },
   sessionDetail: {
     fontSize:   11,
-    fontFamily: "Inter_400Regular",
+    fontFamily: "SFProDisplay-Regular",
     color:      "rgba(255,255,255,0.60)",
   },
   sessionBarTrack: {
@@ -1523,7 +1523,7 @@ const s = StyleSheet.create({
   },
   symbolLegendText: {
     fontSize:   10,
-    fontFamily: "Inter_400Regular",
+    fontFamily: "SFProDisplay-Regular",
     color:      TEXT_MUT,
   },
 });
@@ -1549,7 +1549,7 @@ const t = StyleSheet.create({
   },
   headerCell: {
     fontSize:      10,
-    fontFamily:    "Inter_600SemiBold",
+    fontFamily:    "SFProDisplay-Semibold",
     color:         TEXT_DIM,
     letterSpacing: 0.8,
     textTransform: "uppercase",
@@ -1567,23 +1567,23 @@ const t = StyleSheet.create({
   },
   symbolText: {
     fontSize:   12,
-    fontFamily: "Inter_700Bold",
+    fontFamily: "SFProDisplay-Bold",
     color:      TEXT_PRI,
   },
   monoMuted: {
     fontSize:   11,
-    fontFamily: "Inter_400Regular",
+    fontFamily: "SFProDisplay-Regular",
     color:      TEXT_MUT,
     textAlign:  "right",
   },
   monoSemibold: {
     fontSize:   11,
-    fontFamily: "Inter_600SemiBold",
+    fontFamily: "SFProDisplay-Semibold",
     textAlign:  "right",
   },
   monoBold: {
     fontSize:   12,
-    fontFamily: "Inter_700Bold",
+    fontFamily: "SFProDisplay-Bold",
     textAlign:  "right",
   },
   winRateWrap: {

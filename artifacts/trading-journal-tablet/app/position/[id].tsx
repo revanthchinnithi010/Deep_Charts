@@ -179,7 +179,7 @@ const badgeStyles = StyleSheet.create({
   text: {
     fontSize: 12,
     fontWeight: "600",
-    fontFamily: "Inter_600SemiBold",
+    fontFamily: "SFProDisplay-Semibold",
   },
 });
 
@@ -236,7 +236,7 @@ const segStyles = StyleSheet.create({
   btnText: {
     fontSize: 11,
     fontWeight: "600",
-    fontFamily: "Inter_600SemiBold",
+    fontFamily: "SFProDisplay-Semibold",
   },
 });
 
@@ -276,7 +276,7 @@ const pctStyles = StyleSheet.create({
     fontSize: 11,
     fontWeight: "600",
     color: "#B8B8B8",
-    fontFamily: "Inter_600SemiBold",
+    fontFamily: "SFProDisplay-Semibold",
   },
 });
 
@@ -883,7 +883,7 @@ const emptyStyles = StyleSheet.create({
     fontSize: 14,
     fontWeight: "600",
     color: MUTED,
-    fontFamily: "Inter_600SemiBold",
+    fontFamily: "SFProDisplay-Semibold",
   },
   btn: {
     paddingHorizontal: 16,
@@ -897,7 +897,7 @@ const emptyStyles = StyleSheet.create({
     fontSize: 13,
     fontWeight: "700",
     color: VALUE,
-    fontFamily: "Inter_700Bold",
+    fontFamily: "SFProDisplay-Bold",
   },
 });
 
@@ -927,7 +927,7 @@ const pdStyles = StyleSheet.create({
     fontSize: 17,
     fontWeight: "600",
     color: TITLE,
-    fontFamily: "Inter_600SemiBold",
+    fontFamily: "SFProDisplay-Semibold",
   },
   scroll: {
     flex: 1,
@@ -953,7 +953,7 @@ const pdStyles = StyleSheet.create({
     fontWeight: "700",
     color: VALUE,
     letterSpacing: -0.3,
-    fontFamily: "Inter_700Bold",
+    fontFamily: "SFProDisplay-Bold",
   },
   pnlLabel: {
     fontSize: 11,
@@ -962,20 +962,20 @@ const pdStyles = StyleSheet.create({
     textTransform: "uppercase",
     letterSpacing: 0.8,
     marginBottom: 4,
-    fontFamily: "Inter_600SemiBold",
+    fontFamily: "SFProDisplay-Semibold",
   },
   pnlValue: {
     fontSize: 28,
     fontWeight: "900",
     lineHeight: 32,
-    fontFamily: "Inter_700Bold",
+    fontFamily: "SFProDisplay-Bold",
   },
   pnlSub: {
     fontSize: 13,
     fontWeight: "500",
     marginTop: 8,
     marginBottom: 16,
-    fontFamily: "Inter_500Medium",
+    fontFamily: "SFProDisplay-Medium",
   },
   subGrid: {
     flexDirection: "row",
@@ -1001,13 +1001,13 @@ const pdStyles = StyleSheet.create({
     textTransform: "uppercase",
     letterSpacing: 0.8,
     marginBottom: 6,
-    fontFamily: "Inter_600SemiBold",
+    fontFamily: "SFProDisplay-Semibold",
   },
   subValue: {
     fontSize: 15,
     fontWeight: "900",
     color: VALUE,
-    fontFamily: "Inter_700Bold",
+    fontFamily: "SFProDisplay-Bold",
   },
   collapseBtn: {
     flexDirection: "row",
@@ -1022,7 +1022,7 @@ const pdStyles = StyleSheet.create({
     color: MUTED,
     textTransform: "uppercase",
     letterSpacing: 0.8,
-    fontFamily: "Inter_600SemiBold",
+    fontFamily: "SFProDisplay-Semibold",
   },
   detailRow: {
     flexDirection: "row",
@@ -1034,13 +1034,13 @@ const pdStyles = StyleSheet.create({
   detailLabel: {
     fontSize: 13,
     color: MUTED,
-    fontFamily: "Inter_400Regular",
+    fontFamily: "SFProDisplay-Regular",
   },
   detailValue: {
     fontSize: 15,
     fontWeight: "600",
     color: VALUE,
-    fontFamily: "Inter_600SemiBold",
+    fontFamily: "SFProDisplay-Semibold",
   },
   bracketRow: {
     flexDirection: "row",
@@ -1051,7 +1051,7 @@ const pdStyles = StyleSheet.create({
   bracketSideLabel: {
     fontSize: 12,
     fontWeight: "600",
-    fontFamily: "Inter_600SemiBold",
+    fontFamily: "SFProDisplay-Semibold",
   },
   priceInput: {
     flexDirection: "row",
@@ -1068,13 +1068,13 @@ const pdStyles = StyleSheet.create({
     fontSize: 14,
     fontWeight: "600",
     color: VALUE,
-    fontFamily: "Inter_600SemiBold",
+    fontFamily: "SFProDisplay-Semibold",
   },
   priceInputCcy: {
     fontSize: 11,
     fontWeight: "500",
     color: MUTED,
-    fontFamily: "Inter_500Medium",
+    fontFamily: "SFProDisplay-Medium",
   },
   pctRow: {
     flexDirection: "row",
@@ -1090,12 +1090,12 @@ const pdStyles = StyleSheet.create({
   pnlPreviewLabel: {
     fontSize: 12,
     color: MUTED,
-    fontFamily: "Inter_400Regular",
+    fontFamily: "SFProDisplay-Regular",
   },
   pnlPreviewValue: {
     fontSize: 13,
     fontWeight: "600",
-    fontFamily: "Inter_600SemiBold",
+    fontFamily: "SFProDisplay-Semibold",
   },
   divider: {
     height: 1,
@@ -1117,7 +1117,7 @@ const pdStyles = StyleSheet.create({
     fontSize: 14,
     fontWeight: "600",
     color: VALUE,
-    fontFamily: "Inter_600SemiBold",
+    fontFamily: "SFProDisplay-Semibold",
   },
   closeBtn: {
     height: 54,
@@ -1134,7 +1134,7 @@ const pdStyles = StyleSheet.create({
     fontSize: 15,
     fontWeight: "600",
     color: "#FF6A6A",
-    fontFamily: "Inter_600SemiBold",
+    fontFamily: "SFProDisplay-Semibold",
   },
 });
 
@@ -1160,14 +1160,14 @@ const confirmStyles = StyleSheet.create({
     fontWeight: "600",
     color: TITLE,
     marginBottom: 6,
-    fontFamily: "Inter_600SemiBold",
+    fontFamily: "SFProDisplay-Semibold",
   },
   body: {
     fontSize: 13,
     lineHeight: 19.5,
     color: MUTED,
     marginBottom: 18,
-    fontFamily: "Inter_400Regular",
+    fontFamily: "SFProDisplay-Regular",
   },
   actions: {
     flexDirection: "row",
@@ -1187,7 +1187,7 @@ const confirmStyles = StyleSheet.create({
     fontSize: 14,
     fontWeight: "600",
     color: VALUE,
-    fontFamily: "Inter_600SemiBold",
+    fontFamily: "SFProDisplay-Semibold",
   },
   confirmBtn: {
     flex: 1,
@@ -1203,7 +1203,7 @@ const confirmStyles = StyleSheet.create({
     fontSize: 14,
     fontWeight: "600",
     color: "#FF6767",
-    fontFamily: "Inter_600SemiBold",
+    fontFamily: "SFProDisplay-Semibold",
   },
   updateConfirmBtn: {
     flex: 1,
@@ -1219,7 +1219,7 @@ const confirmStyles = StyleSheet.create({
     fontSize: 14,
     fontWeight: "600",
     color: VALUE,
-    fontFamily: "Inter_600SemiBold",
+    fontFamily: "SFProDisplay-Semibold",
   },
 });
 
@@ -1241,12 +1241,12 @@ const tpSlStyles = StyleSheet.create({
   previewLabel: {
     fontSize: 12,
     fontWeight: "500",
-    fontFamily: "Inter_500Medium",
+    fontFamily: "SFProDisplay-Medium",
   },
   previewValue: {
     fontSize: 13,
     fontWeight: "600",
     color: VALUE,
-    fontFamily: "Inter_600SemiBold",
+    fontFamily: "SFProDisplay-Semibold",
   },
 });

@@ -839,7 +839,7 @@ const styles = StyleSheet.create({
   pageSubtitle: {
     fontSize:   12,
     color:      TEXT_MUT,
-    fontFamily: "Inter_400Regular",
+    fontFamily: "SFProDisplay-Regular",
   },
 
   // ── Month navigation ───────────────────────────────────────────────────────
@@ -871,7 +871,7 @@ const styles = StyleSheet.create({
   monthName: {
     fontSize:   13,
     fontWeight: "600",
-    fontFamily: "Inter_600SemiBold",
+    fontFamily: "SFProDisplay-Semibold",
     color:      TEXT_PRI,
   },
 
@@ -907,7 +907,7 @@ const styles = StyleSheet.create({
   summaryLabel: {
     fontSize:      10,
     fontWeight:    "600",
-    fontFamily:    "Inter_600SemiBold",
+    fontFamily:    "SFProDisplay-Semibold",
     color:         TEXT_MUT,
     textTransform: "uppercase",
     letterSpacing: 0.8,
@@ -943,7 +943,7 @@ const styles = StyleSheet.create({
   dowText: {
     fontSize:      11,
     fontWeight:    "600",
-    fontFamily:    "Inter_600SemiBold",
+    fontFamily:    "SFProDisplay-Semibold",
     color:         "rgba(148,163,184,0.50)",
     textTransform: "uppercase",
     letterSpacing: 0.6,
@@ -966,7 +966,7 @@ const styles = StyleSheet.create({
   loadingText: {
     fontSize:   13,
     color:      TEXT_MUT,
-    fontFamily: "Inter_400Regular",
+    fontFamily: "SFProDisplay-Regular",
   },
 
   // ── Week row (7 day cells + week total) ────────────────────────────────────
@@ -986,7 +986,7 @@ const styles = StyleSheet.create({
   dayNum: {
     fontSize:   11,
     fontWeight: "600",
-    fontFamily: "Inter_600SemiBold",
+    fontFamily: "SFProDisplay-Semibold",
     lineHeight: 14,
   },
   dayPnlBlock: {
@@ -995,13 +995,13 @@ const styles = StyleSheet.create({
   dayPnl: {
     fontSize:   10,
     fontWeight: "700",
-    fontFamily: "Inter_700Bold",
+    fontFamily: "SFProDisplay-Bold",
     lineHeight: 13,
   },
   dayTrades: {
     fontSize:   9,
     color:      "rgba(148,163,184,0.50)",
-    fontFamily: "Inter_400Regular",
+    fontFamily: "SFProDisplay-Regular",
     lineHeight: 11,
   },
 
@@ -1014,19 +1014,19 @@ const styles = StyleSheet.create({
   weekPnl: {
     fontSize:   11,
     fontWeight: "700",
-    fontFamily: "Inter_700Bold",
+    fontFamily: "SFProDisplay-Bold",
     lineHeight: 14,
   },
   weekTrades: {
     fontSize:   9,
     color:      "rgba(148,163,184,0.50)",
-    fontFamily: "Inter_400Regular",
+    fontFamily: "SFProDisplay-Regular",
     lineHeight: 12,
   },
   weekEmpty: {
     fontSize:   10,
     color:      "rgba(148,163,184,0.30)",
-    fontFamily: "Inter_400Regular",
+    fontFamily: "SFProDisplay-Regular",
   },
 
   // ── Legend ─────────────────────────────────────────────────────────────────
@@ -1044,7 +1044,7 @@ const styles = StyleSheet.create({
   legendIntensity: {
     fontSize:   11,
     color:      TEXT_MUT,
-    fontFamily: "Inter_400Regular",
+    fontFamily: "SFProDisplay-Regular",
   },
   legendGroup: {
     flexDirection: "row",
@@ -1059,7 +1059,7 @@ const styles = StyleSheet.create({
   legendLabel: {
     fontSize:   10,
     color:      TEXT_MUT,
-    fontFamily: "Inter_400Regular",
+    fontFamily: "SFProDisplay-Regular",
     marginLeft: 2,
   },
 });
@@ -1108,14 +1108,14 @@ const sheet = StyleSheet.create({
   headerLabel: {
     fontSize:   14,
     fontWeight: "700",
-    fontFamily: "Inter_700Bold",
+    fontFamily: "SFProDisplay-Bold",
     color:      TEXT_PRI,
     marginBottom: 2,
   },
   headerDate: {
     fontSize:   12,
     color:      TEXT_MUT,
-    fontFamily: "Inter_400Regular",
+    fontFamily: "SFProDisplay-Regular",
   },
   closeBtn: {
     width:           30,
@@ -1144,7 +1144,7 @@ const sheet = StyleSheet.create({
   summaryLabel: {
     fontSize:   11,
     color:      TEXT_MUT,
-    fontFamily: "Inter_400Regular",
+    fontFamily: "SFProDisplay-Regular",
     marginBottom: 4,
   },
   summaryPnl: {
@@ -1156,7 +1156,7 @@ const sheet = StyleSheet.create({
   summaryNote: {
     fontSize:   11,
     color:      TEXT_MUT,
-    fontFamily: "Inter_400Regular",
+    fontFamily: "SFProDisplay-Regular",
   },
   summaryStats: {
     flex:            1,
@@ -1175,7 +1175,7 @@ const sheet = StyleSheet.create({
   statKey: {
     fontSize:   12,
     color:      TEXT_MUT,
-    fontFamily: "Inter_400Regular",
+    fontFamily: "SFProDisplay-Regular",
   },
   wlRow: {
     flexDirection: "row",
@@ -1202,7 +1202,7 @@ const sheet = StyleSheet.create({
   badgeText: {
     fontSize:   12,
     fontWeight: "600",
-    fontFamily: "Inter_600SemiBold",
+    fontFamily: "SFProDisplay-Semibold",
     color:      TEXT_PRI,
   },
 
@@ -1217,13 +1217,13 @@ const sheet = StyleSheet.create({
   tradesLabel: {
     fontSize:   14,
     fontWeight: "700",
-    fontFamily: "Inter_700Bold",
+    fontFamily: "SFProDisplay-Bold",
     color:      TEXT_PRI,
   },
   tradesCount: {
     fontSize:          11,
     color:             TEXT_MUT,
-    fontFamily:        "Inter_400Regular",
+    fontFamily:        "SFProDisplay-Regular",
     backgroundColor:   "rgba(255,255,255,0.06)",
     borderRadius:      6,
     paddingHorizontal: 8,
@@ -1254,7 +1254,7 @@ const sheet = StyleSheet.create({
   loadingText: {
     fontSize:   13,
     color:      TEXT_MUT,
-    fontFamily: "Inter_400Regular",
+    fontFamily: "SFProDisplay-Regular",
   },
 
   // Empty trades
@@ -1266,7 +1266,7 @@ const sheet = StyleSheet.create({
   emptyText: {
     fontSize:   13,
     color:      TEXT_MUT,
-    fontFamily: "Inter_400Regular",
+    fontFamily: "SFProDisplay-Regular",
   },
 
   // Trade row
@@ -1291,19 +1291,19 @@ const sheet = StyleSheet.create({
   tradeSymbol: {
     fontSize:   13,
     fontWeight: "700",
-    fontFamily: "Inter_700Bold",
+    fontFamily: "SFProDisplay-Bold",
     color:      TEXT_PRI,
   },
   tradeSide: {
     fontSize:   10,
     fontWeight: "700",
-    fontFamily: "Inter_700Bold",
+    fontFamily: "SFProDisplay-Bold",
     letterSpacing: 0.5,
   },
   tradePnl: {
     fontSize:   14,
     fontWeight: "700",
-    fontFamily: "Inter_700Bold",
+    fontFamily: "SFProDisplay-Bold",
   },
   tradeSub: {
     flexDirection:  "row",
@@ -1313,11 +1313,11 @@ const sheet = StyleSheet.create({
   tradePrice: {
     fontSize:   11,
     color:      TEXT_MUT,
-    fontFamily: "Inter_400Regular",
+    fontFamily: "SFProDisplay-Regular",
   },
   tradeDate: {
     fontSize:   11,
     color:      TEXT_DIM,
-    fontFamily: "Inter_400Regular",
+    fontFamily: "SFProDisplay-Regular",
   },
 });

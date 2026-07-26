@@ -401,7 +401,7 @@ const filterStyles = StyleSheet.create({
     fontSize: 15,
     fontWeight: "700",
     color: "#f1f5f9",
-    fontFamily: "Inter_700Bold",
+    fontFamily: "SFProDisplay-Bold",
   },
   closeBtn: {
     backgroundColor: "rgba(255,255,255,0.07)",
@@ -423,7 +423,7 @@ const filterStyles = StyleSheet.create({
     color: "rgba(148,163,184,0.5)",
     letterSpacing: 1,
     marginBottom: 8,
-    fontFamily: "Inter_700Bold",
+    fontFamily: "SFProDisplay-Bold",
   },
   chipRow: {
     flexDirection: "row",
@@ -442,7 +442,7 @@ const filterStyles = StyleSheet.create({
     fontSize: 12.5,
     fontWeight: "600",
     color: "rgba(255,255,255,0.5)",
-    fontFamily: "Inter_600SemiBold",
+    fontFamily: "SFProDisplay-Semibold",
   },
   footer: {
     flexDirection: "row",
@@ -467,7 +467,7 @@ const filterStyles = StyleSheet.create({
     fontSize: 13.5,
     fontWeight: "600",
     color: "rgba(148,163,184,0.8)",
-    fontFamily: "Inter_600SemiBold",
+    fontFamily: "SFProDisplay-Semibold",
   },
   applyBtn: {
     flex: 2,
@@ -481,7 +481,7 @@ const filterStyles = StyleSheet.create({
     fontSize: 13.5,
     fontWeight: "700",
     color: "#0a0a0f",
-    fontFamily: "Inter_700Bold",
+    fontFamily: "SFProDisplay-Bold",
   },
 });
 
@@ -555,19 +555,19 @@ const rowStyles = StyleSheet.create({
     fontSize:   15,
     fontWeight: "600",
     color:      "#F0F0F0",
-    fontFamily: "Inter_600SemiBold",
+    fontFamily: "SFProDisplay-Semibold",
   },
   side: {
     fontSize:      10,
     fontWeight:    "600",
     letterSpacing: 1,
-    fontFamily:    "Inter_600SemiBold",
+    fontFamily:    "SFProDisplay-Semibold",
   },
   pnl: {
     fontSize:   15,
     fontWeight: "600",
     color:      "rgba(255,255,255,0.55)",
-    fontFamily: "Inter_600SemiBold",
+    fontFamily: "SFProDisplay-Semibold",
   },
   bottomRow: {
     flexDirection:  "row",
@@ -584,7 +584,7 @@ const rowStyles = StyleSheet.create({
     fontSize:   12,
     fontWeight: "500",
     color:      "#6B6B6B",
-    fontFamily: "Inter_500Medium",
+    fontFamily: "SFProDisplay-Medium",
   },
   arrow: {
     fontSize: 11,
@@ -595,7 +595,7 @@ const rowStyles = StyleSheet.create({
     fontSize:   12,
     fontWeight: "500",
     color:      "#6B6B6B",
-    fontFamily: "Inter_500Medium",
+    fontFamily: "SFProDisplay-Medium",
   },
 });
 
@@ -841,7 +841,7 @@ const detailStyles = StyleSheet.create({
     fontSize: 15,
     fontWeight: "600",
     color: "#ffffff",
-    fontFamily: "Inter_600SemiBold",
+    fontFamily: "SFProDisplay-Semibold",
   },
   scroll: {
     flex: 1,
@@ -869,14 +869,14 @@ const detailStyles = StyleSheet.create({
     fontWeight: "600",
     color: "rgba(255,255,255,0.4)",
     letterSpacing: 1.5,
-    fontFamily: "Inter_600SemiBold",
+    fontFamily: "SFProDisplay-Semibold",
     marginBottom: 2,
   },
   symbolText: {
     fontSize: 24,
     fontWeight: "900",
     color: "#ffffff",
-    fontFamily: "Inter_700Bold",
+    fontFamily: "SFProDisplay-Bold",
   },
   sideBadge: {
     paddingHorizontal: 12,
@@ -887,7 +887,7 @@ const detailStyles = StyleSheet.create({
   sideBadgeText: {
     fontSize: 11,
     fontWeight: "700",
-    fontFamily: "Inter_700Bold",
+    fontFamily: "SFProDisplay-Bold",
   },
   divider: {
     height: 1,
@@ -905,13 +905,13 @@ const detailStyles = StyleSheet.create({
   pnlText: {
     fontSize: 20,
     fontWeight: "900",
-    fontFamily: "Inter_700Bold",
+    fontFamily: "SFProDisplay-Bold",
   },
   dateText: {
     fontSize: 13,
     fontWeight: "600",
     color: "rgba(255,255,255,0.8)",
-    fontFamily: "Inter_600SemiBold",
+    fontFamily: "SFProDisplay-Semibold",
   },
   metricsGrid: {
     flexDirection: "row",
@@ -935,13 +935,13 @@ const detailStyles = StyleSheet.create({
     color: "rgba(148,163,184,0.6)",
     letterSpacing: 1,
     marginBottom: 4,
-    fontFamily: "Inter_600SemiBold",
+    fontFamily: "SFProDisplay-Semibold",
   },
   metricValue: {
     fontSize: 14,
     fontWeight: "700",
     color: "#ffffff",
-    fontFamily: "Inter_700Bold",
+    fontFamily: "SFProDisplay-Bold",
   },
   section: {
     marginTop: 20,
@@ -952,7 +952,7 @@ const detailStyles = StyleSheet.create({
     fontWeight: "700",
     color: "rgba(148,163,184,0.6)",
     letterSpacing: 1.5,
-    fontFamily: "Inter_700Bold",
+    fontFamily: "SFProDisplay-Bold",
   },
   tvBtn: {
     flexDirection: "row",
@@ -974,7 +974,7 @@ const detailStyles = StyleSheet.create({
     fontSize: 13,
     fontWeight: "600",
     color: "#818cf8",
-    fontFamily: "Inter_600SemiBold",
+    fontFamily: "SFProDisplay-Semibold",
   },
   emptyBox: {
     paddingHorizontal: 16,
@@ -988,7 +988,7 @@ const detailStyles = StyleSheet.create({
     fontSize: 12,
     color: "rgba(148,163,184,0.5)",
     fontStyle: "italic",
-    fontFamily: "Inter_400Regular",
+    fontFamily: "SFProDisplay-Regular",
   },
   screenshotWrap: {
     borderRadius: 12,
@@ -1022,7 +1022,7 @@ const detailStyles = StyleSheet.create({
   tagGroupLabel: {
     fontSize: 11,
     color: MUTED,
-    fontFamily: "Inter_400Regular",
+    fontFamily: "SFProDisplay-Regular",
   },
   tagWrap: {
     flexDirection: "row",
@@ -1041,7 +1041,7 @@ const detailStyles = StyleSheet.create({
     fontSize: 11,
     fontWeight: "500",
     color: "#818cf8",
-    fontFamily: "Inter_500Medium",
+    fontFamily: "SFProDisplay-Medium",
   },
   mistakeTag: {
     paddingHorizontal: 10,
@@ -1055,13 +1055,13 @@ const detailStyles = StyleSheet.create({
     fontSize: 11,
     fontWeight: "500",
     color: "#f87171",
-    fontFamily: "Inter_500Medium",
+    fontFamily: "SFProDisplay-Medium",
   },
   noTagsText: {
     fontSize: 12,
     color: "rgba(148,163,184,0.5)",
     fontStyle: "italic",
-    fontFamily: "Inter_400Regular",
+    fontFamily: "SFProDisplay-Regular",
   },
   notesBox: {
     padding: 16,
@@ -1074,7 +1074,7 @@ const detailStyles = StyleSheet.create({
     fontSize: 13,
     lineHeight: 20,
     color: "rgba(255,255,255,0.7)",
-    fontFamily: "Inter_400Regular",
+    fontFamily: "SFProDisplay-Regular",
   },
 });
 
@@ -1546,13 +1546,13 @@ const logStyles = StyleSheet.create({
     fontSize: 18,
     fontWeight: "900",
     color: "#ffffff",
-    fontFamily: "Inter_700Bold",
+    fontFamily: "SFProDisplay-Bold",
   },
   headerSub: {
     fontSize: 12,
     color: MUTED,
     marginTop: 2,
-    fontFamily: "Inter_400Regular",
+    fontFamily: "SFProDisplay-Regular",
   },
   closeBtn: {
     width: 32,
@@ -1585,7 +1585,7 @@ const logStyles = StyleSheet.create({
     fontSize: 12,
     fontWeight: "600",
     color: MUTED,
-    fontFamily: "Inter_600SemiBold",
+    fontFamily: "SFProDisplay-Semibold",
   },
   tabTextActive: {
     color: "#818cf8",
@@ -1606,7 +1606,7 @@ const logStyles = StyleSheet.create({
     fontWeight: "600",
     color: MUTED_DIM,
     letterSpacing: 0.8,
-    fontFamily: "Inter_600SemiBold",
+    fontFamily: "SFProDisplay-Semibold",
   },
   fieldLabelRow: {
     flexDirection: "row",
@@ -1622,7 +1622,7 @@ const logStyles = StyleSheet.create({
     paddingHorizontal: 12,
     fontSize: 13,
     color: TEXT,
-    fontFamily: "Inter_400Regular",
+    fontFamily: "SFProDisplay-Regular",
   },
   textarea: {
     height: 100,
@@ -1659,7 +1659,7 @@ const logStyles = StyleSheet.create({
     fontSize: 13,
     fontWeight: "600",
     color: MUTED,
-    fontFamily: "Inter_600SemiBold",
+    fontFamily: "SFProDisplay-Semibold",
   },
   brokerPreview: {
     height: 40,
@@ -1680,7 +1680,7 @@ const logStyles = StyleSheet.create({
   brokerText: {
     fontSize: 13,
     color: MUTED,
-    fontFamily: "Inter_400Regular",
+    fontFamily: "SFProDisplay-Regular",
     flex: 1,
   },
   sourceBadge: {
@@ -1697,7 +1697,7 @@ const logStyles = StyleSheet.create({
   sourceLabel: {
     fontSize: 11,
     color: MUTED,
-    fontFamily: "Inter_400Regular",
+    fontFamily: "SFProDisplay-Regular",
   },
   sourcePill: {
     flexDirection: "row",
@@ -1714,13 +1714,13 @@ const logStyles = StyleSheet.create({
     fontSize: 11,
     fontWeight: "700",
     color: "rgba(255,255,255,0.8)",
-    fontFamily: "Inter_700Bold",
+    fontFamily: "SFProDisplay-Bold",
   },
   sourceSub: {
     fontSize: 10,
     color: "rgba(148,163,184,0.4)",
     marginLeft: "auto",
-    fontFamily: "Inter_400Regular",
+    fontFamily: "SFProDisplay-Regular",
   },
   symbolChip: {
     paddingHorizontal: 12,
@@ -1738,7 +1738,7 @@ const logStyles = StyleSheet.create({
     fontSize: 13,
     fontWeight: "600",
     color: MUTED,
-    fontFamily: "Inter_600SemiBold",
+    fontFamily: "SFProDisplay-Semibold",
   },
   symbolChipTextActive: {
     color: "#818cf8",
@@ -1774,18 +1774,18 @@ const logStyles = StyleSheet.create({
   sidePillText: {
     fontSize: 11,
     fontWeight: "700",
-    fontFamily: "Inter_700Bold",
+    fontFamily: "SFProDisplay-Bold",
   },
   footerSymbol: {
     fontSize: 13,
     fontWeight: "700",
     color: "#ffffff",
-    fontFamily: "Inter_700Bold",
+    fontFamily: "SFProDisplay-Bold",
   },
   footerTagCount: {
     fontSize: 11,
     color: MUTED,
-    fontFamily: "Inter_400Regular",
+    fontFamily: "SFProDisplay-Regular",
   },
   footerRight: {
     flexDirection: "row",
@@ -1806,7 +1806,7 @@ const logStyles = StyleSheet.create({
     fontSize: 13,
     fontWeight: "600",
     color: MUTED,
-    fontFamily: "Inter_600SemiBold",
+    fontFamily: "SFProDisplay-Semibold",
   },
   submitBtn: {
     paddingHorizontal: 20,
@@ -1820,7 +1820,7 @@ const logStyles = StyleSheet.create({
     fontSize: 13,
     fontWeight: "700",
     color: "#ffffff",
-    fontFamily: "Inter_700Bold",
+    fontFamily: "SFProDisplay-Bold",
   },
 });
 
@@ -2180,7 +2180,7 @@ const styles = StyleSheet.create({
     fontSize: 17,
     fontWeight: "600",
     color: TEXT,
-    fontFamily: "Inter_600SemiBold",
+    fontFamily: "SFProDisplay-Semibold",
   },
   headerRight: {
     flexDirection: "row",
@@ -2213,7 +2213,7 @@ const styles = StyleSheet.create({
     fontSize: 10,
     fontWeight: "700",
     color: "#000000",
-    fontFamily: "Inter_700Bold",
+    fontFamily: "SFProDisplay-Bold",
   },
   logBtn: {
     flexDirection: "row",
@@ -2238,7 +2238,7 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: "600",
     color: "#000000",
-    fontFamily: "Inter_600SemiBold",
+    fontFamily: "SFProDisplay-Semibold",
   },
   content: {
     flex: 1,
@@ -2263,7 +2263,7 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 13,
     color: TEXT,
-    fontFamily: "Inter_400Regular",
+    fontFamily: "SFProDisplay-Regular",
   },
   pillsScroll: {
     marginBottom: 4,
@@ -2291,7 +2291,7 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: "600",
     color: MUTED,
-    fontFamily: "Inter_600SemiBold",
+    fontFamily: "SFProDisplay-Semibold",
   },
   pillTextActive: {
     color: "#818cf8",
@@ -2318,7 +2318,7 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     color: "rgba(148,163,184,0.5)",
     letterSpacing: 1,
-    fontFamily: "Inter_600SemiBold",
+    fontFamily: "SFProDisplay-Semibold",
   },
   listContainer: {
     marginHorizontal: 8,
@@ -2332,7 +2332,7 @@ const styles = StyleSheet.create({
   emptyText: {
     fontSize: 14,
     color: MUTED,
-    fontFamily: "Inter_400Regular",
+    fontFamily: "SFProDisplay-Regular",
   },
   pagination: {
     flexDirection: "row",
@@ -2347,7 +2347,7 @@ const styles = StyleSheet.create({
   paginationText: {
     fontSize: 12,
     color: MUTED,
-    fontFamily: "Inter_400Regular",
+    fontFamily: "SFProDisplay-Regular",
   },
   paginationBtns: {
     flexDirection: "row",
@@ -2366,6 +2366,6 @@ const styles = StyleSheet.create({
   pageBtnText: {
     fontSize: 12,
     color: MUTED,
-    fontFamily: "Inter_400Regular",
+    fontFamily: "SFProDisplay-Regular",
   },
 });
