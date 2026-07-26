@@ -12,13 +12,7 @@ initSentry();
 initAnalytics();
 // ─────────────────────────────────────────────────────────────────────────────
 
-import {
-  Inter_400Regular,
-  Inter_500Medium,
-  Inter_600SemiBold,
-  Inter_700Bold,
-  useFonts,
-} from "@expo-google-fonts/inter";
+import { useFonts } from "expo-font";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { setBaseUrl } from "@workspace/api-client-react";
 import { Stack } from "expo-router";
@@ -164,10 +158,10 @@ function RootLayoutNav() {
 
 export default function RootLayout() {
   const [fontsLoaded, fontError] = useFonts({
-    Inter_400Regular,
-    Inter_500Medium,
-    Inter_600SemiBold,
-    Inter_700Bold,
+    "SFProDisplay-Regular":  require("../assets/fonts/SF-Pro-Display-Regular.otf"),
+    "SFProDisplay-Medium":   require("../assets/fonts/SF-Pro-Display-Medium.otf"),
+    "SFProDisplay-Semibold": require("../assets/fonts/SF-Pro-Display-Semibold.otf"),
+    "SFProDisplay-Bold":     require("../assets/fonts/SF-Pro-Display-Bold.otf"),
   });
 
   // renderReady flips to true when fonts are done (loaded or failed) OR when
