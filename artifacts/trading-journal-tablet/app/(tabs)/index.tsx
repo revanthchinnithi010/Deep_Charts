@@ -442,6 +442,13 @@ const CalendarHeatmap = memo(function CalendarHeatmap({
     // On RN Web the browser auto-stretches block elements so this never
     // triggers; on Yoga/Expo Go it must be explicit.
     <View style={{ width: "100%" }}>
+      {/* ── DEBUG — remove after diagnosis ── */}
+      <Text style={{ color: "#facc15", fontSize: 11, fontFamily: "monospace", marginBottom: 4, lineHeight: 16 }}>
+        {"FIX_VERSION_2"}
+      </Text>
+      <Text style={{ color: "#facc15", fontSize: 11, fontFamily: "monospace", marginBottom: 6, lineHeight: 16 }}>
+        {`windowWidth=${windowWidth} gridWidth=${gridWidth} cellSize=${cellSize} cells=${cells.length}`}
+      </Text>
       {/* ── Month navigator + monthly stats ── */}
       <View style={calStyles.navRow}>
         {/* Left: prev / month / next */}
