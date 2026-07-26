@@ -431,6 +431,20 @@ const CalendarHeatmap = memo(function CalendarHeatmap({
     return list;
   }, [firstDay, daysInMonth, year, month]);
 
+  // Group cells into explicit rows of 7.
+  // Reason: Yoga (Android) does not subtract paddingHorizontal from the
+  // container's available width when calculating flexWrap break points, so
+  // flexWrap:"wrap" + paddingHorizontal on the same View causes all cells to
+  // land on one row regardless of width.  Rendering each row as an explicit
+  // flexDirection:"row" View eliminates the wrap calculation entirely.
+  const rows = useMemo(() => {
+    const r: Array<typeof cells> = [];
+    for (let i = 0; i < cells.length; i += 7) {
+      r.push(cells.slice(i, i + 7));
+    }
+    return r;
+  }, [cells]);
+
   return (
     // width:"100%" is required for native Android (Yoga layout engine).
     // Without an explicit width on this root View, Yoga cannot resolve the
@@ -444,7 +458,7 @@ const CalendarHeatmap = memo(function CalendarHeatmap({
     <View style={{ width: "100%" }}>
       {/* ── DEBUG — remove after diagnosis ── */}
       <Text style={{ color: "#facc15", fontSize: 11, fontFamily: "monospace", marginBottom: 4, lineHeight: 16 }}>
-        {"FIX_VERSION_2"}
+        {"FIX_VERSION_3"}
       </Text>
       <Text style={{ color: "#facc15", fontSize: 11, fontFamily: "monospace", marginBottom: 6, lineHeight: 16 }}>
         {`windowWidth=${windowWidth} gridWidth=${gridWidth} cellSize=${cellSize} cells=${cells.length}`}
@@ -509,59 +523,64 @@ const CalendarHeatmap = memo(function CalendarHeatmap({
         ))}
       </View>
 
-      {/* ── Calendar cells ── */}
-      <View style={[calStyles.grid, { width: gridWidth }]}>
-        {cells.map(({ key, day, dateStr }) => {
-          if (day === null || dateStr === null) {
-            // Empty spacer
-            return <View key={key} style={{ width: cellSize, height: cellSize, margin: CELL_GAP / 2 }} />;
-          }
+      {/* ── Calendar cells — one explicit row View per week row ── */}
+      {rows.map((row, rowIdx) => (
+        <View
+          key={rowIdx}
+          style={{ flexDirection: "row", paddingHorizontal: CAL_H_PAD, marginBottom: 4 }}
+        >
+          {row.map(({ key, day, dateStr }) => {
+            if (day === null || dateStr === null) {
+              // Empty spacer
+              return <View key={key} style={{ width: cellSize, height: cellSize, margin: CELL_GAP / 2 }} />;
+            }
 
-          const entry      = dayMap[dateStr];
-          const hasTrades  = !!(entry && entry.trades > 0);
-          const colors     = cellColors[dateStr];
+            const entry      = dayMap[dateStr];
+            const hasTrades  = !!(entry && entry.trades > 0);
+            const colors     = cellColors[dateStr];
 
-          return (
-            <Pressable
-              key={key}
-              onPress={() => hasTrades && onDateClick(dateStr)}
-              disabled={!hasTrades}
-              style={({ pressed }) => [
-                calStyles.cell,
-                {
-                  width:  cellSize,
-                  height: cellSize,
-                  margin: CELL_GAP / 2,
-                  backgroundColor: colors?.bg   ?? "transparent",
-                  borderColor:     colors?.border ?? "transparent",
-                  borderWidth:     colors ? 1 : 0,
-                },
-                pressed && hasTrades && { opacity: 0.60 },
-              ]}
-              accessibilityRole="button"
-              accessibilityLabel={
-                hasTrades
-                  ? `${dateStr}: ${entry.trades} trade${entry.trades > 1 ? "s" : ""}, PnL ${fc(entry.pnl)}`
-                  : `${dateStr}: no trades`
-              }
-              accessibilityState={{ disabled: !hasTrades }}
-            >
-              <Text style={calStyles.cellDay}>{day}</Text>
-              {hasTrades && (
-                <Text
-                  style={[
-                    calStyles.cellPnl,
-                    { color: entry.pnl > 0 ? "#34d399" : "#f87171" },
-                  ]}
-                  numberOfLines={1}
-                >
-                  {entry.pnl > 0 ? "+" : ""}{axisFormatter(Math.abs(entry.pnl))}
-                </Text>
-              )}
-            </Pressable>
-          );
-        })}
-      </View>
+            return (
+              <Pressable
+                key={key}
+                onPress={() => hasTrades && onDateClick(dateStr)}
+                disabled={!hasTrades}
+                style={({ pressed }) => [
+                  calStyles.cell,
+                  {
+                    width:  cellSize,
+                    height: cellSize,
+                    margin: CELL_GAP / 2,
+                    backgroundColor: colors?.bg   ?? "transparent",
+                    borderColor:     colors?.border ?? "transparent",
+                    borderWidth:     colors ? 1 : 0,
+                  },
+                  pressed && hasTrades && { opacity: 0.60 },
+                ]}
+                accessibilityRole="button"
+                accessibilityLabel={
+                  hasTrades
+                    ? `${dateStr}: ${entry.trades} trade${entry.trades > 1 ? "s" : ""}, PnL ${fc(entry.pnl)}`
+                    : `${dateStr}: no trades`
+                }
+                accessibilityState={{ disabled: !hasTrades }}
+              >
+                <Text style={calStyles.cellDay}>{day}</Text>
+                {hasTrades && (
+                  <Text
+                    style={[
+                      calStyles.cellPnl,
+                      { color: entry.pnl > 0 ? "#34d399" : "#f87171" },
+                    ]}
+                    numberOfLines={1}
+                  >
+                    {entry.pnl > 0 ? "+" : ""}{axisFormatter(Math.abs(entry.pnl))}
+                  </Text>
+                )}
+              </Pressable>
+            );
+          })}
+        </View>
+      ))}
     </View>
   );
 });
