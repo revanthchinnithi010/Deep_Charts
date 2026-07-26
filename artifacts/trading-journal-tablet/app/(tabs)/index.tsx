@@ -31,7 +31,7 @@
  *   useCurrencyAxisFormatter — compact axis tick format
  */
 
-import { Ionicons } from "@expo/vector-icons";
+import { X, ChevronLeft, ChevronRight } from "lucide-react-native";
 import {
   useGetCalendarHeatmap,
   useListTrades,
@@ -177,7 +177,7 @@ const DayDetailSheet = memo(function DayDetailSheet({
             accessibilityLabel="Close daily summary"
             accessibilityHint="Closes the daily summary sheet"
           >
-            <Ionicons name="close" size={16} color="rgba(148,163,184,0.70)" />
+            <X size={16} color="rgba(148,163,184,0.70)" />
           </Pressable>
         </View>
 
@@ -451,7 +451,7 @@ const CalendarHeatmap = memo(function CalendarHeatmap({
             accessibilityRole="button"
             accessibilityLabel="Previous month"
           >
-            <Ionicons name="chevron-back" size={16} color="rgba(148,163,184,0.60)" />
+            <ChevronLeft size={16} color="rgba(148,163,184,0.60)" />
           </Pressable>
           <Text style={calStyles.monthName}>{monthName}</Text>
           <Pressable
@@ -461,7 +461,7 @@ const CalendarHeatmap = memo(function CalendarHeatmap({
             accessibilityRole="button"
             accessibilityLabel="Next month"
           >
-            <Ionicons name="chevron-forward" size={16} color="rgba(148,163,184,0.60)" />
+            <ChevronRight size={16} color="rgba(148,163,184,0.60)" />
           </Pressable>
         </View>
 

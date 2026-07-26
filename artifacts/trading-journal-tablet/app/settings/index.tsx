@@ -39,7 +39,7 @@
  *   router.replace("/settings")       — replace (no back arrow in some flows)
  */
 
-import { Ionicons } from "@expo/vector-icons";
+import { ChevronLeft } from "lucide-react-native";
 import { router } from "expo-router";
 import React from "react";
 import {
@@ -83,7 +83,7 @@ export default function SettingsScreen() {
           accessibilityRole="button"
           accessibilityLabel="Go back"
         >
-          <Ionicons name="chevron-back" size={22} color={ICON_BACK} />
+          <ChevronLeft size={22} color={ICON_BACK} />
         </Pressable>
 
         <View style={styles.headerTitles}>

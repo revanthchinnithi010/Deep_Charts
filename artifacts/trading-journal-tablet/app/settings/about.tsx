@@ -12,7 +12,7 @@
  *   button (Back)                             → Pressable + router.back()
  *   position:fixed inset:0                   → full-screen View (screen owns it)
  *   overflowY:auto                            → ScrollView
- *   lucide-react icons                        → @expo/vector-icons Ionicons
+ *   lucide-react icons                        → lucide-react-native
  *   window.addEventListener("keydown")        → removed (no keyboard on mobile)
  *   requestAnimationFrame CSS gate            → removed (Stack handles animation)
  *   rendered/visible mount-gate state         → removed (Expo Router lifecycle)
@@ -27,7 +27,7 @@
  *   AboutSettingsPage       — named export (now delegates to the screen component)
  */
 
-import { Ionicons } from "@expo/vector-icons";
+import { ChevronLeft, Sparkles, FileText, ShieldCheck } from "lucide-react-native";
 import { router } from "expo-router";
 import React, { memo } from "react";
 import {
@@ -65,6 +65,8 @@ const ROW_GAP       = 16;
 const ROW_PADDING   = 24;
 const DIVIDER_INSET = ROW_PADDING + ICON_SIZE + ROW_GAP;
 
+type LucideIcon = React.ComponentType<{ size?: number; color?: string; strokeWidth?: number }>;
+
 // ─────────────────────────────────────────────────────────────────────────────
 // Divider
 // ─────────────────────────────────────────────────────────────────────────────
@@ -80,9 +82,9 @@ function Divider() {
 // ─────────────────────────────────────────────────────────────────────────────
 
 function Row({
-  ionName, iconBg, iconColor, label, rightContent, last,
+  Icon, iconBg, iconColor, label, rightContent, last,
 }: {
-  ionName:       React.ComponentProps<typeof Ionicons>["name"];
+  Icon:          LucideIcon;
   iconBg:        string;
   iconColor:     string;
   label:         string;
@@ -93,7 +95,7 @@ function Row({
     <>
       <View style={[styles.row, { paddingHorizontal: ROW_PADDING, height: ROW_HEIGHT, gap: ROW_GAP }]}>
         <View style={[styles.iconBox, { width: ICON_SIZE, height: ICON_SIZE, backgroundColor: iconBg }]}>
-          <Ionicons name={ionName} size={22} color={iconColor} />
+          <Icon size={22} color={iconColor} />
         </View>
         <Text style={[styles.rowLabel, { flex: 1 }]}>{label}</Text>
         {rightContent != null && (
@@ -123,7 +125,7 @@ function AboutScreen() {
           accessibilityRole="button"
           accessibilityLabel="Back"
         >
-          <Ionicons name="chevron-back" size={18} color={ICON_BACK} />
+          <ChevronLeft size={18} color={ICON_BACK} />
         </Pressable>
 
         <Text style={styles.headerTitle}>About</Text>
@@ -153,7 +155,7 @@ function AboutScreen() {
 
         {/* ── Rows ─────────────────────────────────────────────────────── */}
         <Row
-          ionName="sparkles-outline"
+          Icon={Sparkles}
           iconBg="rgba(165,180,252,0.14)"
           iconColor="#a5b4fc"
           label="Version"
@@ -163,14 +165,14 @@ function AboutScreen() {
         />
 
         <Row
-          ionName="document-text-outline"
+          Icon={FileText}
           iconBg="rgba(96,165,250,0.14)"
           iconColor="#60a5fa"
           label="Terms of Service"
         />
 
         <Row
-          ionName="shield-checkmark-outline"
+          Icon={ShieldCheck}
           iconBg="rgba(52,211,153,0.14)"
           iconColor="#34d399"
           label="Privacy Policy"

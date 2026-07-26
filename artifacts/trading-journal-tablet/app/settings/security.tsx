@@ -31,8 +31,10 @@
  *   SecuritySettingsPage       — named export (delegates to screen)
  */
 
-import { Ionicons } from "@expo/vector-icons";
+import { ChevronLeft, Lock, Smartphone, Key, ShieldCheck } from "lucide-react-native";
 import { router } from "expo-router";
+
+type LucideIcon = React.ComponentType<{ size?: number; color?: string; strokeWidth?: number }>;
 import React, { memo } from "react";
 import {
   Pressable,
@@ -92,9 +94,9 @@ function Divider() {
 // ─────────────────────────────────────────────────────────────────────────────
 
 function Row({
-  ionName, iconBg, iconColor, label, rightContent, last,
+  Icon, iconBg, iconColor, label, rightContent, last,
 }: {
-  ionName:       React.ComponentProps<typeof Ionicons>["name"];
+  Icon:          LucideIcon;
   iconBg:        string;
   iconColor:     string;
   label:         string;
@@ -119,7 +121,7 @@ function Row({
             { width: ICON_SIZE, height: ICON_SIZE, backgroundColor: iconBg },
           ]}
         >
-          <Ionicons name={ionName} size={22} color={iconColor} />
+          <Icon size={22} color={iconColor} />
         </View>
 
         <Text style={styles.rowLabel}>{label}</Text>
@@ -151,7 +153,7 @@ function SecurityScreen() {
           accessibilityRole="button"
           accessibilityLabel="Back"
         >
-          <Ionicons name="chevron-back" size={18} color="rgba(255,255,255,0.72)" />
+          <ChevronLeft size={18} color="rgba(255,255,255,0.72)" />
         </Pressable>
 
         <Text style={styles.headerTitle}>Security</Text>
@@ -173,7 +175,7 @@ function SecurityScreen() {
 
         {/* Password — rightContent: "Set" */}
         <Row
-          ionName="lock-closed-outline"
+          Icon={Lock}
           iconBg="rgba(52,211,153,0.14)"
           iconColor="#34d399"
           label="Password"
@@ -184,7 +186,7 @@ function SecurityScreen() {
 
         {/* Two-Factor Authentication — rightContent: "Off" (dimmer) */}
         <Row
-          ionName="phone-portrait-outline"
+          Icon={Smartphone}
           iconBg="rgba(139,92,246,0.14)"
           iconColor="#a78bfa"
           label="Two-Factor Authentication"
@@ -195,7 +197,7 @@ function SecurityScreen() {
 
         {/* API Keys — rightContent: "Managed in Connections" */}
         <Row
-          ionName="key-outline"
+          Icon={Key}
           iconBg="rgba(234,179,8,0.14)"
           iconColor="#fde047"
           label="API Keys"
@@ -206,7 +208,7 @@ function SecurityScreen() {
 
         {/* Active Sessions — rightContent: "1 device" (last row) */}
         <Row
-          ionName="shield-checkmark-outline"
+          Icon={ShieldCheck}
           iconBg="rgba(96,165,250,0.14)"
           iconColor="#60a5fa"
           label="Active Sessions"

@@ -42,8 +42,13 @@
  *   SoundType, DurationType        — union types
  */
 
-import { Ionicons } from "@expo/vector-icons";
+import {
+  ChevronLeft, ChevronRight, Check,
+  Volume2, VolumeX, Music, Timer,
+} from "lucide-react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+
+type LucideIcon = React.ComponentType<{ size?: number; color?: string; strokeWidth?: number }>;
 import { router } from "expo-router";
 import React, {
   memo,
@@ -191,7 +196,7 @@ function PickerPage<T extends string>({
           accessibilityRole="button"
           accessibilityLabel="Back"
         >
-          <Ionicons name="chevron-back" size={18} color="rgba(255,255,255,0.72)" />
+          <ChevronLeft size={18} color="rgba(255,255,255,0.72)" />
         </Pressable>
         <Text style={styles.headerTitle}>{title}</Text>
         <View style={styles.headerSpacer} />
@@ -224,7 +229,7 @@ function PickerPage<T extends string>({
                 <Text style={styles.pickerRowLabel}>{opt}</Text>
                 {active && (
                   <View style={styles.pickerCheckCircle}>
-                    <Ionicons name="checkmark" size={11} color="#1e1b4b" />
+                    <Check size={11} color="#1e1b4b" />
                   </View>
                 )}
               </Pressable>
@@ -244,11 +249,11 @@ function PickerPage<T extends string>({
 // ─────────────────────────────────────────────────────────────────────────────
 
 function ToggleRow({
-  ionName, ionNameOff, iconColor, iconColorOff, iconBg, iconBgOff,
+  Icon, IconOff, iconColor, iconColorOff, iconBg, iconBgOff,
   label, sub, value, onChange, showDivider,
 }: {
-  ionName:       React.ComponentProps<typeof Ionicons>["name"];
-  ionNameOff?:   React.ComponentProps<typeof Ionicons>["name"];
+  Icon:          LucideIcon;
+  IconOff?:      LucideIcon;
   iconColor:     string;
   iconColorOff?: string;
   iconBg:        string;
@@ -259,7 +264,7 @@ function ToggleRow({
   onChange:      (v: boolean) => void;
   showDivider:   boolean;
 }) {
-  const resolvedIconName  = value ? ionName : (ionNameOff ?? ionName);
+  const ResolvedIcon  = value ? Icon : (IconOff ?? Icon);
   const resolvedIconColor = value ? iconColor : (iconColorOff ?? iconColor);
   const resolvedIconBg    = value ? iconBg : (iconBgOff ?? iconBg);
 
@@ -273,7 +278,7 @@ function ToggleRow({
         accessibilityLabel={label}
       >
         <View style={[styles.iconBox, { backgroundColor: resolvedIconBg }]}>
-          <Ionicons name={resolvedIconName} size={18} color={resolvedIconColor} />
+          <ResolvedIcon size={18} color={resolvedIconColor} />
         </View>
 
         <View style={styles.rowLabels}>
@@ -296,9 +301,9 @@ function ToggleRow({
 // ─────────────────────────────────────────────────────────────────────────────
 
 function NavRow({
-  ionName, iconColor, iconBg, label, value, onPress, showDivider, disabled,
+  Icon, iconColor, iconBg, label, value, onPress, showDivider, disabled,
 }: {
-  ionName:     React.ComponentProps<typeof Ionicons>["name"];
+  Icon:        LucideIcon;
   iconColor:   string;
   iconBg:      string;
   label:       string;
@@ -326,7 +331,7 @@ function NavRow({
         accessibilityState={{ disabled }}
       >
         <View style={[styles.iconBox, { backgroundColor: iconBg }]}>
-          <Ionicons name={ionName} size={18} color={iconColor} />
+          <Icon size={18} color={iconColor} />
         </View>
 
         <Text style={[styles.rowLabel, { flex: 1 }]}>{label}</Text>
@@ -335,7 +340,7 @@ function NavRow({
           {value != null && (
             <Text style={styles.rowValue}>{value}</Text>
           )}
-          <Ionicons name="chevron-forward" size={16} color="rgba(148,163,184,0.30)" />
+          <ChevronRight size={16} color="rgba(148,163,184,0.30)" />
         </View>
       </Pressable>
       {showDivider && <View style={[styles.divider, { marginLeft: 80 }]} />}
@@ -389,7 +394,8 @@ function NotificationsScreen() {
           accessibilityRole="button"
           accessibilityLabel="Back"
         >
-          <Ionicons name="chevron-back" size={18} color="rgba(255,255,255,0.72)" />
+          <ChevronLeft size={18} color="rgba(255,255,255,0.72)" />
+
         </Pressable>
         <Text style={styles.headerTitle}>Notifications</Text>
         <View style={styles.headerSpacer} />
@@ -409,8 +415,8 @@ function NotificationsScreen() {
 
         {/* Alert Sounds toggle */}
         <ToggleRow
-          ionName="volume-medium-outline"
-          ionNameOff="volume-mute-outline"
+          Icon={Volume2}
+          IconOff={VolumeX}
           iconColor={prefs.soundEnabled ? "#34d399" : "#94a3b8"}
           iconBg={prefs.soundEnabled ? "rgba(16,185,129,0.14)" : "rgba(148,163,184,0.10)"}
           label="Alert Sounds"
@@ -422,7 +428,7 @@ function NotificationsScreen() {
 
         {/* Alert Ringtone nav row — disabled when soundEnabled is false */}
         <NavRow
-          ionName="musical-note-outline"
+          Icon={Music}
           iconColor="#a78bfa"
           iconBg="rgba(139,92,246,0.14)"
           label="Alert Ringtone"
@@ -434,7 +440,7 @@ function NotificationsScreen() {
 
         {/* Alert Duration nav row */}
         <NavRow
-          ionName="timer-outline"
+          Icon={Timer}
           iconColor="#fbbf24"
           iconBg="rgba(245,158,11,0.14)"
           label="Alert Duration"

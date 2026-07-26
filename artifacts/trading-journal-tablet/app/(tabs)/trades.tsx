@@ -48,7 +48,10 @@ import {
   Platform,
 } from "react-native";
 import { FlashList, type ListRenderItem } from "@shopify/flash-list";
-import { Ionicons } from "@expo/vector-icons";
+import {
+  X, ArrowLeft, TrendingUp, ExternalLink, Image as ImageIcon,
+  Tag, AlertTriangle, FileText, SlidersHorizontal, Plus, Search,
+} from "lucide-react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useQueryClient } from "@tanstack/react-query";
 import {
@@ -245,7 +248,7 @@ const FilterModal = memo(function FilterModal({
         <View style={filterStyles.titleRow}>
           <Text style={filterStyles.titleText}>Filters</Text>
           <Pressable onPress={onClose} style={filterStyles.closeBtn} hitSlop={8}>
-            <Ionicons name="close" size={14} color={MUTED} />
+            <X size={14} color={MUTED} />
           </Pressable>
         </View>
 
@@ -648,7 +651,7 @@ const TradeDetailModal = memo(function TradeDetailModal({
             style={({ pressed }) => [detailStyles.backBtn, pressed && { opacity: 0.7 }]}
             hitSlop={8}
           >
-            <Ionicons name="arrow-back" size={20} color="rgba(255,255,255,0.7)" />
+            <ArrowLeft size={20} color="rgba(255,255,255,0.7)" />
           </Pressable>
           <Text style={detailStyles.headerTitle}>Trade Details</Text>
           <View style={{ width: 32 }} />
@@ -720,10 +723,10 @@ const TradeDetailModal = memo(function TradeDetailModal({
                 style={({ pressed }) => [detailStyles.tvBtn, pressed && { opacity: 0.75 }]}
               >
                 <View style={detailStyles.tvBtnLeft}>
-                  <Ionicons name="trending-up-outline" size={16} color="#818cf8" />
+                  <TrendingUp size={16} color="#818cf8" />
                   <Text style={detailStyles.tvBtnText}>Open TradingView Chart</Text>
                 </View>
-                <Ionicons name="open-outline" size={14} color="rgba(255,255,255,0.5)" />
+                <ExternalLink size={14} color="rgba(255,255,255,0.5)" />
               </Pressable>
             ) : (
               <View style={detailStyles.emptyBox}>
@@ -745,7 +748,7 @@ const TradeDetailModal = memo(function TradeDetailModal({
               </Pressable>
             ) : (
               <View style={detailStyles.screenshotEmpty}>
-                <Ionicons name="image-outline" size={16} color="rgba(148,163,184,0.4)" />
+                <ImageIcon size={16} color="rgba(148,163,184,0.4)" />
                 <Text style={detailStyles.emptyText}>No screenshot attached</Text>
               </View>
             )}
@@ -758,7 +761,7 @@ const TradeDetailModal = memo(function TradeDetailModal({
             {setupTags.length > 0 && (
               <View style={detailStyles.tagGroup}>
                 <View style={detailStyles.tagGroupHeader}>
-                  <Ionicons name="pricetag-outline" size={12} color={MUTED} />
+                  <Tag size={12} color={MUTED} />
                   <Text style={detailStyles.tagGroupLabel}>Setup</Text>
                 </View>
                 <View style={detailStyles.tagWrap}>
@@ -774,7 +777,7 @@ const TradeDetailModal = memo(function TradeDetailModal({
             {mistakeTags.length > 0 && (
               <View style={detailStyles.tagGroup}>
                 <View style={detailStyles.tagGroupHeader}>
-                  <Ionicons name="warning-outline" size={12} color="rgba(248,113,113,0.7)" />
+                  <AlertTriangle size={12} color="rgba(248,113,113,0.7)" />
                   <Text style={detailStyles.tagGroupLabel}>Mistakes</Text>
                 </View>
                 <View style={detailStyles.tagWrap}>
@@ -795,7 +798,7 @@ const TradeDetailModal = memo(function TradeDetailModal({
           {/* Notes */}
           <View style={[detailStyles.section, { paddingBottom: 32 }]}>
             <View style={detailStyles.tagGroupHeader}>
-              <Ionicons name="document-text-outline" size={12} color={MUTED} />
+              <FileText size={12} color={MUTED} />
               <Text style={detailStyles.sectionTitle}>JOURNAL NOTES</Text>
             </View>
             {trade.notes ? (
@@ -1199,7 +1202,7 @@ const LogTradeModal = memo(function LogTradeModal({
             <Text style={logStyles.headerSub}>Record your trade details and analysis</Text>
           </View>
           <Pressable onPress={onClose} style={logStyles.closeBtn} hitSlop={8}>
-            <Ionicons name="close" size={16} color={MUTED} />
+            <X size={16} color={MUTED} />
           </Pressable>
         </View>
 
@@ -1286,7 +1289,7 @@ const LogTradeModal = memo(function LogTradeModal({
               <View style={logStyles.sourceBadge}>
                 <Text style={logStyles.sourceLabel}>Source:</Text>
                 <View style={logStyles.sourcePill}>
-                  <Ionicons name="document-text-outline" size={12} color={MUTED} />
+                  <FileText size={12} color={MUTED} />
                   <Text style={logStyles.sourcePillText}>Manual Entry</Text>
                 </View>
                 <Text style={logStyles.sourceSub}>Sync source: Manual</Text>
@@ -1969,7 +1972,7 @@ export default function TradesScreen() {
             onPress={() => setIsFilterOpen(true)}
             style={({ pressed }) => [styles.iconBtn, pressed && { opacity: 0.7 }]}
           >
-            <Ionicons name="options-outline" size={16} color={MUTED} />
+            <SlidersHorizontal size={16} color={MUTED} />
             {activeFilterCount > 0 && (
               <View style={styles.filterBadge}>
                 <Text style={styles.filterBadgeText}>{activeFilterCount}</Text>
@@ -1982,7 +1985,7 @@ export default function TradesScreen() {
             style={({ pressed }) => [styles.logBtn, pressed && { opacity: 0.85 }]}
           >
             <View style={styles.logBtnIcon}>
-              <Ionicons name="add" size={10} color="#ffffff" />
+              <Plus size={10} color="#ffffff" />
             </View>
             <Text style={styles.logBtnText}>Log</Text>
           </Pressable>

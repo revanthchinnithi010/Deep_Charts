@@ -60,7 +60,7 @@ import {
 } from "react-native";
 import { FlashList } from "@shopify/flash-list";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { Ionicons } from "@expo/vector-icons";
+import { Plus, Search, Trash2 } from "lucide-react-native";
 import { useQueryClient } from "@tanstack/react-query";
 import {
   useListNotes,
@@ -336,14 +336,14 @@ export default function NotebookScreen() {
               {createNote.isPending ? (
                 <ActivityIndicator size={14} color="#fff" />
               ) : (
-                <Ionicons name="add" size={16} color="#fff" />
+                <Plus size={16} color="#fff" />
               )}
               <Text style={styles.newBtnText}>New Note</Text>
             </Pressable>
 
             {/* Search input */}
             <View style={styles.searchRow}>
-              <Ionicons name="search-outline" size={15} color={TEXT_MUT} style={styles.searchIcon} />
+              <Search size={15} color={TEXT_MUT} style={styles.searchIcon} />
               <TextInput
                 style={styles.searchInput}
                 placeholder="Search notes..."
@@ -419,7 +419,7 @@ export default function NotebookScreen() {
                   {deleteNote.isPending ? (
                     <ActivityIndicator size={14} color={DANGER} />
                   ) : (
-                    <Ionicons name="trash-outline" size={17} color={DANGER} />
+                    <Trash2 size={17} color={DANGER} />
                   )}
                 </Pressable>
               </View>
@@ -440,7 +440,7 @@ export default function NotebookScreen() {
             // ── Empty state (mirrors web exactly) ───────────────────────────
             <View style={styles.emptyState}>
               <View style={styles.emptyIcon}>
-                <Ionicons name="add" size={32} color={TEXT_DIM} />
+                <Plus size={32} color={TEXT_DIM} />
               </View>
               <Text style={styles.emptyText}>Select a note or create a new one</Text>
             </View>

@@ -32,7 +32,7 @@
  *   ThemeMode                    — re-exported from ThemeContext
  */
 
-import { Ionicons } from "@expo/vector-icons";
+import { ChevronLeft, Check, Sun, Moon, Monitor } from "lucide-react-native";
 import { router } from "expo-router";
 import React, { memo, useState } from "react";
 import {
@@ -63,11 +63,13 @@ export type { ThemeMode };
 // Options — preserved verbatim from source
 // ─────────────────────────────────────────────────────────────────────────────
 
+type LucideIcon = React.ComponentType<{ size?: number; color?: string; strokeWidth?: number }>;
+
 const OPTIONS: {
   mode:       ThemeMode;
   label:      string;
   sub:        string;
-  ionName:    React.ComponentProps<typeof Ionicons>["name"];
+  Icon:       LucideIcon;
   iconColor:  string;
   iconBg:     string;
 }[] = [
@@ -75,7 +77,7 @@ const OPTIONS: {
     mode:      "light",
     label:     "Light",
     sub:       "Always use light theme",
-    ionName:   "sunny-outline",
+    Icon:      Sun,
     iconColor: "#fbbf24",
     iconBg:    "rgba(245,158,11,0.14)",
   },
@@ -83,7 +85,7 @@ const OPTIONS: {
     mode:      "dark",
     label:     "Dark",
     sub:       "Always use dark theme",
-    ionName:   "moon-outline",
+    Icon:      Moon,
     iconColor: "#a78bfa",
     iconBg:    "rgba(139,92,246,0.14)",
   },
@@ -91,7 +93,7 @@ const OPTIONS: {
     mode:      "system",
     label:     "System Default",
     sub:       "Follow device preference",
-    ionName:   "desktop-outline",
+    Icon:      Monitor,
     iconColor: "#60a5fa",
     iconBg:    "rgba(59,130,246,0.14)",
   },
@@ -117,7 +119,7 @@ function AppearanceScreen() {
           accessibilityRole="button"
           accessibilityLabel="Back"
         >
-          <Ionicons name="chevron-back" size={18} color="rgba(255,255,255,0.72)" />
+          <ChevronLeft size={18} color="rgba(255,255,255,0.72)" />
         </Pressable>
 
         <Text style={styles.headerTitle}>Appearance</Text>
@@ -139,7 +141,7 @@ function AppearanceScreen() {
         <Text style={styles.sectionLabel}>Theme</Text>
 
         {/* ── Option rows ────────────────────────────────────────────────── */}
-        {OPTIONS.map(({ mode, label, sub, ionName, iconColor, iconBg }, i) => {
+        {OPTIONS.map(({ mode, label, sub, Icon, iconColor, iconBg }, i) => {
           const active  = themeMode === mode;
           const pressed = pressedMode === mode;
 
@@ -159,7 +161,7 @@ function AppearanceScreen() {
               >
                 {/* Icon */}
                 <View style={[styles.optionIcon, { backgroundColor: iconBg }]}>
-                  <Ionicons name={ionName} size={18} color={iconColor} />
+                  <Icon size={18} color={iconColor} />
                 </View>
 
                 {/* Labels */}
@@ -174,7 +176,7 @@ function AppearanceScreen() {
                   active ? styles.radioActive : styles.radioInactive,
                 ]}>
                   {active && (
-                    <Ionicons name="checkmark" size={11} color="#1e1b4b" />
+                    <Check size={11} color="#1e1b4b" />
                   )}
                 </View>
               </Pressable>

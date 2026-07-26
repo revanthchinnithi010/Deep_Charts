@@ -55,7 +55,7 @@ import {
   ActivityIndicator,
 } from "react-native";
 import { router } from "expo-router";
-import { Ionicons } from "@expo/vector-icons";
+import { AlertTriangle, ArrowLeft, ChevronDown } from "lucide-react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useSelectedPositionStore } from "@/store/selectedPositionStore";
 import { useBrokerStore } from "@/store/brokerStore";
@@ -329,7 +329,7 @@ export default function PositionDetailScreen() {
   if (!position) {
     return (
       <View style={[emptyStyles.root, { paddingTop: insets.top }]}>
-        <Ionicons name="warning-outline" size={32} color={MUTED} />
+        <AlertTriangle size={32} color={MUTED} />
         <Text style={emptyStyles.label}>No position selected</Text>
         <Pressable
           onPress={() => router.back()}
@@ -490,7 +490,7 @@ export default function PositionDetailScreen() {
           style={({ pressed }) => [pdStyles.backBtn, pressed && { opacity: 0.7 }]}
           accessibilityLabel="Back"
         >
-          <Ionicons name="arrow-back" size={20} color={VALUE} />
+          <ArrowLeft size={20} color={VALUE} />
         </Pressable>
         <Text style={pdStyles.headerTitle}>Position Details</Text>
         <View style={{ width: 32, height: 32 }} />
@@ -553,8 +553,7 @@ export default function PositionDetailScreen() {
             accessibilityState={{ expanded: detailsOpen }}
           >
             <Text style={pdStyles.collapseLabel}>POSITION DETAILS</Text>
-            <Ionicons
-              name="chevron-down"
+            <ChevronDown
               size={16}
               color={MUTED}
               style={{ transform: [{ rotate: detailsOpen ? "180deg" : "0deg" }] }}
@@ -587,8 +586,7 @@ export default function PositionDetailScreen() {
             accessibilityState={{ expanded: bracketOpen }}
           >
             <Text style={pdStyles.collapseLabel}>BRACKET ORDER</Text>
-            <Ionicons
-              name="chevron-down"
+            <ChevronDown
               size={16}
               color={MUTED}
               style={{ transform: [{ rotate: bracketOpen ? "180deg" : "0deg" }] }}

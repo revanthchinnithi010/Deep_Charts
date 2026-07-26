@@ -32,7 +32,7 @@
  *   Chart ordering: line chart → distribution → monthly → trading stats → cumulative
  */
 
-import { Ionicons } from "@expo/vector-icons";
+import { ArrowLeft, TrendingUp, TrendingDown, BarChart2, Flame } from "lucide-react-native";
 import { router } from "expo-router";
 import { memo, useCallback, useEffect, useMemo, useState } from "react";
 import {
@@ -351,12 +351,14 @@ function SummaryCard({
 }
 
 /** Trading statistics row card — mirrors web TradingStatCard */
+type LucideIcon = React.ComponentType<{ size?: number; color?: string; strokeWidth?: number }>;
+
 function TradingStatCard({
-  label, value, iconName, positive,
+  label, value, Icon, positive,
 }: {
   label:     string;
   value:     string;
-  iconName:  React.ComponentProps<typeof Ionicons>["name"];
+  Icon:      LucideIcon;
   positive?: boolean;
 }) {
   const valueColor =
@@ -378,7 +380,7 @@ function TradingStatCard({
         <Text style={[tsc.value, { color: valueColor }]}>{value}</Text>
       </View>
       <View style={[tsc.iconWrap, { backgroundColor: iconBg }]}>
-        <Ionicons name={iconName} size={16} color={iconColor} />
+        <Icon size={16} color={iconColor} />
       </View>
     </View>
   );
@@ -386,12 +388,12 @@ function TradingStatCard({
 
 /** Cumulative statistics card — mirrors web CumulativeStatCard */
 function CumulativeStatCard({
-  label, value, sub, iconName, valueColor, iconColor, iconBg,
+  label, value, sub, Icon, valueColor, iconColor, iconBg,
 }: {
   label:      string;
   value:      string;
   sub:        string;
-  iconName:   React.ComponentProps<typeof Ionicons>["name"];
+  Icon:       LucideIcon;
   valueColor: string;
   iconColor:  string;
   iconBg:     string;
@@ -399,7 +401,7 @@ function CumulativeStatCard({
   return (
     <View style={csc.card}>
       <View style={[csc.iconWrap, { backgroundColor: iconBg }]}>
-        <Ionicons name={iconName} size={16} color={iconColor} />
+        <Icon size={16} color={iconColor} />
       </View>
       <Text style={[csc.value, { color: valueColor }]}>{value}</Text>
       <Text style={csc.sub}>{sub}</Text>
@@ -523,7 +525,7 @@ export default function NetPnLAnalytics() {
           accessibilityRole="button"
           accessibilityLabel="Go back"
         >
-          <Ionicons name="arrow-back" size={20} color="#E8E8E8" />
+          <ArrowLeft size={20} color="#E8E8E8" />
         </Pressable>
         <Text style={s.headerTitle}>Net PNL Analytics</Text>
         <View style={{ width: 32 }} />

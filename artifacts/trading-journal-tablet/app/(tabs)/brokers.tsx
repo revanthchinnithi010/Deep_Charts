@@ -70,7 +70,7 @@ import {
   Animated, type ListRenderItem,
 } from "react-native";
 import * as Clipboard from "expo-clipboard";
-import { Ionicons } from "@expo/vector-icons";
+import { Check, Copy, Upload, FileText, Lock, Key, Clock, ShieldCheck } from "lucide-react-native";
 import { getApiBase } from "@/lib/apiBase";
 import {
   SAMPLE_SYNCED_TRADES, DELTA_SYNC_HISTORY,
@@ -242,11 +242,9 @@ function CopyButton({ text }: { text: string }) {
       accessibilityRole="button"
       accessibilityLabel={copied ? "Copied to clipboard" : "Copy to clipboard"}
     >
-      <Ionicons
-        name={copied ? "checkmark-outline" : "copy-outline"}
-        size={13}
-        color={copied ? WIN_CLR : MUTED}
-      />
+      {copied
+        ? <Check size={13} color={WIN_CLR} />
+        : <Copy size={13} color={MUTED} />}
       <Text style={[copyStyles.text, copied && { color: WIN_CLR }]}>
         {copied ? "Copied" : "Copy"}
       </Text>
@@ -428,7 +426,7 @@ function FusionPanel() {
         to sync your trades into the journal.
       </Text>
       <View style={panelStyles.importZone}>
-        <Ionicons name="cloud-upload-outline" size={28} color={MUTED} />
+        <Upload size={28} color={MUTED} />
         <Text style={panelStyles.importZoneLabel}>FusionMarkets CSV</Text>
         <Text style={panelStyles.importZoneHint}>Standard FusionMarkets export format</Text>
         <ConnectButton
@@ -501,7 +499,7 @@ function GrowwPanel() {
       </View>
 
       <View style={panelStyles.importZone}>
-        <Ionicons name="document-outline" size={28} color={MUTED} />
+        <FileText size={28} color={MUTED} />
         <Text style={panelStyles.importZoneLabel}>Groww P&L CSV</Text>
         <Text style={panelStyles.importZoneHint}>P&L statement export from Groww</Text>
         <ConnectButton
@@ -844,14 +842,14 @@ function SecuritySection() {
     <View style={secStyles.card}>
       <Text style={secStyles.title}>Security</Text>
       {[
-        { icon: "lock-closed-outline",   label: "Credentials encrypted", sub: "AES-256-CBC, server-side" },
-        { icon: "key-outline",           label: "No plaintext storage",  sub: "Keys never written to disk" },
-        { icon: "time-outline",          label: "Session auth",          sub: "Short-lived session tokens" },
-        { icon: "shield-checkmark-outline", label: "Read-only access",  sub: "API keys cannot place orders unless explicitly enabled" },
+        { Icon: Lock,        label: "Credentials encrypted", sub: "AES-256-CBC, server-side" },
+        { Icon: Key,         label: "No plaintext storage",  sub: "Keys never written to disk" },
+        { Icon: Clock,       label: "Session auth",          sub: "Short-lived session tokens" },
+        { Icon: ShieldCheck, label: "Read-only access",      sub: "API keys cannot place orders unless explicitly enabled" },
       ].map(row => (
         <View key={row.label} style={secStyles.row}>
           <View style={secStyles.iconWrap}>
-            <Ionicons name={row.icon as never} size={15} color="#6ee7b7" />
+            <row.Icon size={15} color="#6ee7b7" />
           </View>
           <View>
             <Text style={secStyles.rowLabel}>{row.label}</Text>

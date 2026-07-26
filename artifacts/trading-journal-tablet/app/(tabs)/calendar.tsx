@@ -81,7 +81,7 @@ import {
   LayoutChangeEvent,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { Ionicons } from "@expo/vector-icons";
+import { X, ChevronLeft, ChevronRight, TrendingUp, TrendingDown, Calendar, BarChart2 } from "lucide-react-native";
 import {
   useGetCalendarHeatmap,
   useListTrades,
@@ -241,7 +241,7 @@ const DayDetailSheet = memo(function DayDetailSheet({
             accessibilityRole="button"
             accessibilityLabel="Close daily summary"
           >
-            <Ionicons name="close" size={16} color={TEXT_MUT} />
+            <X size={16} color={TEXT_MUT} />
           </Pressable>
         </View>
 
@@ -549,7 +549,7 @@ export default function CalendarPage() {
               accessibilityRole="button"
               accessibilityLabel="Previous month"
             >
-              <Ionicons name="chevron-back" size={16} color={TEXT_MUT} />
+              <ChevronLeft size={16} color={TEXT_MUT} />
             </Pressable>
 
             <View style={styles.monthBadge}>
@@ -563,7 +563,7 @@ export default function CalendarPage() {
               accessibilityRole="button"
               accessibilityLabel="Next month"
             >
-              <Ionicons name="chevron-forward" size={16} color={TEXT_MUT} />
+              <ChevronRight size={16} color={TEXT_MUT} />
             </Pressable>
           </View>
         </View>
@@ -574,37 +574,31 @@ export default function CalendarPage() {
             {
               label: "Month PNL",
               value: fc(monthSummary.totalPnl),
-              icon:  monthSummary.totalPnl >= 0
-                       ? "trending-up-outline"
-                       : "trending-down-outline",
+              Icon:  monthSummary.totalPnl >= 0 ? TrendingUp : TrendingDown,
               color: monthSummary.totalPnl >= 0 ? PROFIT : LOSS,
             },
             {
               label: "Win Days",
               value: `${monthSummary.winDays} / ${monthSummary.tradingDays}`,
-              icon:  "calendar-outline" as const,
+              Icon:  Calendar,
               color: PROFIT,
             },
             {
               label: "Day Win Rate",
               value: `${monthSummary.winRate.toFixed(0)}%`,
-              icon:  "bar-chart-outline" as const,
+              Icon:  BarChart2,
               color: monthSummary.winRate >= 50 ? PROFIT : LOSS,
             },
             {
               label: "Total Trades",
               value: `${monthSummary.totalTrades}`,
-              icon:  "bar-chart-outline" as const,
+              Icon:  BarChart2,
               color: TEXT_PRI,
             },
           ].map(s => (
             <View key={s.label} style={styles.summaryCard}>
               <View style={styles.iconBox}>
-                <Ionicons
-                  name={s.icon as React.ComponentProps<typeof Ionicons>["name"]}
-                  size={14}
-                  color={TEXT_MUT}
-                />
+                <s.Icon size={14} color={TEXT_MUT} />
               </View>
               <View>
                 <Text style={styles.summaryLabel}>{s.label}</Text>

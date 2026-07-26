@@ -46,8 +46,13 @@
  *   LiveData                  — exported interface
  */
 
-import { Ionicons } from "@expo/vector-icons";
+import {
+  ChevronLeft, ChevronRight, Check, Copy, RefreshCw, LogOut,
+  Palette, Bell, Server, Activity, Globe, ShieldCheck, Info,
+} from "lucide-react-native";
 import * as Clipboard from "expo-clipboard";
+
+type LucideIcon = React.ComponentType<{ size?: number; color?: string; strokeWidth?: number }>;
 import { router } from "expo-router";
 import React, {
   memo,
@@ -172,7 +177,7 @@ function SignOutRow({ onPress }: { onPress: () => void }) {
         height:          ICON_SIZE,
         backgroundColor: "rgba(239,68,68,0.10)",
       }]}>
-        <Ionicons name="log-out-outline" size={20} color="#f87171" />
+        <LogOut size={20} color="#f87171" />
       </View>
       <Text style={[styles.rowLabel, { flex: 1, color: "#f87171" }]}>Sign Out</Text>
     </Pressable>
@@ -184,9 +189,9 @@ function SignOutRow({ onPress }: { onPress: () => void }) {
 // ─────────────────────────────────────────────────────────────────────────────
 
 function NavRow({
-  ionName, iconBg, iconColor, label, rightContent, onPress, last,
+  Icon, iconBg, iconColor, label, rightContent, onPress, last,
 }: {
-  ionName:       React.ComponentProps<typeof Ionicons>["name"];
+  Icon:          LucideIcon;
   iconBg:        string;
   iconColor:     string;
   label:         string;
@@ -218,14 +223,14 @@ function NavRow({
           height:          ICON_SIZE,
           backgroundColor: iconBg,
         }]}>
-          <Ionicons name={ionName} size={22} color={iconColor} />
+          <Icon size={22} color={iconColor} />
         </View>
 
         <Text style={[styles.rowLabel, { flex: 1 }]}>{label}</Text>
 
         <View style={styles.rowRight}>
           {rightContent}
-          <Ionicons name="chevron-forward" size={16} color="rgba(148,163,184,0.30)" />
+          <ChevronRight size={16} color="rgba(148,163,184,0.30)" />
         </View>
       </Pressable>
       {!last && <Divider />}
@@ -238,9 +243,9 @@ function NavRow({
 // ─────────────────────────────────────────────────────────────────────────────
 
 function InfoRow({
-  ionName, iconBg, iconColor, label, rightContent, onPress, last,
+  Icon, iconBg, iconColor, label, rightContent, onPress, last,
 }: {
-  ionName:       React.ComponentProps<typeof Ionicons>["name"];
+  Icon:          LucideIcon;
   iconBg:        string;
   iconColor:     string;
   label:         string;
@@ -273,7 +278,7 @@ function InfoRow({
           height:          ICON_SIZE,
           backgroundColor: iconBg,
         }]}>
-          <Ionicons name={ionName} size={22} color={iconColor} />
+          <Icon size={22} color={iconColor} />
         </View>
 
         <Text style={[styles.rowLabel, { flex: 1 }]}>{label}</Text>
@@ -426,7 +431,7 @@ function ProfileSettingsScreen() {
           accessibilityRole="button"
           accessibilityLabel="Back"
         >
-          <Ionicons name="chevron-back" size={18} color="rgba(255,255,255,0.72)" />
+          <ChevronLeft size={18} color="rgba(255,255,255,0.72)" />
         </Pressable>
         <Text style={styles.headerTitle}>Settings</Text>
         <View style={styles.headerSpacer} />
@@ -445,7 +450,7 @@ function ProfileSettingsScreen() {
         <SectionLabel first>General</SectionLabel>
 
         <NavRow
-          ionName="color-palette-outline"
+          Icon={Palette}
           iconBg="rgba(139,92,246,0.14)"
           iconColor="#a78bfa"
           label="Appearance"
@@ -456,7 +461,7 @@ function ProfileSettingsScreen() {
         />
 
         <NavRow
-          ionName="notifications-outline"
+          Icon={Bell}
           iconBg="rgba(245,158,11,0.14)"
           iconColor="#fbbf24"
           label="Notifications"
@@ -469,7 +474,7 @@ function ProfileSettingsScreen() {
 
         {/* Database Status */}
         <InfoRow
-          ionName="server-outline"
+          Icon={Server}
           iconBg="rgba(59,130,246,0.14)"
           iconColor="#60a5fa"
           label="Database"
@@ -482,7 +487,7 @@ function ProfileSettingsScreen() {
                 hitSlop={4}
                 accessibilityLabel="Refresh database status"
               >
-                <Ionicons name="refresh-outline" size={12} color="rgba(148,163,184,0.35)" />
+                <RefreshCw size={12} color="rgba(148,163,184,0.35)" />
               </Pressable>
             </View>
           }
@@ -490,7 +495,7 @@ function ProfileSettingsScreen() {
 
         {/* Delta Exchange Status */}
         <InfoRow
-          ionName="pulse-outline"
+          Icon={Activity}
           iconBg="rgba(16,185,129,0.14)"
           iconColor="#34d399"
           label="Delta Exchange"
@@ -504,7 +509,7 @@ function ProfileSettingsScreen() {
 
         {/* cTrader Status */}
         <InfoRow
-          ionName="server-outline"
+          Icon={Server}
           iconBg="rgba(96,165,250,0.14)"
           iconColor="#60a5fa"
           label="cTrader"
@@ -518,7 +523,7 @@ function ProfileSettingsScreen() {
 
         {/* Backend Server IP — tappable to copy */}
         <InfoRow
-          ionName="globe-outline"
+          Icon={Globe}
           iconBg="rgba(234,179,8,0.14)"
           iconColor="#fde047"
           label="Backend Server"
@@ -532,11 +537,9 @@ function ProfileSettingsScreen() {
                   <Text style={[styles.rightLabel, styles.monoFont]}>
                     {live.ip}
                   </Text>
-                  <Ionicons
-                    name={copied ? "checkmark" : "copy-outline"}
-                    size={14}
-                    color={copied ? "#34d399" : "rgba(148,163,184,0.40)"}
-                  />
+                  {copied
+                    ? <Check size={14} color="#34d399" />
+                    : <Copy size={14} color="rgba(148,163,184,0.40)" />}
                 </>
               ) : (
                 <Text style={styles.rightLabelDim}>Unavailable</Text>
@@ -550,7 +553,7 @@ function ProfileSettingsScreen() {
         <SectionLabel>Account</SectionLabel>
 
         <NavRow
-          ionName="shield-checkmark-outline"
+          Icon={ShieldCheck}
           iconBg="rgba(52,211,153,0.14)"
           iconColor="#34d399"
           label="Security"
@@ -558,7 +561,7 @@ function ProfileSettingsScreen() {
         />
 
         <NavRow
-          ionName="information-circle-outline"
+          Icon={Info}
           iconBg="rgba(148,163,184,0.14)"
           iconColor="#cbd5e1"
           label="About"

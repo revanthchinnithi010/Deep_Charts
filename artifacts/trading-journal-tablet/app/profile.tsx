@@ -49,7 +49,7 @@
  * Default export: ProfileScreen (Expo Router screen entry point)
  */
 
-import { Ionicons } from "@expo/vector-icons";
+import { ArrowLeft, Settings, Check, Save, Download, LogOut, ChevronRight } from "lucide-react-native";
 import { router } from "expo-router";
 import React, {
   memo,
@@ -186,7 +186,7 @@ function ProfileScreen() {
           accessibilityRole="button"
           accessibilityLabel="Back"
         >
-          <Ionicons name="arrow-back" size={18} color="rgba(255,255,255,0.72)" />
+          <ArrowLeft size={18} color="rgba(255,255,255,0.72)" />
         </Pressable>
 
         <Text style={styles.headerTitle}>Profile</Text>
@@ -199,7 +199,7 @@ function ProfileScreen() {
           accessibilityRole="button"
           accessibilityLabel="Settings"
         >
-          <Ionicons name="settings-outline" size={16} color="rgba(255,255,255,0.72)" />
+          <Settings size={16} color="rgba(255,255,255,0.72)" />
         </Pressable>
       </View>
 
@@ -319,17 +319,13 @@ function ProfileScreen() {
               accessibilityLabel="Export Data — Download your profile as JSON"
             >
               <View style={[styles.actionIcon, styles.actionIconExport]}>
-                <Ionicons name="download-outline" size={17} color="#60a5fa" />
+                <Download size={17} color="#60a5fa" />
               </View>
               <View style={styles.actionText}>
                 <Text style={styles.actionTitle}>Export Data</Text>
                 <Text style={styles.actionSub}>Download your profile as JSON</Text>
               </View>
-              <Ionicons
-                name="chevron-forward"
-                size={16}
-                color="rgba(148,163,184,0.30)"
-              />
+              <ChevronRight size={16} color="rgba(148,163,184,0.30)" />
             </Pressable>
           </Card>
 
@@ -348,7 +344,7 @@ function ProfileScreen() {
               accessibilityLabel="Sign Out"
             >
               <View style={[styles.actionIcon, styles.actionIconSignOut]}>
-                <Ionicons name="log-out-outline" size={17} color="#f87171" />
+                <LogOut size={17} color="#f87171" />
               </View>
               <Text style={styles.signOutLabel}>Sign Out</Text>
             </Pressable>
@@ -388,11 +384,9 @@ const SaveButton = memo(function SaveButton({
       accessibilityLabel={saved ? "Saved" : saving ? "Saving" : "Save Changes"}
       accessibilityState={{ disabled }}
     >
-      <Ionicons
-        name={saved ? "checkmark" : "save-outline"}
-        size={13}
-        color={saved ? "#34d399" : "#a5b4fc"}
-      />
+      {saved
+        ? <Check size={13} color="#34d399" />
+        : <Save size={13} color="#a5b4fc" />}
       <Text style={[styles.saveBtnLabel, saved && styles.saveBtnLabelSaved]}>
         {saved ? "Saved" : saving ? "Saving…" : "Save Changes"}
       </Text>

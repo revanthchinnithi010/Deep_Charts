@@ -55,7 +55,13 @@
  *   All StatsSummary fields used verbatim (no aliasing)
  */
 
-import { Ionicons } from "@expo/vector-icons";
+import {
+  TrendingUp, TrendingDown, BarChart2, PieChart, Crosshair,
+  Shield, ArrowUp, ArrowDown, Zap, Award,
+  Activity, Flame, Layers, Clock,
+} from "lucide-react-native";
+
+type LucideIcon = React.ComponentType<{ size?: number; color?: string; strokeWidth?: number }>;
 import {
   type EquityPoint,
   type StatsSummary,
@@ -341,21 +347,19 @@ export function buildBrokerPerfDataset(
 // All call sites, props, and data builders remain unchanged in Phase 10.
 // ─────────────────────────────────────────────────────────────────────────────
 
-type IoniconName = React.ComponentProps<typeof Ionicons>["name"];
-
 /** Internal skeleton shell shared by all chart placeholders */
 function ChartSkeletonPlaceholder({
   height = 190,
-  iconName = "bar-chart-outline" as IoniconName,
+  Icon = BarChart2,
   summary,
 }: {
-  height?:   number;
-  iconName?: IoniconName;
-  summary?:  string;
+  height?:  number;
+  Icon?:    LucideIcon;
+  summary?: string;
 }) {
   return (
     <View style={[cs.wrapper, { height }]}>
-      <Ionicons name={iconName} size={24} color="rgba(148,163,184,0.18)" />
+      <Icon size={24} color="rgba(148,163,184,0.18)" />
       <Text style={cs.phaseLabel}>Phase 10 chart</Text>
       {summary ? <Text style={cs.summary}>{summary}</Text> : null}
     </View>
@@ -370,7 +374,7 @@ export const EquityCurveChart = memo(function EquityCurveChart({
   return (
     <ChartSkeletonPlaceholder
       height={height}
-      iconName="trending-up-outline"
+      Icon={TrendingUp}
       summary={latest ? formatter(latest.value) : undefined}
     />
   );
@@ -384,7 +388,7 @@ export const WeeklyPnlChart = memo(function WeeklyPnlChart({
   return (
     <ChartSkeletonPlaceholder
       height={height}
-      iconName="bar-chart-outline"
+      Icon={BarChart2}
       summary={formatter(total)}
     />
   );
@@ -398,7 +402,7 @@ export const WinLossChart = memo(function WinLossChart({
   return (
     <ChartSkeletonPlaceholder
       height={height}
-      iconName="pie-chart-outline"
+      Icon={PieChart}
       summary={`${total} trades`}
     />
   );
@@ -411,7 +415,7 @@ export const SymbolPnlChart = memo(function SymbolPnlChart({
   return (
     <ChartSkeletonPlaceholder
       height={height}
-      iconName="bar-chart-outline"
+      Icon={BarChart2}
       summary={`${data.length} symbols`}
     />
   );
@@ -427,7 +431,7 @@ export const PerformanceRadarChart = memo(function PerformanceRadarChart({
   return (
     <ChartSkeletonPlaceholder
       height={height}
-      iconName="radio-button-on-outline"
+      Icon={Crosshair}
       summary={`${avg.toFixed(0)}% avg score`}
     />
   );
@@ -440,7 +444,7 @@ export const BrokerPnlChart = memo(function BrokerPnlChart({
   return (
     <ChartSkeletonPlaceholder
       height={height}
-      iconName="bar-chart-outline"
+      Icon={BarChart2}
       summary={`${data.length} broker${data.length !== 1 ? "s" : ""}`}
     />
   );
@@ -454,7 +458,7 @@ export const RRHistogramChart = memo(function RRHistogramChart({
   return (
     <ChartSkeletonPlaceholder
       height={height}
-      iconName="bar-chart-outline"
+      Icon={BarChart2}
       summary={`${total} trades`}
     />
   );
@@ -490,7 +494,7 @@ interface MetricCardProps {
   label:       string;
   value:       string;
   sub?:        string;
-  iconName:    IoniconName;
+  Icon:        LucideIcon;
   valueColor?: string;
   iconBg?:     string;
   iconColor?:  string;
@@ -500,7 +504,7 @@ interface MetricCardProps {
 }
 
 const MetricCard = memo(function MetricCard({
-  label, value, sub, iconName, valueColor, iconBg, iconColor, bar, loading = false,
+  label, value, sub, Icon, valueColor, iconBg, iconColor, bar, loading = false,
 }: MetricCardProps) {
   const barPct  = Math.min(bar ?? 0, 100);
   const barColor =
@@ -514,11 +518,7 @@ const MetricCard = memo(function MetricCard({
       <View style={mc.headerRow}>
         <Text style={mc.label}>{label}</Text>
         <View style={[mc.iconWrap, iconBg ? { backgroundColor: iconBg } : null]}>
-          <Ionicons
-            name={iconName}
-            size={13}
-            color={iconColor ?? "rgba(148,163,184,0.60)"}
-          />
+          <Icon size={13} color={iconColor ?? "rgba(148,163,184,0.60)"} />
         </View>
       </View>
 
@@ -727,7 +727,7 @@ export default function Reports() {
           label="Net PNL"
           value={hasStats ? fc(stats.netPnl) : ""}
           sub="All-time realized"
-          iconName={hasStats && stats.netPnl < 0 ? "trending-down" : "trending-up"}
+          Icon={hasStats && stats.netPnl < 0 ? TrendingDown : TrendingUp}
           valueColor={hasStats ? (stats.netPnl >= 0 ? GREEN : RED) : undefined}
           iconBg={hasStats ? (stats.netPnl >= 0 ? "rgba(52,211,153,0.10)" : "rgba(248,113,113,0.10)") : undefined}
           iconColor={hasStats ? (stats.netPnl >= 0 ? GREEN : RED) : undefined}
@@ -737,7 +737,7 @@ export default function Reports() {
           label="Win Rate"
           value={hasStats ? `${stats.winRate.toFixed(1)}%` : ""}
           sub={hasStats ? `${stats.winCount}W · ${stats.lossCount}L · ${stats.breakevenCount}BE` : ""}
-          iconName="stats-chart-outline"
+          Icon={BarChart2}
           bar={hasStats ? stats.winRate : undefined}
           valueColor={
             hasStats
@@ -750,7 +750,7 @@ export default function Reports() {
           label="Profit Factor"
           value={hasStats ? stats.profitFactor.toFixed(2) : ""}
           sub="Gross wins / gross losses"
-          iconName="shield-outline"
+          Icon={Shield}
           valueColor={
             hasStats
               ? (stats.profitFactor >= 2 ? GREEN : stats.profitFactor >= 1 ? TEXT_PRI : RED)
@@ -764,7 +764,7 @@ export default function Reports() {
           label="Avg RR"
           value={hasStats ? `${stats.averageRR.toFixed(2)}R` : ""}
           sub="Reward / risk ratio"
-          iconName="radio-button-on-outline"
+          Icon={Crosshair}
           valueColor={hasStats ? (stats.averageRR >= 2 ? GREEN : TEXT_PRI) : undefined}
         />
         <MetricCard
@@ -772,7 +772,7 @@ export default function Reports() {
           label="Avg Win"
           value={hasStats ? fc(stats.averageWin) : ""}
           sub="Per winning trade"
-          iconName="arrow-up-outline"
+          Icon={ArrowUp}
           valueColor={GREEN}
           iconBg="rgba(52,211,153,0.10)"
           iconColor={GREEN}
@@ -782,7 +782,7 @@ export default function Reports() {
           label="Avg Loss"
           value={hasStats ? fc(stats.averageLoss) : ""}
           sub="Per losing trade"
-          iconName="arrow-down-outline"
+          Icon={ArrowDown}
           valueColor={RED}
           iconBg="rgba(248,113,113,0.10)"
           iconColor={RED}
@@ -792,7 +792,7 @@ export default function Reports() {
           label="Expectancy"
           value={hasStats ? fc(derived.expectancy) : ""}
           sub="Per trade expected"
-          iconName="flash-outline"
+          Icon={Zap}
           valueColor={derived.expectancy >= 0 ? GREEN : RED}
         />
         <MetricCard
@@ -800,7 +800,7 @@ export default function Reports() {
           label="Kelly %"
           value={hasStats ? `${derived.kellyCrit.toFixed(1)}%` : ""}
           sub="Optimal position size"
-          iconName="ribbon-outline"
+          Icon={Award}
           valueColor={TEXT_PRI}
         />
       </View>
@@ -809,7 +809,7 @@ export default function Reports() {
       <View style={s.card}>
         <View style={s.cardHeader}>
           <View style={s.cardIconWrap}>
-            <Ionicons name="pulse-outline" size={14} color={PURPLE} />
+            <Activity size={14} color={PURPLE} />
           </View>
           <Text style={s.cardTitle}>Equity Curve</Text>
           {equity && equity.length > 0 && (
@@ -845,7 +845,7 @@ export default function Reports() {
       <View style={s.card}>
         <View style={s.cardHeader}>
           <View style={s.cardIconWrap}>
-            <Ionicons name="flame-outline" size={14} color={PURPLE} />
+            <Flame size={14} color={PURPLE} />
           </View>
           <Text style={s.cardTitle}>Win / Loss Split</Text>
         </View>
@@ -886,7 +886,7 @@ export default function Reports() {
       <View style={s.card}>
         <View style={s.cardHeader}>
           <View style={s.cardIconWrap}>
-            <Ionicons name="bar-chart-outline" size={14} color={PURPLE} />
+            <BarChart2 size={14} color={PURPLE} />
           </View>
           <Text style={s.cardTitle}>Weekly PNL</Text>
         </View>
@@ -907,7 +907,7 @@ export default function Reports() {
       <View style={s.card}>
         <View style={s.cardHeader}>
           <View style={s.cardIconWrap}>
-            <Ionicons name="layers-outline" size={14} color={PURPLE} />
+            <Layers size={14} color={PURPLE} />
           </View>
           <Text style={s.cardTitle}>Symbol PNL</Text>
         </View>
@@ -928,7 +928,7 @@ export default function Reports() {
       <View style={s.card}>
         <View style={s.cardHeader}>
           <View style={s.cardIconWrap}>
-            <Ionicons name="pulse-outline" size={14} color={PURPLE} />
+            <Activity size={14} color={PURPLE} />
           </View>
           <Text style={s.cardTitle}>Performance Score</Text>
         </View>
@@ -947,7 +947,7 @@ export default function Reports() {
       <View style={s.card}>
         <View style={s.cardHeader}>
           <View style={s.cardIconWrap}>
-            <Ionicons name="radio-button-on-outline" size={14} color={PURPLE} />
+            <Crosshair size={14} color={PURPLE} />
           </View>
           <Text style={s.cardTitle}>RR Distribution</Text>
         </View>
@@ -962,7 +962,7 @@ export default function Reports() {
       <View style={s.card}>
         <View style={s.cardHeader}>
           <View style={s.cardIconWrap}>
-            <Ionicons name="bar-chart-outline" size={14} color={PURPLE} />
+            <BarChart2 size={14} color={PURPLE} />
           </View>
           <Text style={s.cardTitle}>Broker PNL</Text>
         </View>
@@ -982,7 +982,7 @@ export default function Reports() {
       <View style={s.card}>
         <View style={s.cardHeader}>
           <View style={s.cardIconWrap}>
-            <Ionicons name="time-outline" size={14} color={PURPLE} />
+            <Clock size={14} color={PURPLE} />
           </View>
           <Text style={s.cardTitle}>Trading Session Analysis</Text>
         </View>
@@ -1016,7 +1016,7 @@ export default function Reports() {
         <View style={[s.cardHeader, { justifyContent: "space-between" }]}>
           <View style={s.cardHeaderLeft}>
             <View style={s.cardIconWrap}>
-              <Ionicons name="layers-outline" size={14} color={PURPLE} />
+              <Layers size={14} color={PURPLE} />
             </View>
             <Text style={s.cardTitle}>Symbol Details</Text>
           </View>

@@ -24,7 +24,7 @@
  *   All chart ordering, filter behavior, summary card ordering preserved.
  */
 
-import { Ionicons } from "@expo/vector-icons";
+import { ArrowLeft, TrendingUp, TrendingDown, Activity, BarChart2, Calendar, Zap, Flame, Trophy } from "lucide-react-native";
 import {
   useGetCalendarHeatmap,
   useGetEquityCurve,
@@ -117,14 +117,16 @@ function fLongDate(date: string): string {
 }
 
 // ── KPI card ───────────────────────────────────────────────────────────────
+type LucideIcon = React.ComponentType<{ size?: number; color?: string; strokeWidth?: number }>;
+
 function KpiCard({
-  label, value, sub, positive, iconName,
+  label, value, sub, positive, Icon,
 }: {
   label:     string;
   value:     string;
   sub?:      string;
   positive?: boolean;
-  iconName:  React.ComponentProps<typeof Ionicons>["name"];
+  Icon:      LucideIcon;
 }) {
   const valueColor =
     positive === true  ? GREEN :
@@ -135,7 +137,7 @@ function KpiCard({
       <View style={kpi.headerRow}>
         <Text style={kpi.label} numberOfLines={1}>{label}</Text>
         <View style={kpi.iconWrap}>
-          <Ionicons name={iconName} size={12} color={TEXT_MUT} />
+          <Icon size={12} color={TEXT_MUT} />
         </View>
       </View>
       <Text style={[kpi.value, { color: valueColor }]} numberOfLines={1}>{value}</Text>
@@ -146,17 +148,17 @@ function KpiCard({
 
 // ── Chart section header ───────────────────────────────────────────────────
 function ChartHeader({
-  iconName, title, right,
+  Icon, title, right,
 }: {
-  iconName: React.ComponentProps<typeof Ionicons>["name"];
-  title:    string;
-  right?:   React.ReactNode;
+  Icon:   LucideIcon;
+  title:  string;
+  right?: React.ReactNode;
 }) {
   return (
     <View style={ch.row}>
       <View style={ch.left}>
         <View style={ch.iconWrap}>
-          <Ionicons name={iconName} size={13} color={BLUE} />
+          <Icon size={13} color={BLUE} />
         </View>
         <Text style={ch.title}>{title}</Text>
       </View>
@@ -476,7 +478,7 @@ export default function PnlAnalytics() {
           accessibilityRole="button"
           accessibilityLabel="Go back"
         >
-          <Ionicons name="arrow-back" size={20} color="#E8E8E8" />
+          <ArrowLeft size={20} color="#E8E8E8" />
         </Pressable>
         <Text style={s.headerTitle}>Net PNL Analytics</Text>
         <Pressable

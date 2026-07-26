@@ -16,7 +16,7 @@
  *   → /(auth)/login  (Sign in link)
  */
 
-import { Ionicons } from "@expo/vector-icons";
+import { Eye, EyeOff, AlertCircle } from "lucide-react-native";
 import { router } from "expo-router";
 import React, { useCallback, useState } from "react";
 import {
@@ -247,11 +247,9 @@ export default function SignupScreen() {
                   accessibilityRole="button"
                   accessibilityLabel={showPassword ? "Hide password" : "Show password"}
                 >
-                  <Ionicons
-                    name={showPassword ? "eye-off-outline" : "eye-outline"}
-                    size={20}
-                    color={COLORS.muted}
-                  />
+                  {showPassword
+                    ? <EyeOff size={20} color={COLORS.muted} />
+                    : <Eye size={20} color={COLORS.muted} />}
                 </Pressable>
               </View>
               {passwordError ? (
@@ -290,11 +288,9 @@ export default function SignupScreen() {
                       : "Show confirm password"
                   }
                 >
-                  <Ionicons
-                    name={showConfirmPassword ? "eye-off-outline" : "eye-outline"}
-                    size={20}
-                    color={COLORS.muted}
-                  />
+                  {showConfirmPassword
+                    ? <EyeOff size={20} color={COLORS.muted} />
+                    : <Eye size={20} color={COLORS.muted} />}
                 </Pressable>
               </View>
               {confirmPasswordError ? (
@@ -305,7 +301,7 @@ export default function SignupScreen() {
             {/* Submit error */}
             {submitError ? (
               <View style={styles.submitErrorBox}>
-                <Ionicons name="alert-circle-outline" size={16} color={COLORS.error} />
+                <AlertCircle size={16} color={COLORS.error} />
                 <Text style={styles.submitErrorText}>{submitError}</Text>
               </View>
             ) : null}

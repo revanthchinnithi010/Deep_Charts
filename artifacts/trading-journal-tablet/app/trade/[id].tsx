@@ -13,7 +13,7 @@
 import React from "react";
 import { View, Text, StyleSheet, Pressable } from "react-native";
 import { router } from "expo-router";
-import { Ionicons } from "@expo/vector-icons";
+import { ArrowLeft, LayoutGrid } from "lucide-react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function TradeDetailScreen() {
@@ -29,7 +29,7 @@ export default function TradeDetailScreen() {
           hitSlop={8}
           accessibilityLabel="Back"
         >
-          <Ionicons name="arrow-back" size={20} color="rgba(255,255,255,0.7)" />
+          <ArrowLeft size={20} color="rgba(255,255,255,0.7)" />
         </Pressable>
         <Text style={styles.headerTitle}>Trade Details</Text>
         <View style={{ width: 32 }} />
@@ -37,7 +37,7 @@ export default function TradeDetailScreen() {
 
       {/* Coming soon placeholder — matches web trade.tsx exactly */}
       <View style={styles.body}>
-        <Ionicons name="grid-outline" size={48} color="rgba(148,163,184,0.35)" />
+        <LayoutGrid size={48} color="rgba(148,163,184,0.35)" />
         <Text style={styles.label}>Trade Panel</Text>
         <Text style={styles.sub}>Coming soon</Text>
       </View>

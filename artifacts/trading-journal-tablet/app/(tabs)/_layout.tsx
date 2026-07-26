@@ -5,7 +5,7 @@
  *
  * Mirrors exactly:
  *   • Tab order   — Home / Markets / Trade / Charts / Alerts  (MobileBottomNav TABS)
- *   • Icons       — Ionicons equivalents for each Lucide icon used in TABS
+ *   • Icons       — lucide-react-native icons matching each Lucide icon used in TABS
  *   • Labels      — identical strings ("Home", "Markets", "Trade", "Charts", "Alerts")
  *   • Active/inactive styling — colours extracted from MobileBottomNav palette objects
  *   • Badge behaviour — Alerts tab badge mirrors unreadCount (stub: 0 until
@@ -16,15 +16,15 @@
  *   • MobileBottomNav bubble/glow animation (Framer Motion → Reanimated, future phase)
  *   • Tab screen content (each screen is a stub; actual pages migrated separately)
  *
- * Icon mapping (Lucide → Ionicons):
- *   LayoutDashboard → home / home-outline
- *   Globe           → globe / globe-outline
- *   ArrowLeftRight  → swap-horizontal / swap-horizontal-outline
- *   BarChart2       → bar-chart / bar-chart-outline
- *   Bell            → notifications / notifications-outline
+ * Icon mapping (Lucide → lucide-react-native):
+ *   LayoutDashboard → Home
+ *   Globe           → Globe
+ *   ArrowLeftRight  → ArrowLeftRight
+ *   BarChart2       → BarChart2
+ *   Bell            → Bell
  */
 
-import { Ionicons } from "@expo/vector-icons";
+import { Home, Globe, ArrowLeftRight, BarChart2, Bell } from "lucide-react-native";
 import { Tabs } from "expo-router";
 import React from "react";
 import { Platform, StyleSheet, Text } from "react-native";
@@ -103,17 +103,15 @@ const LIGHT_PALETTE: TabPalette = {
 // Tab definitions — mirrors TABS array in MobileBottomNav exactly
 // ─────────────────────────────────────────────────────────────────────────────
 
-type IoniconName = React.ComponentProps<typeof Ionicons>["name"];
+type LucideIcon = React.ComponentType<{ size?: number; color?: string; strokeWidth?: number }>;
 
 interface TabDef {
   /** Expo Router screen name (filename without extension inside (tabs)/) */
-  name:         string;
+  name:  string;
   /** Displayed label — identical to MobileBottomNav tab.label */
-  label:        string;
-  /** Ionicons icon when the tab is focused */
-  iconActive:   IoniconName;
-  /** Ionicons icon when the tab is not focused */
-  iconInactive: IoniconName;
+  label: string;
+  /** Icon component — color handled by tabBarActiveTintColor/tabBarInactiveTintColor */
+  icon:  LucideIcon;
 }
 
 /**
@@ -121,36 +119,11 @@ interface TabDef {
  *   Home → Markets → Trade → Charts → Alerts
  */
 const TABS: TabDef[] = [
-  {
-    name:         "index",
-    label:        "Home",
-    iconActive:   "home",
-    iconInactive: "home-outline",
-  },
-  {
-    name:         "markets",
-    label:        "Markets",
-    iconActive:   "globe",
-    iconInactive: "globe-outline",
-  },
-  {
-    name:         "trades",
-    label:        "Trades",
-    iconActive:   "swap-horizontal",
-    iconInactive: "swap-horizontal-outline",
-  },
-  {
-    name:         "charts",
-    label:        "Charts",
-    iconActive:   "bar-chart",
-    iconInactive: "bar-chart-outline",
-  },
-  {
-    name:         "alerts",
-    label:        "Alerts",
-    iconActive:   "notifications",
-    iconInactive: "notifications-outline",
-  },
+  { name: "index",   label: "Home",    icon: Home           },
+  { name: "markets", label: "Markets", icon: Globe          },
+  { name: "trades",  label: "Trades",  icon: ArrowLeftRight },
+  { name: "charts",  label: "Charts",  icon: BarChart2      },
+  { name: "alerts",  label: "Alerts",  icon: Bell           },
 ];
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -267,20 +240,9 @@ export default function TabsLayout() {
               title: tab.label,
 
               // ── Icon ────────────────────────────────────────────────────
-              tabBarIcon: ({
-                focused,
-                color,
-              }: {
-                focused: boolean;
-                color:   string;
-                size:    number;
-              }) => (
-                <Ionicons
-                  name={focused ? tab.iconActive : tab.iconInactive}
-                  // Fixed 22px mirrors MobileBottomNav icon width/height: 22
-                  size={22}
-                  color={color}
-                />
+              tabBarIcon: ({ color }: { focused: boolean; color: string; size: number }) => (
+                // Fixed 22px mirrors MobileBottomNav icon width/height: 22
+                <tab.icon size={22} color={color} />
               ),
 
               // ── Badge (Alerts only) ──────────────────────────────────────

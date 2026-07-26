@@ -36,8 +36,13 @@ import {
   RefreshControl,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { Ionicons } from "@expo/vector-icons";
+import {
+  Bell, Activity, Zap, PauseCircle, Radio, Settings, Send,
+  BarChart2, Info, GitBranch,
+} from "lucide-react-native";
 import { useRouter } from "expo-router";
+
+type LucideIcon = React.ComponentType<{ size?: number; color?: string; strokeWidth?: number }>;
 
 import { AlertSheetContent } from "@/components/charts/AlertCenterModal";
 import { DrawingAlertsList } from "@/components/charts/DrawingAlertsList";
@@ -77,13 +82,13 @@ function fmtInterval(raw: string): string {
 interface StatCardProps {
   label: string;
   value: number;
-  iconName: string;
+  Icon: LucideIcon;
   iconColor: string;
   iconBg: string;
   pulse?: boolean;
 }
 
-function StatCard({ label, value, iconName, iconColor, iconBg, pulse = false }: StatCardProps) {
+function StatCard({ label, value, Icon, iconColor, iconBg, pulse = false }: StatCardProps) {
   return (
     <View
       style={styles.statCard}
@@ -91,7 +96,7 @@ function StatCard({ label, value, iconName, iconColor, iconBg, pulse = false }: 
       accessibilityLabel={`${label}: ${value}`}
     >
       <View style={[styles.statIconBox, { backgroundColor: iconBg }]}>
-        <Ionicons name={iconName as "notifications"} size={15} color={iconColor} />
+        <Icon size={15} color={iconColor} />
       </View>
       <View style={styles.statText}>
         <Text style={styles.statLabel} numberOfLines={1}>{label}</Text>
@@ -121,16 +126,16 @@ function ConnectionStatusSection({
 }) {
   const router = useRouter();
 
-  const rows = [
-    { key: "delta",    label: "Delta Exchange", iconName: "pulse-outline",  color: "#8B5CF6" },
-    { key: "telegram", label: "Telegram Bot",   iconName: "send-outline",   color: "#2CA5E0" },
-  ] as const;
+  const rows: { key: string; label: string; Icon: LucideIcon; color: string }[] = [
+    { key: "delta",    label: "Delta Exchange", Icon: Activity, color: "#8B5CF6" },
+    { key: "telegram", label: "Telegram Bot",   Icon: Send,     color: "#2CA5E0" },
+  ];
 
   return (
     <View style={styles.infoCard}>
       {/* Card header */}
       <View style={styles.infoCardHeader}>
-        <Ionicons name="radio-outline" size={14} color="#B7FF5A" />
+        <Radio size={14} color="#B7FF5A" />
         <Text style={styles.infoCardTitle}>Connections</Text>
         <Pressable
           onPress={() => router.push("/brokers")}
@@ -139,7 +144,7 @@ function ConnectionStatusSection({
           accessibilityRole="button"
           accessibilityLabel="Manage broker connections"
         >
-          <Ionicons name="settings-outline" size={11} color="#B7FF5A" />
+          <Settings size={11} color="#B7FF5A" />
           <Text style={styles.manageBtnText}>Manage</Text>
         </Pressable>
       </View>
@@ -151,7 +156,7 @@ function ConnectionStatusSection({
           const loaded = ok !== null && !loading;
           return (
             <View key={r.key} style={styles.connRow}>
-              <Ionicons name={r.iconName} size={14} color={r.color} />
+              <r.Icon size={14} color={r.color} />
               <Text style={styles.connLabel}>{r.label}</Text>
               {!loaded ? (
                 <Text style={styles.connDots}>…</Text>
@@ -175,7 +180,7 @@ function ConnectionStatusSection({
         accessibilityRole="button"
         accessibilityLabel="Open Broker Settings"
       >
-        <Ionicons name="settings-outline" size={11} color="rgba(167,184,169,0.55)" />
+        <Settings size={11} color="rgba(167,184,169,0.55)" />
         <Text style={styles.openBrokersBtnText}>Open Broker Settings</Text>
       </Pressable>
     </View>
@@ -194,7 +199,7 @@ function RecentTriggersSection() {
   return (
     <View style={styles.infoCard}>
       <View style={styles.infoCardHeader}>
-        <Ionicons name="notifications-outline" size={14} color="#B7FF5A" />
+        <Bell size={14} color="#B7FF5A" />
         <Text style={styles.infoCardTitle}>Recent Triggers</Text>
       </View>
       {wsAlertEvents.length === 0 ? (
@@ -225,7 +230,7 @@ function AlertStatsSection() {
   return (
     <View style={styles.infoCard}>
       <View style={styles.infoCardHeader}>
-        <Ionicons name="bar-chart-outline" size={14} color="#B7FF5A" />
+        <BarChart2 size={14} color="#B7FF5A" />
         <Text style={styles.infoCardTitle}>Alert Breakdown</Text>
       </View>
 
@@ -251,7 +256,7 @@ function AlertStatsSection() {
       </View>
 
       <View style={styles.statsTip}>
-        <Ionicons name="information-circle-outline" size={11} color="rgba(167,184,169,0.3)" />
+        <Info size={11} color="rgba(167,184,169,0.3)" />
         <Text style={styles.statsTipText}>Alerts persist across sessions via local storage</Text>
       </View>
     </View>
@@ -365,10 +370,10 @@ export default function AlertsScreen() {
   }, [fetchConn]);
 
   // Tab definitions
-  const TABS: { key: ScreenTab; label: string; iconName: string }[] = [
-    { key: "alerts",  label: "Alerts",  iconName: "notifications-outline" },
-    { key: "drawing", label: "Drawing", iconName: "git-branch-outline"    },
-    { key: "info",    label: "Info",    iconName: "information-circle-outline" },
+  const TABS: { key: ScreenTab; label: string; Icon: LucideIcon }[] = [
+    { key: "alerts",  label: "Alerts",  Icon: Bell      },
+    { key: "drawing", label: "Drawing", Icon: GitBranch },
+    { key: "info",    label: "Info",    Icon: Info      },
   ];
 
   return (
@@ -389,7 +394,7 @@ export default function AlertsScreen() {
           accessibilityRole="button"
           accessibilityLabel={unreadCount > 0 ? `Notifications, ${unreadCount} unread` : "Notifications"}
         >
-          <Ionicons name="notifications-outline" size={18} color="rgba(167,184,169,0.7)" />
+          <Bell size={18} color="rgba(167,184,169,0.7)" />
           {unreadCount > 0 && (
             <View style={styles.bellBadge}>
               <Text style={styles.bellBadgeText}>{unreadCount}</Text>
@@ -403,7 +408,7 @@ export default function AlertsScreen() {
         <StatCard
           label="Active Alerts"
           value={totalActive}
-          iconName="pulse-outline"
+          Icon={Activity}
           iconColor="#60a5fa"
           iconBg="rgba(96,165,250,0.12)"
           pulse
@@ -411,21 +416,21 @@ export default function AlertsScreen() {
         <StatCard
           label="Triggered"
           value={totalTriggered}
-          iconName="flash-outline"
+          Icon={Zap}
           iconColor="#B7FF5A"
           iconBg="rgba(183,255,90,0.12)"
         />
         <StatCard
           label="Paused"
           value={totalPaused}
-          iconName="pause-circle-outline"
+          Icon={PauseCircle}
           iconColor="#FFC857"
           iconBg="rgba(255,200,87,0.12)"
         />
         <StatCard
           label="Total"
           value={totalAlerts}
-          iconName="notifications-outline"
+          Icon={Bell}
           iconColor="#60a5fa"
           iconBg="rgba(96,165,250,0.10)"
         />
@@ -448,11 +453,7 @@ export default function AlertsScreen() {
               accessibilityLabel={t.label}
               accessibilityState={{ selected: active }}
             >
-              <Ionicons
-                name={t.iconName as "notifications-outline"}
-                size={13}
-                color={active ? "#fff" : "rgba(167,184,169,0.5)"}
-              />
+              <t.Icon size={13} color={active ? "#fff" : "rgba(167,184,169,0.5)"} />
               <Text style={[styles.tabLabel, active && styles.tabLabelActive]}>
                 {t.label}
               </Text>
@@ -473,7 +474,7 @@ export default function AlertsScreen() {
           <View style={{ flex: 1 }}>
             {/* Symbol / interval indicator */}
             <View style={styles.drawingHeader}>
-              <Ionicons name="git-branch-outline" size={12} color="rgba(167,184,169,0.45)" />
+              <GitBranch size={12} color="rgba(167,184,169,0.45)" />
               <Text style={styles.drawingHeaderText}>
                 Chart-linked drawings for{" "}
                 <Text style={styles.drawingHeaderSymbol}>{symbol}</Text>

@@ -49,7 +49,7 @@
 
 import { ScrollView, View, Text, Pressable, StyleSheet } from "react-native";
 import { router } from "expo-router";
-import { Ionicons } from "@expo/vector-icons";
+import { ArrowLeft } from "lucide-react-native";
 import { useDeltaAccount } from "@/store/deltaAccountStore";
 import { useCtraderAccount } from "@/store/ctraderAccountStore";
 import { useCurrencyStore, CURRENCY_META } from "@/store/currencyStore";
@@ -76,7 +76,7 @@ export default function Balances() {
           accessibilityRole="button"
           accessibilityLabel="Go back"
         >
-          <Ionicons name="arrow-back-outline" size={20} color="#E8E8E8" />
+          <ArrowLeft size={20} color="#E8E8E8" />
         </Pressable>
 
         {/* Title (centred) */}
