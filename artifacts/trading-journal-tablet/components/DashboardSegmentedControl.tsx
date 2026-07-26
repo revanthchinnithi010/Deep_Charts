@@ -365,12 +365,12 @@ const styles = StyleSheet.create({
   },
   labelActive: {
     color:       LABEL_ACTIVE,
-    fontFamily:  "Inter_600SemiBold",
+    fontFamily:  "SFProDisplay-Semibold",
     fontWeight:  "600",
   },
   labelIdle: {
     color:       LABEL_IDLE,
-    fontFamily:  "Inter_400Regular",
+    fontFamily:  "SFProDisplay-Regular",
     fontWeight:  "400",
   },
   labelDisabled: {

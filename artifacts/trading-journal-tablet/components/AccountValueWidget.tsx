@@ -558,7 +558,7 @@ const styles = StyleSheet.create({
   titleLabel: {
     color: C.statTitle,
     fontSize: 13,
-    fontFamily: "Inter_600SemiBold",
+    fontFamily: "SFProDisplay-Semibold",
     fontWeight: "600",
     flexShrink: 1, // allow text to truncate before pushing chip off-screen
   },
@@ -601,7 +601,7 @@ const styles = StyleSheet.create({
   positionsChipText: {
     color: "#fff",
     fontSize: 12,
-    fontFamily: "Inter_600SemiBold",
+    fontFamily: "SFProDisplay-Semibold",
     fontWeight: "600",
   },
 
@@ -670,14 +670,14 @@ const styles = StyleSheet.create({
   subLabel: {
     color: C.statSub,
     fontSize: 11,
-    fontFamily: "Inter_600SemiBold",
+    fontFamily: "SFProDisplay-Semibold",
     fontWeight: "600",
   },
 
   // web: text-[15px] font-black leading-none
   subValue: {
     fontSize: 15,
-    fontFamily: "Inter_700Bold",
+    fontFamily: "SFProDisplay-Bold",
     fontWeight: "900",
     lineHeight: 18,
   },
@@ -720,14 +720,14 @@ const styles = StyleSheet.create({
   emptyTitle: {
     color: C.statValue,
     fontSize: 15,
-    fontFamily: "Inter_600SemiBold",
+    fontFamily: "SFProDisplay-Semibold",
     fontWeight: "600",
     marginTop: 4,
   },
   emptySubtitle: {
     color: C.statSub,
     fontSize: 13,
-    fontFamily: "Inter_400Regular",
+    fontFamily: "SFProDisplay-Regular",
     textAlign: "center",
     lineHeight: 18,
   },

@@ -16,7 +16,7 @@
  *
  *   theme.colors.dark.primary            // "#B0BCCE"
  *   theme.typography.fontSize.xl         // 20
- *   theme.typography.fontFamily.sansBold // "Inter_700Bold"
+ *   theme.typography.fontFamily.sansBold // "SFProDisplay-Bold"
  *   theme.zIndex.modal                   // 1500
  *   theme.animation.duration.normal      // 200
  *   theme.animation.easing.easeOut       // [0, 0, 0.2, 1]
@@ -51,13 +51,13 @@ export { default as colors } from "@/constants/colors";
  */
 const fontFamily = {
   /** Inter Regular 400 */
-  sans:        "Inter_400Regular",
+  sans:        "SFProDisplay-Regular",
   /** Inter Medium 500 */
-  sansMedium:  "Inter_500Medium",
+  sansMedium:  "SFProDisplay-Medium",
   /** Inter SemiBold 600 */
-  sansSemiBold:"Inter_600SemiBold",
+  sansSemiBold:"SFProDisplay-Semibold",
   /** Inter Bold 700 */
-  sansBold:    "Inter_700Bold",
+  sansBold:    "SFProDisplay-Bold",
   /**
    * Platform-native monospace — Menlo on iOS, `monospace` on Android/web.
    * Used for numeric data, code blocks, and stack traces.

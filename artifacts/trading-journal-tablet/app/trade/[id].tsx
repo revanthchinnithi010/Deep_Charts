@@ -70,7 +70,7 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: "600",
     color: "#ffffff",
-    fontFamily: "Inter_600SemiBold",
+    fontFamily: "SFProDisplay-Semibold",
   },
   body: {
     flex: 1,
@@ -82,11 +82,11 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: "500",
     color: "rgba(148,163,184,0.5)",
-    fontFamily: "Inter_500Medium",
+    fontFamily: "SFProDisplay-Medium",
   },
   sub: {
     fontSize: 12,
     color: "rgba(148,163,184,0.35)",
-    fontFamily: "Inter_400Regular",
+    fontFamily: "SFProDisplay-Regular",
   },
 });

@@ -156,8 +156,8 @@ function makeTabLabel(palette: TabPalette) {
             fontWeight:     focused ? "600" : "400",
             letterSpacing:  focused ? 0.4  : 0.1,
             fontFamily:     focused
-              ? "Inter_600SemiBold"
-              : "Inter_400Regular",
+              ? "SFProDisplay-Semibold"
+              : "SFProDisplay-Regular",
           },
         ]}
         numberOfLines={1}

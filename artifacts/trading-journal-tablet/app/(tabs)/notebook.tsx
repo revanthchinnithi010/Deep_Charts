@@ -136,18 +136,18 @@ const rowStyles = StyleSheet.create({
   title: {
     fontSize:   14,
     fontWeight: "500",
-    fontFamily: "Inter_500Medium",
+    fontFamily: "SFProDisplay-Medium",
     color:      TEXT_MUT,
   },
   titleActive: {
     color:      TEXT_PRI,
     fontWeight: "600",
-    fontFamily: "Inter_600SemiBold",
+    fontFamily: "SFProDisplay-Semibold",
   },
   date: {
     fontSize:   11,
     color:      TEXT_DIM,
-    fontFamily: "Inter_400Regular",
+    fontFamily: "SFProDisplay-Regular",
     marginTop:  3,
   },
 });
@@ -499,7 +499,7 @@ const styles = StyleSheet.create({
     color:      "#fff",
     fontSize:   13,
     fontWeight: "600",
-    fontFamily: "Inter_600SemiBold",
+    fontFamily: "SFProDisplay-Semibold",
   },
 
   // Search row
@@ -520,7 +520,7 @@ const styles = StyleSheet.create({
     flex:        1,
     color:       TEXT_PRI,
     fontSize:    13,
-    fontFamily:  "Inter_400Regular",
+    fontFamily:  "SFProDisplay-Regular",
     paddingVertical: 0,
   },
 
@@ -538,7 +538,7 @@ const styles = StyleSheet.create({
   listEmptyText: {
     color:      TEXT_DIM,
     fontSize:   13,
-    fontFamily: "Inter_400Regular",
+    fontFamily: "SFProDisplay-Regular",
   },
 
   // ── Divider ───────────────────────────────────────────────────────────────
@@ -572,7 +572,7 @@ const styles = StyleSheet.create({
     color:      TEXT_PRI,
     fontSize:   20,
     fontWeight: "700",
-    fontFamily: "Inter_700Bold",
+    fontFamily: "SFProDisplay-Bold",
     paddingVertical: 0,
   },
   deleteBtn: {
@@ -591,7 +591,7 @@ const styles = StyleSheet.create({
     flex:              1,
     color:             TEXT_PRI,
     fontSize:          15,
-    fontFamily:        "Inter_400Regular",
+    fontFamily:        "SFProDisplay-Regular",
     lineHeight:        24,
     paddingHorizontal: 20,
     paddingTop:        16,
@@ -616,6 +616,6 @@ const styles = StyleSheet.create({
   emptyText: {
     color:      TEXT_MUT,
     fontSize:   14,
-    fontFamily: "Inter_400Regular",
+    fontFamily: "SFProDisplay-Regular",
   },
 });

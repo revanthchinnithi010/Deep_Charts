@@ -186,10 +186,10 @@ module.exports = {
       // ── Font families ─────────────────────────────────────────────────────
       // Source: --app-font-sans in :root
       fontFamily: {
-        sans:     ["Inter_400Regular", "Inter", "System"],
-        medium:   ["Inter_500Medium",  "Inter", "System"],
-        semibold: ["Inter_600SemiBold","Inter", "System"],
-        bold:     ["Inter_700Bold",    "Inter", "System"],
+        sans:     ["SFProDisplay-Regular", "Inter", "System"],
+        medium:   ["SFProDisplay-Medium",  "Inter", "System"],
+        semibold: ["SFProDisplay-Semibold","Inter", "System"],
+        bold:     ["SFProDisplay-Bold",    "Inter", "System"],
         mono:     ["JetBrains Mono", "Courier New", "monospace"],
       },
 

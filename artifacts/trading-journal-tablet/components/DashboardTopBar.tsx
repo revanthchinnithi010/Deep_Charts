@@ -107,9 +107,9 @@ const logoStyles = StyleSheet.create({
     flexDirection: "row",
     alignItems:    "baseline",
   },
-  // web: font-weight 800, fill gradient → use Inter_700Bold + purple-pink colour
+  // web: font-weight 800, fill gradient → use SFProDisplay-Bold + purple-pink colour
   area: {
-    fontFamily:  "Inter_700Bold",
+    fontFamily:  "SFProDisplay-Bold",
     fontWeight:  "700",
     fontSize:    17,
     color:       C.logoAreaColor,
@@ -117,7 +117,7 @@ const logoStyles = StyleSheet.create({
     lineHeight:  20,
   },
   dot: {
-    fontFamily:  "Inter_700Bold",
+    fontFamily:  "SFProDisplay-Bold",
     fontWeight:  "700",
     fontSize:    17,
     color:       C.logoLabColor,
@@ -126,7 +126,7 @@ const logoStyles = StyleSheet.create({
   },
   // web: font-family Georgia serif, font-style italic, font-weight 400
   lab: {
-    fontFamily:  "Inter_400Regular",
+    fontFamily:  "SFProDisplay-Regular",
     fontWeight:  "400",
     fontStyle:   "italic",
     fontSize:    17,
@@ -377,7 +377,7 @@ const styles = StyleSheet.create({
   avatarInitials: {
     color:      C.avatarText,
     fontSize:   14,
-    fontFamily: "Inter_700Bold",
+    fontFamily: "SFProDisplay-Bold",
     fontWeight: "700",
     lineHeight: 17,
   },
@@ -395,7 +395,7 @@ const styles = StyleSheet.create({
   // web: Dancing Script cursive 11.3px italic rgba(255,255,255,0.45)
   //      margin-top 2px margin-left 7px line-height 12.4px
   byLine: {
-    fontFamily:    "Inter_400Regular",
+    fontFamily:    "SFProDisplay-Regular",
     fontWeight:    "400",
     fontStyle:     "italic",
     fontSize:      11,
@@ -452,7 +452,7 @@ const styles = StyleSheet.create({
   badgeText: {
     color:      "#FFFFFF",
     fontSize:   8,
-    fontFamily: "Inter_700Bold",
+    fontFamily: "SFProDisplay-Bold",
     fontWeight: "700",
     lineHeight: 10,
   },
