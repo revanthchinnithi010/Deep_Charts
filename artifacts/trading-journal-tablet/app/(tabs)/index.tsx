@@ -458,7 +458,7 @@ const CalendarHeatmap = memo(function CalendarHeatmap({
     <View style={{ width: "100%" }}>
       {/* ── DEBUG — remove after diagnosis ── */}
       <Text style={{ color: "#facc15", fontSize: 11, fontFamily: "monospace", marginBottom: 4, lineHeight: 16 }}>
-        {"FIX_VERSION_3"}
+        {"FIX_VERSION_4"}
       </Text>
       <Text style={{ color: "#facc15", fontSize: 11, fontFamily: "monospace", marginBottom: 6, lineHeight: 16 }}>
         {`windowWidth=${windowWidth} gridWidth=${gridWidth} cellSize=${cellSize} cells=${cells.length}`}
@@ -539,44 +539,49 @@ const CalendarHeatmap = memo(function CalendarHeatmap({
             const hasTrades  = !!(entry && entry.trades > 0);
             const colors     = cellColors[dateStr];
 
+            // Outer View owns width/height/margin so Yoga always sees fixed
+            // cell bounds, regardless of how Pressable resolves its function-
+            // style prop on Android.  Pressable fills with flex:1.
             return (
-              <Pressable
+              <View
                 key={key}
-                onPress={() => hasTrades && onDateClick(dateStr)}
-                disabled={!hasTrades}
-                style={({ pressed }) => [
-                  calStyles.cell,
-                  {
-                    width:  cellSize,
-                    height: cellSize,
-                    margin: CELL_GAP / 2,
-                    backgroundColor: colors?.bg   ?? "transparent",
-                    borderColor:     colors?.border ?? "transparent",
-                    borderWidth:     colors ? 1 : 0,
-                  },
-                  pressed && hasTrades && { opacity: 0.60 },
-                ]}
-                accessibilityRole="button"
-                accessibilityLabel={
-                  hasTrades
-                    ? `${dateStr}: ${entry.trades} trade${entry.trades > 1 ? "s" : ""}, PnL ${fc(entry.pnl)}`
-                    : `${dateStr}: no trades`
-                }
-                accessibilityState={{ disabled: !hasTrades }}
+                style={{ width: cellSize, height: cellSize, margin: CELL_GAP / 2 }}
               >
-                <Text style={calStyles.cellDay}>{day}</Text>
-                {hasTrades && (
-                  <Text
-                    style={[
-                      calStyles.cellPnl,
-                      { color: entry.pnl > 0 ? "#34d399" : "#f87171" },
-                    ]}
-                    numberOfLines={1}
-                  >
-                    {entry.pnl > 0 ? "+" : ""}{axisFormatter(Math.abs(entry.pnl))}
-                  </Text>
-                )}
-              </Pressable>
+                <Pressable
+                  onPress={() => hasTrades && onDateClick(dateStr)}
+                  disabled={!hasTrades}
+                  style={({ pressed }) => [
+                    calStyles.cell,
+                    {
+                      flex:            1,
+                      backgroundColor: colors?.bg     ?? "transparent",
+                      borderColor:     colors?.border ?? "transparent",
+                      borderWidth:     colors ? 1 : 0,
+                    },
+                    pressed && hasTrades && { opacity: 0.60 },
+                  ]}
+                  accessibilityRole="button"
+                  accessibilityLabel={
+                    hasTrades
+                      ? `${dateStr}: ${entry.trades} trade${entry.trades > 1 ? "s" : ""}, PnL ${fc(entry.pnl)}`
+                      : `${dateStr}: no trades`
+                  }
+                  accessibilityState={{ disabled: !hasTrades }}
+                >
+                  <Text style={calStyles.cellDay}>{day}</Text>
+                  {hasTrades && (
+                    <Text
+                      style={[
+                        calStyles.cellPnl,
+                        { color: entry.pnl > 0 ? "#34d399" : "#f87171" },
+                      ]}
+                      numberOfLines={1}
+                    >
+                      {entry.pnl > 0 ? "+" : ""}{axisFormatter(Math.abs(entry.pnl))}
+                    </Text>
+                  )}
+                </Pressable>
+              </View>
             );
           })}
         </View>
