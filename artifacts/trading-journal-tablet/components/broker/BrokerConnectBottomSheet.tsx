@@ -52,7 +52,7 @@ import { useState, useEffect, useRef, useCallback, useMemo, memo } from "react";
 import {
   View, Text, Pressable, TextInput, StyleSheet, ActivityIndicator,
 } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
+import { ShieldCheck, Server, Wifi, Info, ChevronLeft, X, CheckCircle, Eye, EyeOff, XCircle, RefreshCw } from "lucide-react-native";
 import {
   BottomSheetModal,
   BottomSheetScrollView,
@@ -152,18 +152,20 @@ function useBrokerConnect() {
 
 // ── Security badges row ───────────────────────────────────────────────────────
 
-const SECURITY_BADGES = [
-  { icon: "shield-checkmark-outline" as const, label: "AES-256 encrypted" },
-  { icon: "server-outline"            as const, label: "Backend-only signing" },
-  { icon: "wifi-outline"              as const, label: "Live WS sync" },
+type LucideIcon = React.ComponentType<{ size?: number; color?: string; strokeWidth?: number }>;
+
+const SECURITY_BADGES: { Icon: LucideIcon; label: string }[] = [
+  { Icon: ShieldCheck, label: "AES-256 encrypted" },
+  { Icon: Server,      label: "Backend-only signing" },
+  { Icon: Wifi,        label: "Live WS sync" },
 ];
 
 function SecurityBadges() {
   return (
     <View style={styles.badgesRow}>
-      {SECURITY_BADGES.map(({ icon, label }) => (
+      {SECURITY_BADGES.map(({ Icon, label }) => (
         <View key={label} style={styles.badgeItem}>
-          <Ionicons name={icon} size={12} color="rgba(0,255,180,0.7)" />
+          <Icon size={12} color="rgba(0,255,180,0.7)" />
           <Text style={styles.badgeText}>{label}</Text>
         </View>
       ))}
@@ -216,7 +218,7 @@ function BrokerFormContent({
       {/* cTrader — no API key form; handled by OAuth in a separate flow */}
       {broker.id === "ctrader" && (
         <View style={styles.ctraderPlaceholder}>
-          <Ionicons name="information-circle-outline" size={24} color="rgba(59,130,246,0.6)" />
+          <Info size={24} color="rgba(59,130,246,0.6)" />
           <Text style={styles.ctraderText}>
             cTrader uses OAuth via Spotware. Open the cTrader widget to connect.
           </Text>
@@ -277,7 +279,7 @@ export function BrokerConnectBottomSheet() {
           style={({ pressed }) => [styles.backBtn, pressed && { opacity: 0.7 }]}
           hitSlop={8}
         >
-          <Ionicons name="chevron-back" size={20} color="rgba(255,255,255,0.8)" />
+          <ChevronLeft size={20} color="rgba(255,255,255,0.8)" />
         </Pressable>
 
         {broker ? (
@@ -299,7 +301,7 @@ export function BrokerConnectBottomSheet() {
           style={({ pressed }) => [styles.closeBtn, pressed && { opacity: 0.7 }]}
           hitSlop={8}
         >
-          <Ionicons name="close" size={18} color="rgba(255,255,255,0.5)" />
+          <X size={18} color="rgba(255,255,255,0.5)" />
         </Pressable>
       </View>
 
@@ -338,7 +340,7 @@ const SuccessBanner = memo(function SuccessBanner({
   return (
     <View style={styles.successContainer}>
       <View style={styles.successIconWrap}>
-        <Ionicons name="checkmark-circle" size={32} color="#00FFB4" />
+        <CheckCircle size={32} color="#00FFB4" />
       </View>
       <View style={styles.successText}>
         <Text style={styles.successTitle}>Connected to {broker.name}</Text>
@@ -430,11 +432,7 @@ function Mt5CredentialsForm({
               hitSlop={8}
               style={styles.mt5EyeBtn}
             >
-              <Ionicons
-                name={showPass ? "eye-off-outline" : "eye-outline"}
-                size={14}
-                color="rgba(255,255,255,0.4)"
-              />
+              {showPass ? <EyeOff size={14} color="rgba(255,255,255,0.4)" /> : <Eye size={14} color="rgba(255,255,255,0.4)" />}
             </Pressable>
           </View>
         </View>
@@ -459,12 +457,7 @@ function Mt5CredentialsForm({
       {/* Error banner */}
       {status === "error" && (
         <View style={styles.mt5ErrorBox}>
-          <Ionicons
-            name="close-circle-outline"
-            size={15}
-            color="#EF4444"
-            style={{ flexShrink: 0, marginTop: 1 }}
-          />
+          <XCircle size={15} color="#EF4444" style={{ flexShrink: 0, marginTop: 1 }} />
           <Text style={styles.mt5ErrorText}>{errorMsg}</Text>
         </View>
       )}
@@ -476,7 +469,7 @@ function Mt5CredentialsForm({
             onPress={onRetry}
             style={({ pressed }) => [styles.retryBtn, pressed && { opacity: 0.7 }]}
           >
-            <Ionicons name="refresh-outline" size={13} color="rgba(255,255,255,0.6)" />
+            <RefreshCw size={13} color="rgba(255,255,255,0.6)" />
             <Text style={styles.retryBtnText}>Retry</Text>
           </Pressable>
         )}

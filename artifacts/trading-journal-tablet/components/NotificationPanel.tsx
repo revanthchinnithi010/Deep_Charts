@@ -54,7 +54,10 @@
  *   ❌ Business logic changes
  */
 
-import { Ionicons } from "@expo/vector-icons";
+import {
+  TrendingUp, Layers, GitBranch, Wifi, AlertCircle, Link2,
+  Send, Activity, Info, Bell, ArrowLeft, CheckCheck, Trash2,
+} from "lucide-react-native";
 import { BlurView } from "expo-blur";
 import React, {
   memo,
@@ -109,16 +112,18 @@ function fmtRelTime(d: Date): string {
  *   Trash2       → trash
  */
 
-const TYPE_CFG: Record<NotifType, { iconName: string; color: string; bg: string }> = {
-  price_alert:     { iconName: "trending-up",          color: "#60a5fa", bg: "rgba(96,165,250,0.12)"  },
-  zone_alert:      { iconName: "layers",               color: "#fb923c", bg: "rgba(251,146,60,0.12)"  },
-  trendline_alert: { iconName: "git-branch",           color: "#a78bfa", bg: "rgba(167,139,250,0.12)" },
-  ws_reconnect:    { iconName: "wifi",                 color: "#60a5fa", bg: "rgba(96,165,250,0.12)"  },
-  ws_error:        { iconName: "alert-circle",         color: "#f87171", bg: "rgba(248,113,113,0.12)" },
-  broker:          { iconName: "link",                 color: "#60a5fa", bg: "rgba(96,165,250,0.12)"  },
-  telegram:        { iconName: "send",                 color: "#38bdf8", bg: "rgba(56,189,248,0.12)"  },
-  feed:            { iconName: "pulse",                color: "#fbbf24", bg: "rgba(251,191,36,0.12)"  },
-  system:          { iconName: "information-circle",   color: "#94a3b8", bg: "rgba(148,163,184,0.12)" },
+type LucideIcon = React.ComponentType<{ size?: number; color?: string; strokeWidth?: number }>;
+
+const TYPE_CFG: Record<NotifType, { Icon: LucideIcon; color: string; bg: string }> = {
+  price_alert:     { Icon: TrendingUp,  color: "#60a5fa", bg: "rgba(96,165,250,0.12)"  },
+  zone_alert:      { Icon: Layers,      color: "#fb923c", bg: "rgba(251,146,60,0.12)"  },
+  trendline_alert: { Icon: GitBranch,   color: "#a78bfa", bg: "rgba(167,139,250,0.12)" },
+  ws_reconnect:    { Icon: Wifi,        color: "#60a5fa", bg: "rgba(96,165,250,0.12)"  },
+  ws_error:        { Icon: AlertCircle, color: "#f87171", bg: "rgba(248,113,113,0.12)" },
+  broker:          { Icon: Link2,       color: "#60a5fa", bg: "rgba(96,165,250,0.12)"  },
+  telegram:        { Icon: Send,        color: "#38bdf8", bg: "rgba(56,189,248,0.12)"  },
+  feed:            { Icon: Activity,    color: "#fbbf24", bg: "rgba(251,191,36,0.12)"  },
+  system:          { Icon: Info,        color: "#94a3b8", bg: "rgba(148,163,184,0.12)" },
 };
 
 /* ─── animation constants ─────────────────────────────────────────────────── */
@@ -131,7 +136,7 @@ const CLOSE_MS = 180;   // slightly faster dismiss
 const NotifItem = memo(function NotifItem({
   n, onRead,
 }: { n: AppNotification; onRead: (id: string) => void }) {
-  const { iconName, color, bg } = TYPE_CFG[n.type];
+  const { Icon, color, bg } = TYPE_CFG[n.type];
   return (
     <Pressable
       onPress={() => onRead(n.id)}
@@ -141,7 +146,7 @@ const NotifItem = memo(function NotifItem({
       ]}
     >
       <View style={[styles.notifIconWrap, { backgroundColor: bg }]}>
-        <Ionicons name={iconName as any} size={16} color={color} />
+        <Icon size={16} color={color} />
       </View>
       <View style={styles.notifBody}>
         <View style={styles.notifTitleRow}>
@@ -159,7 +164,7 @@ const EmptyState = memo(function EmptyState() {
   return (
     <View style={styles.emptyWrap}>
       <View style={styles.emptyIconWrap}>
-        <Ionicons name="notifications" size={28} color="rgba(255,255,255,0.28)" />
+        <Bell size={28} color="rgba(255,255,255,0.28)" />
       </View>
       <Text style={styles.emptyTitle}>No Notifications</Text>
       <Text style={styles.emptyDesc}>
@@ -349,7 +354,7 @@ export const NotificationPanel = memo(function NotificationPanel({ open, onClose
               accessibilityLabel="Back"
               accessibilityRole="button"
             >
-              <Ionicons name="arrow-back" size={18} color="rgba(255,255,255,0.85)" />
+              <ArrowLeft size={18} color="rgba(255,255,255,0.85)" />
             </Pressable>
             <Text style={styles.headerTitle}>Notifications</Text>
             {unreadCount > 0 && (
@@ -369,7 +374,7 @@ export const NotificationPanel = memo(function NotificationPanel({ open, onClose
                 accessibilityLabel="Mark all read"
                 accessibilityRole="button"
               >
-                <Ionicons name="checkmark-done" size={14} color="rgba(255,255,255,0.55)" />
+                <CheckCheck size={14} color="rgba(255,255,255,0.55)" />
               </Pressable>
             )}
             {notifications.length > 0 && (
@@ -379,7 +384,7 @@ export const NotificationPanel = memo(function NotificationPanel({ open, onClose
                 accessibilityLabel="Clear all notifications"
                 accessibilityRole="button"
               >
-                <Ionicons name="trash" size={14} color="rgba(255,255,255,0.55)" />
+                <Trash2 size={14} color="rgba(255,255,255,0.55)" />
               </Pressable>
             )}
           </View>

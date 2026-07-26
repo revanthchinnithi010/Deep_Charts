@@ -17,7 +17,7 @@ import {
   ScrollView, KeyboardAvoidingView, Platform,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { Ionicons } from "@expo/vector-icons";
+import { AlertTriangle, Crosshair, CircleDot, ChevronRight } from "lucide-react-native";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Constants — preserved exactly from source
@@ -275,7 +275,7 @@ export default function CalcPosition() {
 
             {highRisk && (
               <View style={s.warnRow}>
-                <Ionicons name="warning" size={15} color="#f87171" />
+                <AlertTriangle size={15} color="#f87171" />
                 <Text style={s.warnText}>Risk % above 2% — high drawdown risk. Consider reducing position.</Text>
               </View>
             )}
@@ -286,7 +286,7 @@ export default function CalcPosition() {
             <View style={s.resultsPanelInner}>
               <View style={s.resultsHeader}>
                 <View style={s.resultsIcon}>
-                  <Ionicons name="locate" size={14} color={ACCENT} />
+                  <Crosshair size={14} color={ACCENT} />
                 </View>
                 <Text style={s.resultsTitle}>Position Sizing Result</Text>
               </View>
@@ -306,7 +306,7 @@ export default function CalcPosition() {
                     {assetType === "forex" ? "lots" : assetType === "crypto" ? "units" : "shares"}
                   </Text>
                 </View>
-                <Ionicons name="radio-button-on" size={32} color="rgba(183,255,90,0.30)" />
+                <CircleDot size={32} color="rgba(183,255,90,0.30)" />
               </View>
 
               <ResultRow label="Risk Amount ($)"     value={fmtUSD(calc.riskAmount)}  accent />
@@ -327,7 +327,7 @@ export default function CalcPosition() {
                     {calc.rr > 0 ? fmt(100 / (1 + calc.rr), 1) : "—"}%
                   </Text>
                 </View>
-                <Ionicons name="chevron-forward" size={16} color="rgba(183,255,90,0.40)" />
+                <ChevronRight size={16} color="rgba(183,255,90,0.40)" />
               </View>
             )}
           </View>

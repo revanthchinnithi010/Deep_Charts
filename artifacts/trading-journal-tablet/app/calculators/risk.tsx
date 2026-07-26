@@ -27,7 +27,7 @@ import {
   ScrollView, KeyboardAvoidingView, Platform,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { Ionicons } from "@expo/vector-icons";
+import { AlertTriangle, ShieldCheck, TrendingDown, BarChart2 } from "lucide-react-native";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Constants — preserved exactly from source
@@ -196,7 +196,7 @@ export default function CalcRisk() {
 
               {highRisk && (
                 <View style={s.warnRow}>
-                  <Ionicons name="warning" size={15} color="#f87171" />
+                  <AlertTriangle size={15} color="#f87171" />
                   <Text style={s.warnText}>Risk above 2% accelerates drawdown exponentially. Professional traders use 0.5–1%.</Text>
                 </View>
               )}
@@ -224,7 +224,7 @@ export default function CalcRisk() {
               </View>
               {!highRisk && calc.riskAmt > 0 && (
                 <View style={s.safeRow}>
-                  <Ionicons name="shield-checkmark" size={15} color="rgba(237,240,246,0.50)" />
+                  <ShieldCheck size={15} color="rgba(237,240,246,0.50)" />
                   <Text style={s.safeText}>
                     Risk profile looks sustainable. Break-even at {fmt(calc.breakEvenPct, 0)}% win rate.
                   </Text>
@@ -240,7 +240,7 @@ export default function CalcRisk() {
             <View style={s.card}>
               <View style={s.tableHeader}>
                 <View style={s.tableIcon}>
-                  <Ionicons name="trending-down" size={14} color="#f87171" />
+                  <TrendingDown size={14} color="#f87171" />
                 </View>
                 <Text style={s.tableTitle}>Consecutive Loss Simulation</Text>
               </View>
@@ -270,7 +270,7 @@ export default function CalcRisk() {
             <View style={s.card}>
               <View style={s.tableHeader}>
                 <View style={[s.tableIcon, { backgroundColor: "rgba(183,255,90,0.10)", borderColor: "rgba(183,255,90,0.20)" }]}>
-                  <Ionicons name="analytics" size={14} color={ACCENT} />
+                  <BarChart2 size={14} color={ACCENT} />
                 </View>
                 <Text style={s.tableTitle}>Recovery Needed</Text>
               </View>

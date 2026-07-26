@@ -29,7 +29,7 @@
  */
 
 import { LinearGradient } from "expo-linear-gradient";
-import { Ionicons } from "@expo/vector-icons";
+import { ChevronRight, Wallet, Eye, EyeOff, Layers } from "lucide-react-native";
 import React, { memo, useCallback, useState } from "react";
 import {
   Platform,
@@ -274,7 +274,7 @@ function AccountValueWidget({
     return (
       <View style={styles.card}>
         <View style={styles.emptyState}>
-          <Ionicons name="wallet-outline" size={28} color={C.statSub} />
+          <Wallet size={28} color={C.statSub} />
           <Text style={styles.emptyTitle}>No account connected</Text>
           <Text style={styles.emptySubtitle}>
             Connect Delta Exchange or cTrader to see your account value.
@@ -322,7 +322,7 @@ function AccountValueWidget({
             >
               <Text style={styles.titleLabel}>Account Value</Text>
               {onShowBalances && (
-                <Ionicons name="chevron-forward" size={14} color={C.statIcon} />
+                <ChevronRight size={14} color={C.statIcon} />
               )}
             </Pressable>
 
@@ -334,11 +334,7 @@ function AccountValueWidget({
               accessibilityLabel={masked ? "Show values" : "Hide values"}
               accessibilityState={{ checked: masked }}
             >
-              <Ionicons
-                name={masked ? "eye-off-outline" : "eye-outline"}
-                size={16}
-                color={C.statIcon}
-              />
+              {masked ? <EyeOff size={16} color={C.statIcon} /> : <Eye size={16} color={C.statIcon} />}
             </Pressable>
           </View>
 
@@ -365,7 +361,7 @@ function AccountValueWidget({
                 accessibilityRole="button"
                 accessibilityLabel="Show positions"
               >
-                <Ionicons name="layers-outline" size={12} color="#fff" />
+                <Layers size={12} color="#fff" />
                 <Text
                   style={[styles.positionsChipText, { fontSize: chipFontSize }]}
                 >
@@ -453,7 +449,8 @@ function AccountValueWidget({
                 Positions / Orders
               </Text>
               {onShowPositions && (
-                <Ionicons name="chevron-forward" size={10} color={C.statIcon} />
+                <ChevronRight size={10} color={C.statIcon} />
+          {/* duplicate removed */}
               )}
             </Pressable>
             {loading ? (

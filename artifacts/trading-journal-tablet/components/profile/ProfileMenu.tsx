@@ -45,7 +45,10 @@ import {
   BottomSheetView,
 } from "@gorhom/bottom-sheet";
 import type { BottomSheetBackdropProps } from "@gorhom/bottom-sheet";
-import { Ionicons } from "@expo/vector-icons";
+import {
+  User, Settings, Palette, Download, LogOut,
+  Sun, Moon, Monitor, Check, ChevronLeft, ChevronRight,
+} from "lucide-react-native";
 import { router } from "expo-router";
 import React, {
   memo,
@@ -152,25 +155,27 @@ export function getInitials(name: string): string {
 // Icons mapped: Lucide → Ionicons equivalents
 // ─────────────────────────────────────────────────────────────────────────────
 
+type LucideIcon = React.ComponentType<{ size?: number; color?: string; strokeWidth?: number }>;
+
 // MENU_ITEMS — action strings preserved exactly ("profile", "settings", etc.)
-const MENU_ITEMS = [
-  { ionName: "person-outline",        label: "My Profile",  action: "profile",    danger: false },
-  { ionName: "settings-outline",      label: "Settings",    action: "settings",   danger: false },
-  { ionName: "color-palette-outline", label: "Appearance",  action: "appearance", danger: false },
-  { ionName: "download-outline",      label: "Export Data", action: "export",     danger: false },
-  { ionName: "log-out-outline",       label: "Sign Out",    action: "signout",    danger: true  },
-] as const;
+const MENU_ITEMS: { Icon: LucideIcon; label: string; action: string; danger: boolean }[] = [
+  { Icon: User,     label: "My Profile",  action: "profile",    danger: false },
+  { Icon: Settings, label: "Settings",    action: "settings",   danger: false },
+  { Icon: Palette,  label: "Appearance",  action: "appearance", danger: false },
+  { Icon: Download, label: "Export Data", action: "export",     danger: false },
+  { Icon: LogOut,   label: "Sign Out",    action: "signout",    danger: true  },
+];
 
 // THEME_OPTIONS — mode strings and label/sub text preserved verbatim
 const THEME_OPTIONS: {
   mode: ThemeMode;
   label: string;
   sub: string;
-  ionName: string;
+  Icon: LucideIcon;
 }[] = [
-  { mode: "light",  label: "Light",          sub: "Always use light theme",   ionName: "sunny-outline"    },
-  { mode: "dark",   label: "Dark",           sub: "Always use dark theme",    ionName: "moon-outline"     },
-  { mode: "system", label: "System Default", sub: "Follow device preference", ionName: "contrast-outline" },
+  { mode: "light",  label: "Light",          sub: "Always use light theme",   Icon: Sun     },
+  { mode: "dark",   label: "Dark",           sub: "Always use dark theme",    Icon: Moon    },
+  { mode: "system", label: "System Default", sub: "Follow device preference", Icon: Monitor },
 ];
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -183,13 +188,13 @@ interface ThemeRowProps {
   mode:     ThemeMode;
   label:    string;
   sub:      string;
-  ionName:  string;
+  Icon:     LucideIcon;
   active:   boolean;
   onSelect: (m: ThemeMode) => void;
 }
 
 const ThemeRow = memo(function ThemeRow({
-  mode, label, sub, ionName, active, onSelect,
+  mode, label, sub, Icon, active, onSelect,
 }: ThemeRowProps) {
   const [pressed, setPressed] = useState(false);
 
@@ -212,11 +217,7 @@ const ThemeRow = memo(function ThemeRow({
         styles.themeIconBox,
         active && styles.themeIconBoxActive,
       ]}>
-        <Ionicons
-          name={ionName as React.ComponentProps<typeof Ionicons>["name"]}
-          size={14}
-          color={active ? "#a5b4fc" : "rgba(148,163,184,0.55)"}
-        />
+        <Icon size={14} color={active ? "#a5b4fc" : "rgba(148,163,184,0.55)"} />
       </View>
 
       {/* Text block */}
@@ -230,7 +231,7 @@ const ThemeRow = memo(function ThemeRow({
       {/* Active checkmark — mirrors web's #a5b4fc filled circle */}
       {active && (
         <View style={styles.themeCheck}>
-          <Ionicons name="checkmark" size={10} color="#1e1b4b" />
+          <Check size={10} color="#1e1b4b" />
         </View>
       )}
     </Pressable>
@@ -259,11 +260,11 @@ const AppearancePanel = memo(function AppearancePanel({
           accessibilityRole="button"
           accessibilityLabel="Back"
         >
-          <Ionicons name="chevron-back" size={14} color="rgba(255,255,255,0.72)" />
+          <ChevronLeft size={14} color="rgba(255,255,255,0.72)" />
         </Pressable>
         <View style={styles.panelTitleRow}>
           <View style={styles.panelTitleIcon}>
-            <Ionicons name="color-palette-outline" size={12} color="#a5b4fc" />
+            <Palette size={12} color="#a5b4fc" />
           </View>
           <Text style={styles.panelTitleText}>Appearance</Text>
         </View>
@@ -279,7 +280,7 @@ const AppearancePanel = memo(function AppearancePanel({
               mode={o.mode}
               label={o.label}
               sub={o.sub}
-              ionName={o.ionName}
+              Icon={o.Icon}
               active={themeMode === o.mode}
               onSelect={setThemeMode}
             />
@@ -297,7 +298,7 @@ const AppearancePanel = memo(function AppearancePanel({
 // ─────────────────────────────────────────────────────────────────────────────
 
 interface MenuItemRowProps {
-  ionName: string;
+  Icon:    LucideIcon;
   label:   string;
   action:  string;
   danger:  boolean;
@@ -306,7 +307,7 @@ interface MenuItemRowProps {
 }
 
 const MenuItemRow = memo(function MenuItemRow({
-  ionName, label, action, danger, isLast, onClick,
+  Icon, label, action, danger, isLast, onClick,
 }: MenuItemRowProps) {
   const [pressed, setPressed] = useState(false);
 
@@ -326,21 +327,13 @@ const MenuItemRow = memo(function MenuItemRow({
         accessibilityRole="button"
         accessibilityLabel={label}
       >
-        <Ionicons
-          name={ionName as React.ComponentProps<typeof Ionicons>["name"]}
-          size={14}
-          color={danger ? "#f87171" : "rgba(148,163,184,0.70)"}
-        />
+        <Icon size={14} color={danger ? "#f87171" : "rgba(148,163,184,0.70)"} />
         <Text style={[styles.menuLabel, danger && styles.menuLabelDanger]}>
           {label}
         </Text>
         {/* Chevron on non-danger rows — mirrors web's opacity-25 ChevronRight */}
         {!danger && (
-          <Ionicons
-            name="chevron-forward"
-            size={12}
-            color="rgba(148,163,184,0.25)"
-          />
+          <ChevronRight size={12} color="rgba(148,163,184,0.25)" />
         )}
       </Pressable>
     </View>
@@ -520,7 +513,7 @@ export const ProfileDropdown = memo(function ProfileDropdown({
               {MENU_ITEMS.map((item, i) => (
                 <MenuItemRow
                   key={item.action}
-                  ionName={item.ionName}
+                  Icon={item.Icon}
                   label={item.label}
                   action={item.action}
                   danger={item.danger}

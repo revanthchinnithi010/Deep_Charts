@@ -48,7 +48,7 @@ import {
   View, Text, Pressable, StyleSheet,
   Animated, ActivityIndicator,
 } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
+import { Wifi, WifiOff, ChevronDown } from "lucide-react-native";
 import { useCurrencyStore, formatAmount } from "@/store/currencyStore";
 import type { AccountSnapshot } from "@/store/accountTypes";
 
@@ -164,11 +164,9 @@ export default function AccountCard({ account }: Props) {
             {isConnecting ? (
               <ActivityIndicator size={12} color={CONNECTED_CLR} />
             ) : (
-              <Ionicons
-                name={isConnected ? "wifi" : "wifi-outline"}
-                size={14}
-                color={isConnected ? CONNECTED_CLR : "#6b7280"}
-              />
+              {isConnected
+                ? <Wifi size={14} color={CONNECTED_CLR} />
+                : <WifiOff size={14} color="#6b7280" />}
             )}
             <Text style={[styles.statusText, isConnected && styles.statusTextConnected]}>
               {isConnected
@@ -186,7 +184,7 @@ export default function AccountCard({ account }: Props) {
             accessibilityLabel={isExpanded ? "Collapse card" : "Expand card"}
           >
             <Animated.View style={{ transform: [{ rotate: chevronRotate }] }}>
-              <Ionicons name="chevron-down-outline" size={16} color="rgba(255,255,255,0.4)" />
+              <ChevronDown size={16} color="rgba(255,255,255,0.4)" />
             </Animated.View>
           </Pressable>
         </View>

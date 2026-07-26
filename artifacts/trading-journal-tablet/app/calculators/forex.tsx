@@ -15,7 +15,7 @@ import {
   ScrollView, KeyboardAvoidingView, Platform,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { Ionicons } from "@expo/vector-icons";
+import { TrendingUp, TrendingDown, AlertTriangle, ChevronRight, Globe, Zap } from "lucide-react-native";
 import { useTickStore } from "@/store/tickStore";
 import { fmtPrice } from "@/lib/fmtPrice";
 
@@ -191,8 +191,9 @@ export default function CalcForex() {
                     style={[s.sideBtn, sd === side
                       ? sd === "long" ? s.sideBtnLong : s.sideBtnShort
                       : s.sideBtnOff]}>
-                    <Ionicons name={sd === "long" ? "trending-up" : "trending-down"} size={12}
-                      color={sd === side ? (sd === "long" ? "#60a5fa" : "#f87171") : MUTED} />
+                    {sd === "long"
+                      ? <TrendingUp size={12} color={sd === side ? "#60a5fa" : MUTED} />
+                      : <TrendingDown size={12} color={sd === side ? "#f87171" : MUTED} />}
                     <Text style={[s.sideBtnText, sd === side
                       ? sd === "long" ? s.sideBtnTextLong : s.sideBtnTextShort
                       : s.sideBtnTextOff]}>{sd}</Text>
@@ -298,13 +299,13 @@ export default function CalcForex() {
             {/* Warnings */}
             {calc?.overLev && (
               <View style={s.warnRow}>
-                <Ionicons name="warning" size={15} color="#f87171" />
+                <AlertTriangle size={15} color="#f87171" />
                 <Text style={s.warnText}>Over-leverage ({lev}x) — broker margin call risk is high.</Text>
               </View>
             )}
             {calc?.highMargin && (
               <View style={s.amberRow}>
-                <Ionicons name="warning" size={15} color="#fbbf24" />
+                <AlertTriangle size={15} color="#fbbf24" />
                 <Text style={s.amberText}>Margin usage {fmt(calc.marginPct, 1)}% of capital — consider reducing lot size.</Text>
               </View>
             )}
@@ -322,7 +323,7 @@ export default function CalcForex() {
                   accessibilityLabel="Apply recommended lot size"
                 >
                   <Text style={s.applyBtnText}>Apply</Text>
-                  <Ionicons name="chevron-forward" size={12} color={ACCENT} />
+                  <ChevronRight size={12} color={ACCENT} />
                 </Pressable>
               </View>
             )}
@@ -333,7 +334,7 @@ export default function CalcForex() {
             <View style={s.resultsPanelInner}>
               <View style={s.resultsHeader}>
                 <View style={s.resultsIcon}>
-                  <Ionicons name="globe" size={14} color={ACCENT} />
+                  <Globe size={14} color={ACCENT} />
                 </View>
                 <Text style={s.resultsTitle}>{cfg.label} — {side.toUpperCase()}</Text>
                 <View style={s.levBadge}><Text style={s.levBadgeText}>{parseFloat(lev)}x</Text></View>
@@ -354,7 +355,7 @@ export default function CalcForex() {
 
             {calc && calc.rr > 0 && (
               <View style={[s.rrBanner, calc.rr >= 2 ? s.rrBannerGood : s.rrBannerWarn]}>
-                <Ionicons name="flash" size={15} color={calc.rr >= 2 ? "#60a5fa" : "#fbbf24"} />
+                <Zap size={15} color={calc.rr >= 2 ? "#60a5fa" : "#fbbf24"} />
                 <View style={{ flex: 1 }}>
                   <Text style={[s.rrTitle, calc.rr >= 2 ? s.rrTitleGood : s.rrTitleWarn]}>
                     {calc.rr >= 2 ? "Good RR Ratio" : calc.rr >= 1 ? "Acceptable RR" : "Poor RR — review setup"}

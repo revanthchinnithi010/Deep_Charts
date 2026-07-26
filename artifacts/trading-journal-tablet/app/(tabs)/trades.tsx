@@ -1386,7 +1386,7 @@ const LogTradeModal = memo(function LogTradeModal({
               {/* TradingView Link */}
               <View style={logStyles.fieldGroup}>
                 <View style={logStyles.fieldLabelRow}>
-                  <Ionicons name="trending-up-outline" size={12} color={MUTED} />
+                  <TrendingUp size={12} color={MUTED} />
                   <Text style={logStyles.fieldLabel}>TRADINGVIEW CHART LINK</Text>
                 </View>
                 <TextInput
@@ -1403,7 +1403,7 @@ const LogTradeModal = memo(function LogTradeModal({
               {/* Screenshot */}
               <View style={logStyles.fieldGroup}>
                 <View style={logStyles.fieldLabelRow}>
-                  <Ionicons name="image-outline" size={12} color={MUTED} />
+                  <ImageIcon size={12} color={MUTED} />
                   <Text style={logStyles.fieldLabel}>SCREENSHOT URL</Text>
                 </View>
                 <TextInput
@@ -1427,7 +1427,7 @@ const LogTradeModal = memo(function LogTradeModal({
               {/* Setup Tags */}
               <View style={logStyles.fieldGroup}>
                 <View style={logStyles.fieldLabelRow}>
-                  <Ionicons name="pricetag-outline" size={12} color={MUTED} />
+                  <Tag size={12} color={MUTED} />
                   <Text style={logStyles.fieldLabel}>SETUP TAGS</Text>
                 </View>
                 <MultiSelectChipsRN
@@ -1441,7 +1441,7 @@ const LogTradeModal = memo(function LogTradeModal({
               {/* Mistake Tags */}
               <View style={logStyles.fieldGroup}>
                 <View style={logStyles.fieldLabelRow}>
-                  <Ionicons name="warning-outline" size={12} color="rgba(248,113,113,0.7)" />
+                  <AlertTriangle size={12} color="rgba(248,113,113,0.7)" />
                   <Text style={logStyles.fieldLabel}>MISTAKE TAGS</Text>
                 </View>
                 <MultiSelectChipsRN
@@ -1455,7 +1455,7 @@ const LogTradeModal = memo(function LogTradeModal({
               {/* Notes */}
               <View style={logStyles.fieldGroup}>
                 <View style={logStyles.fieldLabelRow}>
-                  <Ionicons name="document-text-outline" size={12} color={MUTED} />
+                  <FileText size={12} color={MUTED} />
                   <Text style={logStyles.fieldLabel}>JOURNAL NOTES</Text>
                 </View>
                 <TextInput
@@ -2000,7 +2000,7 @@ export default function TradesScreen() {
       >
         {/* ── Search bar ───────────────────────────────────────────────────── */}
         <View style={styles.searchWrap}>
-          <Ionicons name="search-outline" size={14} color={MUTED_DIM} style={styles.searchIcon} />
+          <Search size={14} color={MUTED_DIM} style={styles.searchIcon} />
           <TextInput
             style={styles.searchInput}
             placeholder="Search symbol…"

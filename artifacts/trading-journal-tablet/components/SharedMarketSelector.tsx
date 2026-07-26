@@ -55,7 +55,7 @@ import {
   BottomSheetBackdrop,
   type BottomSheetBackdropProps,
 } from "@gorhom/bottom-sheet";
-import { Ionicons } from "@expo/vector-icons";
+import { ArrowUp, ArrowDown, Star, Search, X, XCircle, ChevronDown, ChevronRight } from "lucide-react-native";
 
 import { useWatchlist }         from "@/contexts/WatchlistContext";
 import { useSymbolTick }        from "@/store/tickStore";
@@ -204,11 +204,9 @@ const PriceCell = memo(function PriceCell({ symbol, broker }: { symbol: string; 
           : styles.changePillIdle,
       ]}>
         {isLive && (
-          <Ionicons
-            name={isUp ? "arrow-up" : "arrow-down"}
-            size={8}
-            color={isUp ? "#10b981" : "#ef4444"}
-          />
+          {isUp
+            ? <ArrowUp size={8} color="#10b981" />
+            : <ArrowDown size={8} color="#ef4444" />}
         )}
         <Text style={[styles.changeText, { color: changeColor }]}>
           {isLive ? `${Math.abs(changePct).toFixed(2)}%` : "—"}
@@ -263,10 +261,10 @@ export const SymbolRow = memo(function SymbolRowItem({
     >
       {/* Star button */}
       <Pressable onPress={handleStarPress} hitSlop={8} style={styles.starBtn}>
-        <Ionicons
-          name={visualFav ? "star" : (inWatchlist ? "star-half" : "star-outline")}
+        <Star
           size={14}
-          color={visualFav ? "#f59e0b" : "rgba(148,163,184,0.40)"}
+          color={visualFav ? "#f59e0b" : inWatchlist ? "#f59e0b" : "rgba(148,163,184,0.40)"}
+          fill={visualFav ? "#f59e0b" : "none"}
         />
       </Pressable>
 
@@ -312,15 +310,17 @@ const CtraderStatusBar = memo(function CtraderStatusBar() {
 
 // ── EmptyState ────────────────────────────────────────────────────────────
 
-function EmptyState({ iconName, title, subtitle }: {
-  iconName: keyof typeof Ionicons.glyphMap;
-  title:    string;
+type LucideIcon = React.ComponentType<{ size?: number; color?: string; strokeWidth?: number }>;
+
+function EmptyState({ Icon, title, subtitle }: {
+  Icon:      LucideIcon;
+  title:     string;
   subtitle?: string;
 }) {
   return (
     <View style={styles.emptyContainer}>
       <View style={styles.emptyIconBox}>
-        <Ionicons name={iconName} size={22} color="rgba(148,163,184,0.30)" />
+        <Icon size={22} color="rgba(148,163,184,0.30)" />
       </View>
       <Text style={styles.emptyTitle}>{title}</Text>
       {subtitle && <Text style={styles.emptySubtitle}>{subtitle}</Text>}
@@ -852,11 +852,9 @@ export const SharedMarketSelector = memo(function SharedMarketSelector({
             <View style={[styles.sectionCount, { backgroundColor: `${meta.color}18` }]}>
               <Text style={[styles.sectionCountText, { color: meta.color }]}>{item.count}</Text>
             </View>
-            <Ionicons
-              name={item.open ? "chevron-down" : "chevron-forward"}
-              size={12}
-              color="rgba(148,163,184,0.35)"
-            />
+            {item.open
+              ? <ChevronDown size={12} color="rgba(148,163,184,0.35)" />
+              : <ChevronRight size={12} color="rgba(148,163,184,0.35)" />}
           </Pressable>
         );
       }
@@ -906,7 +904,7 @@ export const SharedMarketSelector = memo(function SharedMarketSelector({
         );
 
       case "srch_empty":
-        return <EmptyState iconName="search" title={`No symbols match "${item.q}"`} />;
+        return <EmptyState Icon={Search} title={`No symbols match "${item.q}"`} />;
 
       case "loading":
         return (
@@ -984,7 +982,7 @@ export const SharedMarketSelector = memo(function SharedMarketSelector({
               hitSlop={8}
               style={({ pressed }) => [styles.closeBtn, pressed && { opacity: 0.6 }]}
             >
-              <Ionicons name="close" size={14} color="rgba(148,163,184,0.5)" />
+              <X size={14} color="rgba(148,163,184,0.5)" />
             </Pressable>
           )}
         </View>
@@ -994,7 +992,7 @@ export const SharedMarketSelector = memo(function SharedMarketSelector({
       {mode === "page" && activeTab !== "Watchlist" && (
         <View style={styles.searchRow}>
           <View style={styles.searchBox}>
-            <Ionicons name="search" size={13} color="rgba(148,163,184,0.38)" />
+            <Search size={13} color="rgba(148,163,184,0.38)" />
             <TextInput
               ref={searchInputRef}
               style={styles.searchInput}
@@ -1009,7 +1007,7 @@ export const SharedMarketSelector = memo(function SharedMarketSelector({
             />
             {rawSearch.length > 0 && (
               <Pressable onPress={handleClearSearch} hitSlop={8} style={styles.clearBtn}>
-                <Ionicons name="close-circle" size={14} color="rgba(148,163,184,0.5)" />
+                <XCircle size={14} color="rgba(148,163,184,0.5)" />
               </Pressable>
             )}
           </View>

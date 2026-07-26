@@ -42,7 +42,7 @@ import {
   View, Text, Pressable, ScrollView, Modal, TextInput,
   StyleSheet, FlatList,
 } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
+import { X, Check, ChevronDown } from "lucide-react-native";
 import type { ChartSettings } from "@/components/charts/chartSettingsTypes";
 import { DEFAULT_CHART_SETTINGS } from "@/components/charts/chartSettingsTypes";
 
@@ -105,7 +105,7 @@ function PresetColorModal({
         <View style={s.colorModalHeader}>
           <Text style={s.colorModalTitle}>{label ?? "Color"}</Text>
           <Pressable onPress={onClose} hitSlop={8}>
-            <Ionicons name="close" size={15} color={T.textDim} />
+            <X size={15} color={T.textDim} />
           </Pressable>
         </View>
         <View style={s.colorGrid}>
@@ -152,7 +152,7 @@ function SelectModal({
                 <Text style={[s.selectOptionText, active && s.selectOptionTextActive]}>
                   {opt.label}
                 </Text>
-                {active && <Ionicons name="checkmark" size={14} color={T.accent} />}
+                {active && <Check size={14} color={T.accent} />}
               </Pressable>
             );
           })}
@@ -302,7 +302,7 @@ const _StyledSelectImpl = memo(function StyledSelectImpl({ value, onChange, opti
     <>
       <Pressable style={s.selectBtn} onPress={() => setOpen(true)}>
         <Text style={s.selectBtnText} numberOfLines={1}>{currentLabel}</Text>
-        <Ionicons name="chevron-down" size={12} color={T.textDim} />
+        <ChevronDown size={12} color={T.textDim} />
       </Pressable>
       <SelectModal
         visible={open}
@@ -627,7 +627,7 @@ const SettingsPanel = memo(function SettingsPanel({ settings, onChange, onSaveAs
         <View style={s.header}>
           <Text style={s.headerTitle}>Chart Settings</Text>
           <Pressable onPress={onClose} style={s.headerClose} hitSlop={8}>
-            <Ionicons name="close" size={16} color={T.textDim} />
+            <X size={16} color={T.textDim} />
           </Pressable>
         </View>
 

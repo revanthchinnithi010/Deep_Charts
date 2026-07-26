@@ -1023,7 +1023,7 @@ export default function Reports() {
           <View style={s.symbolLegend}>
             {derived.topSymbol && (
               <View style={s.symbolLegendItem}>
-                <Ionicons name="trending-up" size={10} color={TEXT_MUT} />
+                <TrendingUp size={10} color={TEXT_MUT} />
                 <Text style={s.symbolLegendText}>
                   Best: {derived.topSymbol.symbol}
                 </Text>
@@ -1031,11 +1031,7 @@ export default function Reports() {
             )}
             {derived.worstSymbol && derived.worstSymbol.pnl < 0 && (
               <View style={s.symbolLegendItem}>
-                <Ionicons
-                  name="trending-down"
-                  size={10}
-                  color="rgba(248,113,113,0.80)"
-                />
+                <TrendingDown size={10} color="rgba(248,113,113,0.80)" />
                 <Text style={[s.symbolLegendText, { color: "rgba(248,113,113,0.80)" }]}>
                   Worst: {derived.worstSymbol.symbol}
                 </Text>

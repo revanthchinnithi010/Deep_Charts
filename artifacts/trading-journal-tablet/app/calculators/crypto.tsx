@@ -33,7 +33,7 @@ import {
   Platform,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { Ionicons } from "@expo/vector-icons";
+import { TrendingUp, TrendingDown, AlertTriangle, ChevronRight, Bitcoin, Zap } from "lucide-react-native";
 import { useTickStore } from "@/store/tickStore";
 import { fmtPrice } from "@/lib/fmtPrice";
 
@@ -236,8 +236,9 @@ export default function CalcCrypto() {
                       style={[s.sideBtn, sd === side
                         ? sd === "long" ? s.sideBtnLong : s.sideBtnShort
                         : s.sideBtnOff]}>
-                      <Ionicons name={sd === "long" ? "trending-up" : "trending-down"} size={12}
-                        color={sd === side ? (sd === "long" ? "#34d399" : "#f87171") : MUTED} />
+                      {sd === "long"
+                        ? <TrendingUp size={12} color={sd === side ? "#34d399" : MUTED} />
+                        : <TrendingDown size={12} color={sd === side ? "#f87171" : MUTED} />}
                       <Text style={[s.sideBtnText, sd === side
                         ? sd === "long" ? s.sideBtnTextLong : s.sideBtnTextShort
                         : s.sideBtnTextOff]}>
@@ -329,13 +330,13 @@ export default function CalcCrypto() {
             {/* Warnings */}
             {calc?.overLev && (
               <View style={s.warnRow}>
-                <Ionicons name="warning" size={15} color="#f87171" />
+                <AlertTriangle size={15} color="#f87171" />
                 <Text style={s.warnText}>High leverage ({lev}x) detected — liquidation risk is elevated.</Text>
               </View>
             )}
             {calc?.highMargin && (
               <View style={s.amberRow}>
-                <Ionicons name="warning" size={15} color="#fbbf24" />
+                <AlertTriangle size={15} color="#fbbf24" />
                 <Text style={s.amberText}>Margin usage is {fmt(calc.marginPct, 1)}% of capital — consider reducing position.</Text>
               </View>
             )}
@@ -354,7 +355,7 @@ export default function CalcCrypto() {
                   accessibilityLabel="Apply recommended lot size"
                 >
                   <Text style={s.applyBtnText}>Apply</Text>
-                  <Ionicons name="chevron-forward" size={12} color={ACCENT} />
+                  <ChevronRight size={12} color={ACCENT} />
                 </Pressable>
               </View>
             )}
@@ -365,7 +366,7 @@ export default function CalcCrypto() {
             <View style={s.resultsPanelInner}>
               <View style={s.resultsHeader}>
                 <View style={s.resultsIcon}>
-                  <Ionicons name="logo-bitcoin" size={14} color={ACCENT} />
+                  <Bitcoin size={14} color={ACCENT} />
                 </View>
                 <Text style={s.resultsTitle}>{COINS[coin].name} — {side.toUpperCase()}</Text>
                 <View style={s.levBadge}>
@@ -389,7 +390,7 @@ export default function CalcCrypto() {
             {/* RR Banner */}
             {calc && calc.rr > 0 && (
               <View style={[s.rrBanner, calc.rr >= 2 ? s.rrBannerGood : s.rrBannerWarn]}>
-                <Ionicons name="flash" size={15} color={calc.rr >= 2 ? "#34d399" : "#fbbf24"} />
+                <Zap size={15} color={calc.rr >= 2 ? "#34d399" : "#fbbf24"} />
                 <View style={{ flex: 1 }}>
                   <Text style={[s.rrTitle, calc.rr >= 2 ? s.rrTitleGood : s.rrTitleWarn]}>
                     {calc.rr >= 2 ? "Good RR Ratio" : calc.rr >= 1 ? "Acceptable RR" : "Poor RR Ratio"}

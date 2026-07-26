@@ -16,7 +16,7 @@ import {
   ScrollView, KeyboardAvoidingView, Platform,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { Ionicons } from "@expo/vector-icons";
+import { ShieldAlert, AlertTriangle, ShieldCheck, Layers } from "lucide-react-native";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Constants — preserved exactly from source
@@ -215,19 +215,19 @@ export default function CalcMargin() {
             {/* Status */}
             {calc.status === "danger" && (
               <View style={s.warnRow}>
-                <Ionicons name="shield" size={15} color="#f87171" />
+                <ShieldAlert size={15} color="#f87171" />
                 <Text style={s.warnText}>Stop-out imminent — position may be auto-closed by broker!</Text>
               </View>
             )}
             {calc.status === "warning" && (
               <View style={s.amberRow}>
-                <Ionicons name="warning" size={15} color="#fbbf24" />
+                <AlertTriangle size={15} color="#fbbf24" />
                 <Text style={s.amberText}>Margin Call level reached — deposit more funds or reduce position.</Text>
               </View>
             )}
             {calc.status === "safe" && calc.margin > 0 && (
               <View style={s.safeRow}>
-                <Ionicons name="shield-checkmark" size={15} color="rgba(237,240,246,0.50)" />
+                <ShieldCheck size={15} color="rgba(237,240,246,0.50)" />
                 <Text style={s.safeText}>Margin level is healthy. Monitor if market moves against you.</Text>
               </View>
             )}
@@ -238,7 +238,7 @@ export default function CalcMargin() {
             <View style={s.resultsPanelInner}>
               <View style={s.resultsHeader}>
                 <View style={s.resultsIcon}>
-                  <Ionicons name="layers" size={14} color={ACCENT} />
+                  <Layers size={14} color={ACCENT} />
                 </View>
                 <Text style={s.resultsTitle}>Margin Breakdown</Text>
               </View>

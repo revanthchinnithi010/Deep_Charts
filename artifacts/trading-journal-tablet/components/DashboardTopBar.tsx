@@ -44,7 +44,7 @@
  *   Badge          16×16, bg hsl(0,72%,56%), border 2px #05070A, text-[9px] bold white
  */
 
-import { Ionicons } from "@expo/vector-icons";
+import { Bell } from "lucide-react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
 import React, { memo, useCallback, useState } from "react";
@@ -284,8 +284,7 @@ function DashboardTopBar() {
               accessibilityLabel="Notifications"
             >
               {/* web: Bootstrap Icons bell SVG 16×16, colour #FFFFFF */}
-              <Ionicons
-                name={notifOpen ? "notifications" : "notifications-outline"}
+              <Bell
                 size={16}
                 color={C.iconColor}
               />

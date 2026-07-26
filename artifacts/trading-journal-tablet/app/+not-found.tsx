@@ -1,4 +1,4 @@
-import { Feather } from "@expo/vector-icons";
+import { Compass, Home } from "lucide-react-native";
 import { Link, Stack } from "expo-router";
 import React from "react";
 import {
@@ -45,8 +45,7 @@ export default function NotFoundScreen() {
             { backgroundColor: colors.card, borderColor: colors.border },
           ]}
         >
-          <Feather
-            name="compass"
+          <Compass
             size={40}
             color={colors.mutedForeground}
           />
@@ -89,8 +88,7 @@ export default function NotFoundScreen() {
               },
             ]}
           >
-            <Feather
-              name="home"
+            <Home
               size={16}
               color={colors.primaryForeground}
               style={styles.btnIcon}

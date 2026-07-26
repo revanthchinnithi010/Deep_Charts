@@ -35,7 +35,13 @@ import {
   View, Text, Pressable, ScrollView, TextInput,
   Modal, StyleSheet, Dimensions, ActivityIndicator,
 } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
+import {
+  TrendingUp, TrendingDown, ArrowRight, Minus, GitMerge, Square, Circle as CircleIcon,
+  Type, FileText, Paintbrush, Highlighter, PenLine, Spline,
+  List, Bell, GitBranch, LayoutGrid, Calculator, Camera, Minimize2, Maximize2, Settings,
+  Eye, EyeOff, Lock, Trash2, ChevronRight as ChevronRightIcon, ChevronDown as ChevronDownIcon,
+  Link2, Unlink, LayoutDashboard,
+} from "lucide-react-native";
 import { useDrawingStore } from "@/store/drawingStore";
 import { useTickStore } from "@/store/tickStore";
 import { useWatchlist } from "@/contexts/WatchlistContext";
@@ -91,27 +97,29 @@ export interface RightToolbarProps {
 export const TOOLBAR_W = 52;
 
 // ── Object tree icon / label maps ──────────────────────────────────────────────
-const TOOL_ICON_NAMES: Record<string, string> = {
-  trendline:      "trending-up-outline",
-  ray:            "arrow-forward-outline",
-  extended:       "arrow-forward-outline",
-  hline:          "remove-outline",
-  hray:           "remove-outline",
-  vline:          "reorder-two-outline",
-  channel:        "git-merge-outline",
-  fib:            "git-merge-outline",
-  fib_channel:    "git-merge-outline",
-  rect:           "square-outline",
-  ellipse:        "ellipse-outline",
-  text:           "text-outline",
-  note:           "document-text-outline",
-  arrow:          "arrow-forward-circle-outline",
-  position_long:  "trending-up-outline",
-  position_short: "trending-down-outline",
-  brush:          "brush-outline",
-  highlighter:    "color-fill-outline",
-  path:           "pencil-outline",
-  curve:          "return-down-forward-outline",
+type LucideIcon = React.ComponentType<{ size?: number; color?: string; strokeWidth?: number }>;
+
+const TOOL_ICON_NAMES: Record<string, LucideIcon> = {
+  trendline:      TrendingUp,
+  ray:            ArrowRight,
+  extended:       ArrowRight,
+  hline:          Minus,
+  hray:           Minus,
+  vline:          Minus,
+  channel:        GitMerge,
+  fib:            GitMerge,
+  fib_channel:    GitMerge,
+  rect:           Square,
+  ellipse:        CircleIcon,
+  text:           Type,
+  note:           FileText,
+  arrow:          ArrowRight,
+  position_long:  TrendingUp,
+  position_short: TrendingDown,
+  brush:          Paintbrush,
+  highlighter:    Highlighter,
+  path:           PenLine,
+  curve:          Spline,
 };
 const TOOL_LABELS: Record<string, string> = {
   trendline: "Trendline", ray: "Ray", extended: "Extended",
@@ -125,9 +133,9 @@ const TOOL_LABELS: Record<string, string> = {
 
 // ── Toolbar button ────────────────────────────────────────────────────────────
 function ToolBtn({
-  iconName, label, active, badge, onClick, disabled, btnSize = 44, iconSize = 22,
+  Icon, label, active, badge, onClick, disabled, btnSize = 44, iconSize = 22,
 }: {
-  iconName: string; label: string; active?: boolean;
+  Icon: LucideIcon; label: string; active?: boolean;
   badge?: number; onClick?: () => void; disabled?: boolean;
   btnSize?: number; iconSize?: number;
 }) {
@@ -142,8 +150,7 @@ function ToolBtn({
         disabled && styles.toolBtnDisabled,
       ]}
     >
-      <Ionicons
-        name={iconName as any}
+      <Icon
         size={iconSize}
         color="#ffffff"
       />
@@ -165,17 +172,17 @@ function ToolBtn({
 }
 
 // ── Panel header ──────────────────────────────────────────────────────────────
-function PanelHeader({ title, iconName, onClose }: {
-  title: string; iconName: string; onClose: () => void;
+function PanelHeader({ title, Icon, onClose }: {
+  title: string; Icon: LucideIcon; onClose: () => void;
 }) {
   return (
     <View style={styles.panelHeader}>
       <View style={styles.panelHeaderIcon}>
-        <Ionicons name={iconName as any} size={14} color="#B7FF5A" />
+        <Icon size={14} color="#B7FF5A" />
       </View>
       <Text style={styles.panelHeaderTitle} numberOfLines={1}>{title}</Text>
       <Pressable onPress={onClose} style={styles.panelHeaderClose} hitSlop={8}>
-        <Ionicons name="close" size={13} color="rgba(167,184,169,0.45)" />
+        <X size={13} color="rgba(167,184,169,0.45)" />
       </Pressable>
     </View>
   );
@@ -217,7 +224,7 @@ const ObjectsSlide = memo(function ObjectsSlide({
 
   return (
     <View style={{ flex: 1 }}>
-      <PanelHeader title="Object Tree" iconName="git-branch-outline" onClose={onClose} />
+      <PanelHeader title="Object Tree" Icon={GitBranch} onClose={onClose} />
 
       {/* Symbol + timeframe badges */}
       <View style={styles.objectsBadgeRow}>
@@ -238,7 +245,7 @@ const ObjectsSlide = memo(function ObjectsSlide({
       <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false}>
         {filtered.length === 0 ? (
           <View style={styles.emptyState}>
-            <Ionicons name="git-branch-outline" size={24} color="rgba(255,255,255,0.15)" />
+            <GitBranch size={24} color="rgba(255,255,255,0.15)" />
             <Text style={styles.emptyTitle}>No objects</Text>
             <Text style={styles.emptySubtitle}>Drawings placed on the chart{"\n"}will appear here</Text>
           </View>
@@ -256,13 +263,11 @@ const ObjectsSlide = memo(function ObjectsSlide({
                   style={styles.objectGroupHeader}
                   onPress={() => setCollapsed(p => ({ ...p, [type]: !p[type] }))}
                 >
-                  <Ionicons
-                    name={isCollapsed ? "chevron-forward" : "chevron-down"}
-                    size={11}
-                    color="rgba(255,255,255,0.28)"
-                  />
+                  {isCollapsed
+                    ? <ChevronRightIcon size={11} color="rgba(255,255,255,0.28)" />
+                    : <ChevronDownIcon  size={11} color="rgba(255,255,255,0.28)" />}
                   <View style={styles.objectGroupIcon}>
-                    <Ionicons name={iconName as any} size={12} color="rgba(255,255,255,0.7)" />
+                    <ToolTypeIcon size={12} color="rgba(255,255,255,0.7)" />
                   </View>
                   <Text style={styles.objectGroupLabel} numberOfLines={1}>{label}</Text>
                   <View style={styles.objectGroupCount}>
@@ -275,11 +280,9 @@ const ObjectsSlide = memo(function ObjectsSlide({
                     }}
                     hitSlop={4}
                   >
-                    <Ionicons
-                      name={allVisible ? "eye-outline" : "eye-off-outline"}
-                      size={13}
-                      color={allVisible ? "rgba(255,255,255,0.45)" : "rgba(255,255,255,0.22)"}
-                    />
+                    {allVisible
+                      ? <Eye    size={13} color="rgba(255,255,255,0.45)" />
+                      : <EyeOff size={13} color="rgba(255,255,255,0.22)" />}
                   </Pressable>
                 </Pressable>
 
@@ -310,29 +313,23 @@ const ObjectsSlide = memo(function ObjectsSlide({
                             onPress={() => updateDrawing(d.id, { isVisible: !(d.isVisible !== false) })}
                             hitSlop={4}
                           >
-                            <Ionicons
-                              name={d.isVisible !== false ? "eye-outline" : "eye-off-outline"}
-                              size={12}
-                              color={d.isVisible !== false ? "rgba(255,255,255,0.4)" : "rgba(255,255,255,0.2)"}
-                            />
+                            {d.isVisible !== false
+                              ? <Eye    size={12} color="rgba(255,255,255,0.4)" />
+                              : <EyeOff size={12} color="rgba(255,255,255,0.2)" />}
                           </Pressable>
                           <Pressable
                             style={styles.iconBtn26}
                             onPress={() => updateDrawing(d.id, { isLocked: !d.isLocked })}
                             hitSlop={4}
                           >
-                            <Ionicons
-                              name="lock-closed-outline"
-                              size={12}
-                              color={d.isLocked ? "#B7FF5A" : "rgba(255,255,255,0.28)"}
-                            />
+                            <Lock size={12} color={d.isLocked ? "#B7FF5A" : "rgba(255,255,255,0.28)"} />
                           </Pressable>
                           <Pressable
                             style={styles.iconBtn26}
                             onPress={() => handleDelete(d.id)}
                             hitSlop={4}
                           >
-                            <Ionicons name="trash-outline" size={12} color="rgba(255,255,255,0.25)" />
+                            <Trash2 size={12} color="rgba(255,255,255,0.25)" />
                           </Pressable>
                         </View>
                       );
@@ -352,14 +349,14 @@ const ObjectsSlide = memo(function ObjectsSlide({
             style={styles.objectsFooterBtn}
             onPress={() => filtered.forEach(d => updateDrawing(d.id, { isVisible: false }))}
           >
-            <Ionicons name="eye-off-outline" size={11} color="rgba(255,255,255,0.4)" />
+            <EyeOff size={11} color="rgba(255,255,255,0.4)" />
             <Text style={styles.objectsFooterText}>Hide all</Text>
           </Pressable>
           <Pressable
             style={styles.objectsFooterBtn}
             onPress={() => filtered.forEach(d => updateDrawing(d.id, { isVisible: true }))}
           >
-            <Ionicons name="eye-outline" size={11} color="rgba(255,255,255,0.4)" />
+            <Eye size={11} color="rgba(255,255,255,0.4)" />
             <Text style={styles.objectsFooterText}>Show all</Text>
           </Pressable>
         </View>
@@ -438,7 +435,7 @@ const LayoutSlide = memo(function LayoutSlide({
 
   return (
     <View style={{ flex: 1 }}>
-      <PanelHeader title="Layout Manager" iconName="browsers-outline" onClose={onClose} />
+      <PanelHeader title="Layout Manager" Icon={LayoutDashboard} onClose={onClose} />
 
       <ScrollView style={{ flex: 1 }} contentContainerStyle={{ padding: 14, paddingTop: 14 }} showsVerticalScrollIndicator={false}>
         <Text style={styles.sectionLabel}>Chart Grid</Text>
@@ -474,11 +471,9 @@ const LayoutSlide = memo(function LayoutSlide({
               onPress={() => onSyncTFChange(!syncTF)}
             >
               <View style={[styles.syncIconBox, syncTF && styles.syncIconBoxActive]}>
-                <Ionicons
-                  name={syncTF ? "link-outline" : "unlink-outline" as any}
-                  size={15}
-                  color={syncTF ? "#B7FF5A" : "rgba(167,184,169,0.45)"}
-                />
+                {syncTF
+                  ? <Link2  size={15} color="#B7FF5A" />
+                  : <Unlink size={15} color="rgba(167,184,169,0.45)" />}
               </View>
               <View style={{ flex: 1 }}>
                 <Text style={[styles.syncTitle, syncTF && styles.syncTitleActive]}>
@@ -585,7 +580,7 @@ const LayoutSlide = memo(function LayoutSlide({
                         style={styles.namedLayoutIconBtn}
                         hitSlop={4}
                       >
-                        <Ionicons name="trash-outline" size={13} color="rgba(239,68,68,0.5)" />
+                        <Trash2 size={13} color="rgba(239,68,68,0.5)" />
                       </Pressable>
                     </>
                   )}
@@ -663,7 +658,7 @@ const RightToolbar = memo(function RightToolbar({
             onPress={() => { setShowCameraMenu(false); onScreenshot?.(); }}
           >
             <View style={styles.cameraMenuIconBox}>
-              <Ionicons name="camera-outline" size={18} color="#B7FF5A" />
+              <Camera size={18} color="#B7FF5A" />
             </View>
             <View>
               <Text style={styles.cameraMenuItemTitle}>Snapshot</Text>
@@ -676,7 +671,7 @@ const RightToolbar = memo(function RightToolbar({
             onPress={() => { setShowCameraMenu(false); onCopyLiveLink?.(); }}
           >
             <View style={[styles.cameraMenuIconBox, styles.cameraMenuIconBoxBlue]}>
-              <Ionicons name="link-outline" size={14} color="#63B3ED" />
+              <Link2 size={14} color="#63B3ED" />
             </View>
             <View>
               <Text style={styles.cameraMenuItemTitle}>Copy Live Chart Link</Text>

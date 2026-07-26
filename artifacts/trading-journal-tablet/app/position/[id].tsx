@@ -55,7 +55,7 @@ import {
   ActivityIndicator,
 } from "react-native";
 import { router } from "expo-router";
-import { AlertTriangle, ArrowLeft, ChevronDown } from "lucide-react-native";
+import { AlertTriangle, ArrowLeft, ChevronDown, Trash2 } from "lucide-react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useSelectedPositionStore } from "@/store/selectedPositionStore";
 import { useBrokerStore } from "@/store/brokerStore";
@@ -738,7 +738,7 @@ export default function PositionDetailScreen() {
             pressed && canClose && { opacity: 0.8 },
           ]}
         >
-          <Ionicons name="trash-outline" size={15} color={canClose ? "#FF6A6A" : MUTED} />
+          <Trash2 size={15} color={canClose ? "#FF6A6A" : MUTED} />
           <Text style={[pdStyles.closeBtnText, !canClose && { color: MUTED }]}>
             {closing ? "Closing Position…" : "Close Position"}
           </Text>

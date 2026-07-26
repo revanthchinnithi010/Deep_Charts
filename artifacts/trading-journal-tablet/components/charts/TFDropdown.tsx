@@ -31,7 +31,7 @@ import {
   Modal, StyleSheet, Dimensions, TouchableWithoutFeedback,
 } from "react-native";
 import type { GestureResponderEvent } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
+import { ChevronDown, Check, X, Plus, Star } from "lucide-react-native";
 
 // ── Label helpers ─────────────────────────────────────────────────────────────
 export function tfLabel(value: string): string {
@@ -205,8 +205,7 @@ export function TFDropdown({
         onPress={openDropdown}
         style={[ss.trigger, open && ss.triggerOpen]}
       >
-        <Ionicons
-          name="chevron-down"
+        <ChevronDown
           size={11}
           color={open ? "#B7FF5A" : "rgba(211,222,218,0.65)"}
           style={{ transform: [{ rotate: open ? "180deg" : "0deg" }] }}
@@ -249,10 +248,10 @@ export function TFDropdown({
                   autoCorrect={false}
                 />
                 <Pressable onPress={submitCustom} style={ss.customSubmit}>
-                  <Ionicons name="checkmark" size={13} color="#0F1618" />
+                  <Check size={13} color="#0F1618" />
                 </Pressable>
                 <SmallBtn onPress={() => { setCustomMode(false); setCustomVal(""); setCustomErr(false); }}>
-                  <Ionicons name="close" size={13} color="rgba(167,184,169,0.6)" />
+                  <X size={13} color="rgba(167,184,169,0.6)" />
                 </SmallBtn>
               </View>
             ) : (
@@ -260,7 +259,7 @@ export function TFDropdown({
                 onPress={() => setCustomMode(true)}
                 style={ss.addCustomBtn}
               >
-                <Ionicons name="add" size={13} color="rgba(183,255,90,0.65)" />
+                <Plus size={13} color="rgba(183,255,90,0.65)" />
                 <Text style={ss.addCustomLabel}>Add custom interval…</Text>
               </Pressable>
             )}
@@ -338,10 +337,10 @@ const TFRow = memo(function TFRow({
         onPress={e => onToggleFav(item.value, e)}
         active={isFav}
       >
-        <Ionicons
-          name={isFav ? "star" : "star-outline"}
+        <Star
           size={12}
           color={isFav ? "#B7FF5A" : "rgba(167,184,169,0.35)"}
+          fill={isFav ? "#B7FF5A" : "none"}
         />
       </SmallBtn>
     </Pressable>

@@ -9,7 +9,7 @@
  * Phase 10.6 — Analytics Foundation
  */
 
-import { Ionicons } from "@expo/vector-icons";
+import { BarChart2, AlertCircle, type LucideProps } from "lucide-react-native";
 import React, { memo, useEffect, useRef } from "react";
 import { Animated, StyleSheet, Text, View } from "react-native";
 
@@ -94,19 +94,20 @@ export const ChartLoadingState = memo(function ChartLoadingState({
 
 // ── ChartEmptyState ────────────────────────────────────────────────────────
 
+type LucideIcon = React.ComponentType<LucideProps>;
+
 export const ChartEmptyState = memo(function ChartEmptyState({
   height  = 200,
   message = "No data available",
-  icon    = "bar-chart-outline",
+  Icon    = BarChart2,
 }: {
   height?:  number;
   message?: string;
-  icon?:    React.ComponentProps<typeof Ionicons>["name"];
+  Icon?:    LucideIcon;
 }) {
   return (
     <View style={[styles.container, styles.centred, { height }]}>
-      <Ionicons
-        name={icon}
+      <Icon
         size={28}
         color="rgba(148,163,184,0.25)"
         style={styles.emptyIcon}
@@ -127,8 +128,7 @@ export const ChartErrorState = memo(function ChartErrorState({
 }) {
   return (
     <View style={[styles.container, styles.centred, { height }]}>
-      <Ionicons
-        name="alert-circle-outline"
+      <AlertCircle
         size={28}
         color="rgba(221,75,75,0.45)"
         style={styles.emptyIcon}
