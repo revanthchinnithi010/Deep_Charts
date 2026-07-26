@@ -387,7 +387,7 @@ const styles = StyleSheet.create({
   wordmark: {
     color: COLORS.wordmark,
     fontSize: 12,
-    fontFamily: "Inter_600SemiBold",
+    fontFamily: "SFProDisplay-Semibold",
     letterSpacing: 1.5,
     textTransform: "uppercase",
     marginBottom: 20,
@@ -395,13 +395,13 @@ const styles = StyleSheet.create({
   title: {
     color: COLORS.textPrimary,
     fontSize: 28,
-    fontFamily: "Inter_700Bold",
+    fontFamily: "SFProDisplay-Bold",
     marginBottom: 6,
   },
   subtitle: {
     color: COLORS.textSecondary,
     fontSize: 15,
-    fontFamily: "Inter_400Regular",
+    fontFamily: "SFProDisplay-Regular",
   },
 
   // ── Form ──────────────────────────────────────────────────────────────────
@@ -414,7 +414,7 @@ const styles = StyleSheet.create({
   label: {
     color: COLORS.textSecondary,
     fontSize: 13,
-    fontFamily: "Inter_500Medium",
+    fontFamily: "SFProDisplay-Medium",
     marginBottom: 8,
     letterSpacing: 0.2,
   },
@@ -427,7 +427,7 @@ const styles = StyleSheet.create({
     paddingVertical: Platform.OS === "ios" ? 14 : 12,
     color: COLORS.textPrimary,
     fontSize: 15,
-    fontFamily: "Inter_400Regular",
+    fontFamily: "SFProDisplay-Regular",
   },
   inputWrapper: {
     flexDirection: "row",
@@ -443,7 +443,7 @@ const styles = StyleSheet.create({
     paddingVertical: Platform.OS === "ios" ? 14 : 12,
     color: COLORS.textPrimary,
     fontSize: 15,
-    fontFamily: "Inter_400Regular",
+    fontFamily: "SFProDisplay-Regular",
   },
   eyeButton: {
     paddingHorizontal: 14,
@@ -455,7 +455,7 @@ const styles = StyleSheet.create({
   fieldError: {
     color: COLORS.error,
     fontSize: 12,
-    fontFamily: "Inter_400Regular",
+    fontFamily: "SFProDisplay-Regular",
     marginTop: 6,
     marginLeft: 2,
   },
@@ -477,7 +477,7 @@ const styles = StyleSheet.create({
     flex: 1,
     color: COLORS.error,
     fontSize: 13,
-    fontFamily: "Inter_400Regular",
+    fontFamily: "SFProDisplay-Regular",
     lineHeight: 18,
   },
 
@@ -495,7 +495,7 @@ const styles = StyleSheet.create({
   buttonText: {
     color: "#FFFFFF",
     fontSize: 15,
-    fontFamily: "Inter_600SemiBold",
+    fontFamily: "SFProDisplay-Semibold",
     letterSpacing: 0.2,
   },
 
@@ -509,11 +509,11 @@ const styles = StyleSheet.create({
   footerText: {
     color: COLORS.muted,
     fontSize: 14,
-    fontFamily: "Inter_400Regular",
+    fontFamily: "SFProDisplay-Regular",
   },
   footerLink: {
     color: COLORS.accent,
     fontSize: 14,
-    fontFamily: "Inter_600SemiBold",
+    fontFamily: "SFProDisplay-Semibold",
   },
 });

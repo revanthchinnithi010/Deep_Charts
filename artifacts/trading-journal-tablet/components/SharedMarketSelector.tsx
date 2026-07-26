@@ -1122,13 +1122,13 @@ const styles = StyleSheet.create({
     fontSize: 12.5,
     fontWeight: "500",
     color: "#6E7578",
-    fontFamily: "Inter_500Medium",
+    fontFamily: "SFProDisplay-Medium",
   },
 
   tabBtnTextActive: {
     fontWeight: "700",
     color: "#FFFFFF",
-    fontFamily: "Inter_700Bold",
+    fontFamily: "SFProDisplay-Bold",
   },
 
   tabCountBadge: {
@@ -1146,7 +1146,7 @@ const styles = StyleSheet.create({
     fontSize: 9.5,
     fontWeight: "600",
     color: "rgba(148,163,184,0.30)",
-    fontFamily: "Inter_600SemiBold",
+    fontFamily: "SFProDisplay-Semibold",
   },
 
   tabCountTextActive: {
@@ -1189,7 +1189,7 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 13.5,
     color: "#e2e8f0",
-    fontFamily: "Inter_400Regular",
+    fontFamily: "SFProDisplay-Regular",
     padding: 0,
     margin: 0,
   },
@@ -1226,7 +1226,7 @@ const styles = StyleSheet.create({
     fontSize: 10,
     color: "rgba(148,163,184,0.38)",
     fontWeight: "500",
-    fontFamily: "Inter_500Medium",
+    fontFamily: "SFProDisplay-Medium",
   },
 
   // ── Symbol row ──
@@ -1275,7 +1275,7 @@ const styles = StyleSheet.create({
     fontSize: 13.5,
     letterSpacing: 0.025 * 13.5,
     lineHeight: 16,
-    fontFamily: "Inter_700Bold",
+    fontFamily: "SFProDisplay-Bold",
   },
 
   badge: {
@@ -1291,14 +1291,14 @@ const styles = StyleSheet.create({
     fontWeight: "700",
     letterSpacing: 0.06 * 8,
     lineHeight: 11.2,
-    fontFamily: "Inter_700Bold",
+    fontFamily: "SFProDisplay-Bold",
   },
 
   nameText: {
     color: "rgba(148,163,184,0.38)",
     fontSize: 10.5,
     lineHeight: 12.6,
-    fontFamily: "Inter_400Regular",
+    fontFamily: "SFProDisplay-Regular",
   },
 
   // ── Price cell ──
@@ -1331,7 +1331,7 @@ const styles = StyleSheet.create({
     letterSpacing: -0.01 * 13,
     minWidth: 60,
     textAlign: "right",
-    fontFamily: "Inter_600SemiBold",
+    fontFamily: "SFProDisplay-Semibold",
   },
 
   priceTextEmpty: {
@@ -1370,7 +1370,7 @@ const styles = StyleSheet.create({
     fontWeight: "700",
     fontVariant: ["tabular-nums"],
     letterSpacing: 0.01 * 11,
-    fontFamily: "Inter_700Bold",
+    fontFamily: "SFProDisplay-Bold",
   },
 
   // ── Section header ──
@@ -1402,7 +1402,7 @@ const styles = StyleSheet.create({
     color: "rgba(255,255,255,0.68)",
     letterSpacing: 0.06 * 11,
     textTransform: "uppercase",
-    fontFamily: "Inter_700Bold",
+    fontFamily: "SFProDisplay-Bold",
   },
 
   sectionCount: {
@@ -1415,7 +1415,7 @@ const styles = StyleSheet.create({
     fontSize: 10,
     fontWeight: "600",
     letterSpacing: 0.02 * 10,
-    fontFamily: "Inter_600SemiBold",
+    fontFamily: "SFProDisplay-Semibold",
   },
 
   // ── Show more button ──
@@ -1430,7 +1430,7 @@ const styles = StyleSheet.create({
   showMoreText: {
     fontSize: 12,
     fontWeight: "600",
-    fontFamily: "Inter_600SemiBold",
+    fontFamily: "SFProDisplay-Semibold",
   },
 
   // ── Empty state ──
@@ -1459,7 +1459,7 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     color: "rgba(255,255,255,0.40)",
     textAlign: "center",
-    fontFamily: "Inter_600SemiBold",
+    fontFamily: "SFProDisplay-Semibold",
   },
 
   emptySubtitle: {
@@ -1468,7 +1468,7 @@ const styles = StyleSheet.create({
     textAlign: "center",
     lineHeight: 18,
     maxWidth: 220,
-    fontFamily: "Inter_400Regular",
+    fontFamily: "SFProDisplay-Regular",
   },
 
   // ── Loading ──
@@ -1483,7 +1483,7 @@ const styles = StyleSheet.create({
   loadingText: {
     fontSize: 12.5,
     color: "rgba(148,163,184,0.35)",
-    fontFamily: "Inter_400Regular",
+    fontFamily: "SFProDisplay-Regular",
   },
 
   // ── Error ──
@@ -1497,7 +1497,7 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: "rgba(239,68,68,0.55)",
     marginBottom: 6,
-    fontFamily: "Inter_500Medium",
+    fontFamily: "SFProDisplay-Medium",
   },
 
   errorMsg: {
@@ -1505,7 +1505,7 @@ const styles = StyleSheet.create({
     color: "rgba(148,163,184,0.30)",
     marginBottom: 16,
     textAlign: "center",
-    fontFamily: "Inter_400Regular",
+    fontFamily: "SFProDisplay-Regular",
   },
 
   retryBtn: {
@@ -1521,7 +1521,7 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: "600",
     color: "#f59e0b",
-    fontFamily: "Inter_600SemiBold",
+    fontFamily: "SFProDisplay-Semibold",
   },
 
   // ── Footer ──
@@ -1535,7 +1535,7 @@ const styles = StyleSheet.create({
     fontSize: 10,
     color: "rgba(148,163,184,0.18)",
     fontWeight: "500",
-    fontFamily: "Inter_500Medium",
+    fontFamily: "SFProDisplay-Medium",
   },
 
   // ── List ──
