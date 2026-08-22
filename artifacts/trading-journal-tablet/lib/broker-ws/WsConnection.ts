@@ -1,34 +1,8 @@
 /**
  * WsConnection.ts — reusable, self-healing WebSocket wrapper.
  *
- * React Native port of src/lib/broker-ws/WsConnection.ts
- * ───────────────────────────────────────────────────────
- * RN compatibility notes
- * ──────────────────────
- * 1. WebSocket global
- *    Both the browser and React Native expose a global `WebSocket`
- *    constructor with an identical public API (readyState constants,
- *    onopen / onmessage / onclose / onerror, send, close).
- *    expo/tsconfig.base includes lib:["dom","esnext"] so the DOM
- *    WebSocket and CloseEvent types are available for TypeScript.
- *    No changes needed.
- *
- * 2. ws.close(code, reason)
- *    Supported by React Native's WebSocket on both iOS and Android.
- *    Behaviour is identical to the browser for codes 1000 and 4xxx.
- *
- * 3. WebSocket.OPEN / .CONNECTING static constants
- *    React Native's WebSocket exposes the same numeric constants
- *    (CONNECTING=0, OPEN=1, CLOSING=2, CLOSED=3) as the browser.
- *
- * 4. Close event code
- *    React Native's WebSocket close event includes `code` and `reason`
- *    fields, matching CloseEvent from the DOM lib. No cast needed.
- *
- * 5. setInterval / setTimeout / clearInterval / clearTimeout
- *    Available identically in Hermes / React Native.
- *
- * Logic is preserved exactly from the web original.
+ * React Native compatible: global WebSocket, timers, exponential reconnect,
+ * heartbeat and latency tracking.
  */
 
 import { HeartbeatManager } from "./HeartbeatManager";
@@ -52,11 +26,6 @@ export interface WsConnectionOptions {
   onLatency: (ms: number) => void;
 }
 
-/**
- * Reusable, self-healing WebSocket wrapper.
- * Handles: connection lifecycle, heartbeat ping/pong, exponential backoff
- * reconnect, and latency tracking. Agnostic of message protocol.
- */
 export class WsConnection {
   private ws: WebSocket | null = null;
   private _status: WsClientStatus = "idle";
@@ -72,8 +41,8 @@ export class WsConnection {
   constructor(private readonly opts: WsConnectionOptions) {
     this.heartbeat = new HeartbeatManager({
       intervalMs: opts.heartbeatIntervalMs ?? 20_000,
-      timeoutMs:  opts.heartbeatTimeoutMs  ?? 8_000,
-      onPing:    () => this.sendPing(),
+      timeoutMs: opts.heartbeatTimeoutMs ?? 8_000,
+      onPing: () => this.sendPing(),
       onTimeout: () => {
         console.warn(`[${opts.name}] heartbeat timeout — forcing reconnect`);
         this.ws?.close(4000, "heartbeat timeout");
@@ -84,7 +53,7 @@ export class WsConnection {
       ...opts.reconnectOptions,
       onReconnect: (attempt) => {
         this._reconnectAttempts = attempt;
-        if (__DEV__) { console.log(`[${opts.name}] reconnecting (attempt ${attempt})`); }
+        if (__DEV__) console.log(`[${opts.name}] reconnecting (attempt ${attempt})`);
         this.setStatus("reconnecting");
         this.openSocket();
       },
@@ -95,15 +64,17 @@ export class WsConnection {
     });
   }
 
-  get status(): WsClientStatus   { return this._status; }
-  get latencyMs(): number | null  { return this._latencyMs; }
+  get status(): WsClientStatus { return this._status; }
+  get latencyMs(): number | null { return this._latencyMs; }
   get reconnectAttempts(): number { return this._reconnectAttempts; }
   get lastConnectedAt(): number | null { return this._lastConnectedAt; }
   get lastPongAt(): number | null { return this._lastPongAt; }
 
   connect(): void {
     if (this.destroyed) return;
-    if (this.ws && this.ws.readyState <= WebSocket.OPEN) return;
+    // A CLOSING socket must not block a fresh connection attempt. The old
+    // implementation treated readyState=2 as "already connected".
+    if (this.ws && (this.ws.readyState === WebSocket.CONNECTING || this.ws.readyState === WebSocket.OPEN)) return;
     this.setStatus("connecting");
     this.openSocket();
   }
@@ -121,7 +92,6 @@ export class WsConnection {
     this.disconnect();
   }
 
-  /** Send a raw message. Returns false if not connected. */
   send(msg: unknown): boolean {
     if (this.ws?.readyState !== WebSocket.OPEN) return false;
     try {
@@ -133,10 +103,8 @@ export class WsConnection {
     }
   }
 
-  /** Called externally when a pong arrives (e.g. from a containing client). */
   notifyPong(): void { this.receivePong(); }
 
-  /** Called by the subclass when a pong arrives. */
   protected receivePong(): void {
     const latency = this.heartbeat.pong();
     if (latency !== null) {
@@ -146,7 +114,6 @@ export class WsConnection {
     }
   }
 
-  /** Override in subclass to send a broker-specific ping. */
   protected sendPing(): void {
     this.send({ type: "ping" });
   }
@@ -154,21 +121,22 @@ export class WsConnection {
   private openSocket(): void {
     if (this.destroyed) return;
     const url = typeof this.opts.url === "function" ? this.opts.url() : this.opts.url;
-    if (__DEV__) {
-      console.log(`[${this.opts.name}] connecting to ${url}`);
-    }
+    if (__DEV__) console.log(`[${this.opts.name}] connecting to ${url}`);
 
     let ws: WebSocket;
-    try { ws = new WebSocket(url); } catch (e) {
+    try {
+      ws = new WebSocket(url);
+    } catch (e) {
       console.error(`[${this.opts.name}] WebSocket construction failed`, e);
       this.setStatus("error");
+      this.reconnect.schedule();
       return;
     }
     this.ws = ws;
 
     ws.onopen = () => {
       if (this.ws !== ws) return;
-      if (__DEV__) { console.log(`[${this.opts.name}] connected`); }
+      if (__DEV__) console.log(`[${this.opts.name}] connected`);
       this._lastConnectedAt = Date.now();
       this.reconnect.reset();
       this._reconnectAttempts = 0;
@@ -182,7 +150,9 @@ export class WsConnection {
       try {
         const data = typeof event.data === "string" ? JSON.parse(event.data) : event.data;
         this.opts.onMessage(data);
-      } catch { /* ignore malformed */ }
+      } catch {
+        // Ignore malformed broker messages rather than killing the feed.
+      }
     };
 
     ws.onclose = (event) => {
@@ -200,7 +170,7 @@ export class WsConnection {
     ws.onerror = () => {
       console.error(`[${this.opts.name}] socket error`);
       this.setStatus("error");
-      ws.close();
+      try { ws.close(); } catch { /* close can throw on a failed native socket */ }
     };
   }
 
