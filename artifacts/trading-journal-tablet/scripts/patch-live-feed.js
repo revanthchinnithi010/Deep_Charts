@@ -1,10 +1,10 @@
 #!/usr/bin/env node
 /**
- * Wires the tablet Skia chart to the resilient LiveMarketBridge.
+ * Wires the tablet Skia chart to the resilient Bybit public market bridge.
  *
  * CustomChart was originally ported with a temporary no-op WS bridge. Keep the
- * patch isolated and idempotent so the chart source can remain close to the
- * web implementation while the tablet feed uses the native Delta socket.
+ * patch isolated and idempotent so the chart source stays close to the web
+ * implementation while live crypto prices come directly from Bybit.
  */
 
 const fs = require("fs");
@@ -46,4 +46,4 @@ if (src.includes(sendStub)) {
 }
 
 fs.writeFileSync(chartFile, src, "utf8");
-console.log("[patch-live-feed] CustomChart now consumes the live Delta feed.");
+console.log("[patch-live-feed] CustomChart now consumes the live Bybit feed.");
