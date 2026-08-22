@@ -51,9 +51,6 @@ class LiveMarketBridge {
   private wsStatus: WsStatus = "disconnected";
   private latencyMs: number | null = null;
   private appState: AppStateStatus = AppState.currentState;
-  private appStateSubscription: { remove: () => void } | null = null;
-  private chartStoreUnsubscribe: (() => void) | null = null;
-  private watchdog: ReturnType<typeof setInterval> | null = null;
   private lastTickAt = 0;
 
   constructor() {
@@ -94,7 +91,7 @@ class LiveMarketBridge {
     this.started = true;
     this.currentSymbol = useChartStore.getState().symbol;
 
-    this.chartStoreUnsubscribe = useChartStore.subscribe((state) => {
+    useChartStore.subscribe((state) => {
       if (state.symbol === this.currentSymbol) return;
       const previous = this.currentSymbol;
       this.currentSymbol = state.symbol;
@@ -102,7 +99,7 @@ class LiveMarketBridge {
       if (this.currentSymbol) this.client.subscribeSymbol(this.currentSymbol);
     });
 
-    this.appStateSubscription = AppState.addEventListener("change", (next) => {
+    AppState.addEventListener("change", (next) => {
       const previous = this.appState;
       this.appState = next;
 
@@ -114,7 +111,7 @@ class LiveMarketBridge {
       }
     });
 
-    this.watchdog = setInterval(() => {
+    setInterval(() => {
       if (this.appState !== "active" || !this.currentSymbol) return;
       if (this.wsStatus !== "connected") return;
       if (this.lastTickAt !== 0 && Date.now() - this.lastTickAt > 45_000) {
