@@ -50,12 +50,6 @@ function finiteNumber(value: unknown): number | undefined {
   return Number.isFinite(n) && n !== 0 ? n : undefined;
 }
 
-/**
- * Direct React Native → Delta Exchange public WebSocket client.
- *
- * Public market data does not require API credentials. The client subscribes
- * to `ticker` and automatically re-subscribes after every reconnect.
- */
 export class DeltaWsClient implements IBrokerWsClient {
   readonly brokerId = "delta" as const;
 
@@ -85,9 +79,9 @@ export class DeltaWsClient implements IBrokerWsClient {
         maxDelayMs: 30_000,
         backoffFactor: 1.5,
       },
-      onOpen: () => {
-        // Keep the connection active even if ticker traffic pauses.
-        this.conn.send({ type: "enable_heartbeat" });
+      onOpen: (ws) => {
+        // Keep the public connection active even if ticker traffic pauses.
+        try { ws.send(JSON.stringify({ type: "enable_heartbeat" })); } catch { /* socket may close during resume */ }
         this.resubscribeAll();
       },
       onMessage: (data) => this.handleMessage(data as DeltaMsg),
@@ -102,8 +96,6 @@ export class DeltaWsClient implements IBrokerWsClient {
     });
   }
 
-  /** Update the WS URL before connect(). Legacy private Delta URLs are mapped
-   * to the current public market-data endpoint automatically. */
   setWsUrl(url: string): void {
     if (url) this._wsUrl = DeltaWsClient.resolveWsUrl(url);
   }
@@ -193,13 +185,10 @@ export class DeltaWsClient implements IBrokerWsClient {
       return;
     }
 
-    // Current public endpoint: { type: "ticker", d: [...], sy, ... }
     if (msg.type === "ticker") {
       const publicMsg = msg as PublicDeltaTicker;
       for (const item of publicMsg.d ?? []) {
         const symbol = String(item.s ?? publicMsg.sy ?? "").toUpperCase();
-        // New ticker's 24h OHLC close is the current traded close. Prefer it,
-        // then mark price as a safe fallback.
         const close = finiteNumber(item.ohlc?.[3]);
         const mark = finiteNumber(item.m);
         const price = close ?? mark;
@@ -212,8 +201,7 @@ export class DeltaWsClient implements IBrokerWsClient {
       return;
     }
 
-    // Legacy parser kept so an older Delta endpoint/environment can still feed
-    // the chart during a transition.
+    // Keep legacy parsing for a transition period.
     if (msg.type === "v2/ticker") {
       const legacy = msg as LegacyDeltaTicker;
       const rawPrice = legacy.close ?? legacy.mark_price ?? legacy.spot_price;
