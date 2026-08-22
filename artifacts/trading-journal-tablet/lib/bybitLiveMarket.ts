@@ -11,13 +11,16 @@ export interface BybitTick {
   timestamp: number;
 }
 
-type StateHandler = (status: BybitFeedStatus, latencyMs: number | null) => void;
+type StateHandler = (status: BybitFeedStatus, latencyMs: number | null, networkOnline: boolean | null) => void;
 type TickHandler = (tick: BybitTick) => void;
 
 const BYBIT_LINEAR_WS = "wss://stream.bybit.com/v5/public/linear";
+const BYBIT_TIME_URL = "https://api.bybit.com/v5/market/time";
 const PING_INTERVAL_MS = 20_000;
 const WATCHDOG_INTERVAL_MS = 10_000;
-const STALE_AFTER_MS = 35_000;
+const STALE_AFTER_MS = 60_000;
+const NETWORK_PROBE_INTERVAL_MS = 30_000;
+const NETWORK_PROBE_TIMEOUT_MS = 5_000;
 const MAX_BACKOFF_MS = 30_000;
 
 function normalizeSymbol(symbol: string): string {
@@ -30,18 +33,23 @@ function normalizeSymbol(symbol: string): string {
 export class BybitLiveMarket {
   private ws: WebSocket | null = null;
   private destroyed = false;
-  private active = AppState.currentState === "active";
+  // React Native can briefly report null for currentState during cold launch.
+  // Treat that as active so the first start() cannot silently become a no-op.
+  private active = AppState.currentState !== "background" && AppState.currentState !== "inactive";
   private currentSymbol = "";
   private reconnectTimer: ReturnType<typeof setTimeout> | null = null;
   private pingTimer: ReturnType<typeof setInterval> | null = null;
   private watchdogTimer: ReturnType<typeof setInterval> | null = null;
+  private networkProbeTimer: ReturnType<typeof setInterval> | null = null;
   private reconnectAttempt = 0;
   private lastMessageAt = 0;
   private lastTickAt = 0;
   private pingSentAt = 0;
   private latencyMs: number | null = null;
+  private networkOnline: boolean | null = null;
   private status: BybitFeedStatus = "idle";
   private generation = 0;
+  private recoveryInProgress = false;
   private stateHandlers = new Set<StateHandler>();
   private tickHandlers = new Set<TickHandler>();
   private appStateSubscription: { remove: () => void } | null = null;
@@ -49,13 +57,19 @@ export class BybitLiveMarket {
   constructor() {
     this.appStateSubscription = AppState.addEventListener("change", (next: AppStateStatus) => {
       const wasActive = this.active;
-      this.active = next === "active";
+      this.active = next !== "background" && next !== "inactive";
 
       if (!wasActive && this.active) {
+        // Never trust a socket that survived a long Android background period.
+        // Start a completely fresh connection and subscription instead.
         this.reconnectAttempt = 0;
-        this.connect(true);
+        this.lastMessageAt = 0;
+        this.lastTickAt = 0;
+        this.recoveryInProgress = false;
+        this.probeNetwork().finally(() => this.connect(true));
       } else if (wasActive && !this.active) {
         this.cancelReconnect();
+        this.stopHeartbeat();
         this.closeSocket(false);
         this.setStatus("disconnected");
       }
@@ -64,15 +78,25 @@ export class BybitLiveMarket {
 
   start(symbol: string): void {
     this.currentSymbol = normalizeSymbol(symbol);
-    if (!this.currentSymbol || !this.active || this.destroyed) return;
+    if (!this.currentSymbol || this.destroyed) return;
+    if (!this.active) {
+      // If launch happened while AppState was still resolving, retry shortly.
+      setTimeout(() => {
+        if (!this.destroyed && this.currentSymbol && this.active) this.start(this.currentSymbol);
+      }, 250);
+      return;
+    }
     this.startWatchdog();
-    this.connect(true);
+    this.startNetworkProbe();
+    this.probeNetwork().finally(() => this.connect(true));
   }
 
   setSymbol(symbol: string): void {
     const next = normalizeSymbol(symbol);
     if (!next || next === this.currentSymbol) return;
     this.currentSymbol = next;
+    this.lastTickAt = 0;
+    this.lastMessageAt = 0;
     if (this.active && !this.destroyed) this.connect(true);
   }
 
@@ -87,15 +111,17 @@ export class BybitLiveMarket {
     this.destroyed = true;
     this.stop();
     if (this.watchdogTimer) clearInterval(this.watchdogTimer);
+    if (this.networkProbeTimer) clearInterval(this.networkProbeTimer);
     this.watchdogTimer = null;
+    this.networkProbeTimer = null;
     this.appStateSubscription?.remove();
     this.appStateSubscription = null;
     this.stateHandlers.clear();
     this.tickHandlers.clear();
   }
 
-  getSnapshot(): { status: BybitFeedStatus; latencyMs: number | null } {
-    return { status: this.status, latencyMs: this.latencyMs };
+  getSnapshot(): { status: BybitFeedStatus; latencyMs: number | null; networkOnline: boolean | null } {
+    return { status: this.status, latencyMs: this.latencyMs, networkOnline: this.networkOnline };
   }
 
   onState(handler: StateHandler): () => void {
@@ -115,6 +141,7 @@ export class BybitLiveMarket {
     this.cancelReconnect();
     this.closeSocket(false);
     const generation = ++this.generation;
+    this.recoveryInProgress = true;
     this.setStatus(this.reconnectAttempt > 0 ? "reconnecting" : "connecting");
 
     let ws: WebSocket;
@@ -131,8 +158,10 @@ export class BybitLiveMarket {
     ws.onopen = () => {
       if (this.ws !== ws || generation !== this.generation) return;
       this.reconnectAttempt = 0;
+      this.recoveryInProgress = false;
       this.lastMessageAt = Date.now();
       this.lastTickAt = 0;
+      this.networkOnline = true;
       this.setStatus("connected");
       this.startHeartbeat();
       this.subscribeCurrent(ws);
@@ -141,12 +170,15 @@ export class BybitLiveMarket {
     ws.onmessage = (event) => {
       if (this.ws !== ws || generation !== this.generation) return;
       this.lastMessageAt = Date.now();
+      this.networkOnline = true;
       this.handleMessage(event.data);
     };
 
     ws.onerror = () => {
       if (this.ws !== ws || generation !== this.generation) return;
-      this.setStatus("error");
+      // A socket error does not prove that the device is offline.
+      // The network probe decides that separately.
+      this.setStatus("reconnecting");
     };
 
     ws.onclose = () => {
@@ -209,6 +241,7 @@ export class BybitLiveMarket {
     const bid = Number(item.bid1Price);
     const ask = Number(item.ask1Price);
     this.lastTickAt = Date.now();
+    this.networkOnline = true;
     this.tickHandlers.forEach((handler) => {
       try {
         handler({
@@ -249,24 +282,67 @@ export class BybitLiveMarket {
     this.watchdogTimer = setInterval(() => {
       if (this.destroyed || !this.active || !this.currentSymbol) return;
       const now = Date.now();
+
       if (!this.ws || this.ws.readyState !== WebSocket.OPEN) {
         this.connect();
         return;
       }
-      if (this.lastMessageAt > 0 && now - this.lastMessageAt > STALE_AFTER_MS) {
-        try { this.ws.close(4001, "stale Bybit feed"); } catch { /* ignore */ }
+
+      // Crypto is 24/7. If no ticker has arrived for a full minute, recover
+      // the socket instead of leaving the UI permanently connected-but-stale.
+      if (this.lastTickAt > 0 && now - this.lastTickAt > STALE_AFTER_MS && !this.recoveryInProgress) {
+        this.recoveryInProgress = true;
+        this.setStatus("reconnecting");
+        this.probeNetwork().finally(() => {
+          if (!this.destroyed && this.active) this.connect(true);
+        });
       }
     }, WATCHDOG_INTERVAL_MS);
+  }
+
+  private startNetworkProbe(): void {
+    if (this.networkProbeTimer) return;
+    this.networkProbeTimer = setInterval(() => {
+      if (!this.destroyed && this.active) this.probeNetwork();
+    }, NETWORK_PROBE_INTERVAL_MS);
+  }
+
+  private async probeNetwork(): Promise<boolean> {
+    if (this.destroyed || !this.active) return false;
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), NETWORK_PROBE_TIMEOUT_MS);
+    try {
+      const response = await fetch(BYBIT_TIME_URL, {
+        method: "GET",
+        cache: "no-store",
+        signal: controller.signal,
+      });
+      // Any HTTP response means the device has network reachability.
+      this.networkOnline = true;
+      if ((this.status === "disconnected" || this.status === "error") && this.active) {
+        this.scheduleReconnect();
+      }
+      this.notifyState();
+      return true;
+    } catch {
+      this.networkOnline = false;
+      this.setStatus("disconnected");
+      return false;
+    } finally {
+      clearTimeout(timeout);
+    }
   }
 
   private scheduleReconnect(): void {
     if (this.destroyed || !this.active || !this.currentSymbol || this.reconnectTimer) return;
     this.reconnectAttempt += 1;
     const delay = Math.min(MAX_BACKOFF_MS, 1_000 * Math.pow(1.7, this.reconnectAttempt - 1));
-    this.setStatus("reconnecting");
+    this.setStatus(this.networkOnline === false ? "disconnected" : "reconnecting");
     this.reconnectTimer = setTimeout(() => {
       this.reconnectTimer = null;
-      this.connect(true);
+      this.probeNetwork().finally(() => {
+        if (this.networkOnline !== false) this.connect(true);
+      });
     }, delay);
   }
 
@@ -283,7 +359,10 @@ export class BybitLiveMarket {
   }
 
   private setStatus(status: BybitFeedStatus): void {
-    if (this.status === status) return;
+    if (this.status === status) {
+      this.notifyState();
+      return;
+    }
     this.status = status;
     this.notifyState();
   }
@@ -291,7 +370,7 @@ export class BybitLiveMarket {
   private notifyState(): void {
     const snapshot = this.getSnapshot();
     this.stateHandlers.forEach((handler) => {
-      try { handler(snapshot.status, snapshot.latencyMs); } catch { /* ignore */ }
+      try { handler(snapshot.status, snapshot.latencyMs, snapshot.networkOnline); } catch { /* isolate listeners */ }
     });
   }
 }
