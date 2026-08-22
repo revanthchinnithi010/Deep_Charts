@@ -134,6 +134,10 @@ class LiveMarketBridge {
   }
 
   sendMessage(msg: object): void {
+    this.ensureStarted();
+    // The Skia chart's legacy bridge message is not needed with the direct
+    // ticker connection; the live tick stream is already subscribed by symbol.
+    if ((msg as { type?: string }).type === "subscribe_candles") return;
     this.client.send(msg);
   }
 
@@ -181,6 +185,15 @@ class LiveMarketBridge {
 }
 
 const bridge = new LiveMarketBridge();
+
+export function subscribeLiveMarketMessages(handler: (msg: unknown) => void): () => void {
+  bridge.ensureStarted();
+  return bridge.subscribeMessages(handler);
+}
+
+export function sendLiveMarketMessage(msg: object): void {
+  bridge.sendMessage(msg);
+}
 
 export function useLiveMarketContext(): LiveMarketContextValue {
   const [snapshot, setSnapshot] = useState(bridge.getSnapshot());
