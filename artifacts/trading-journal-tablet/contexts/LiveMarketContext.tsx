@@ -38,11 +38,22 @@ interface LiveMarketContextValue {
   sendMessage: (msg: object) => void;
 }
 
-type StateListener = (snapshot: { wsStatus: WsStatus; latencyMs: number | null }) => void;
+type FeedSnapshot = {
+  wsStatus: WsStatus;
+  latencyMs: number | null;
+};
+type StateListener = (snapshot: FeedSnapshot) => void;
 type MessageHandler = (msg: unknown) => void;
 
-function mapStatus(status: BybitFeedStatus): WsStatus {
-  return status === "idle" ? "disconnected" : status;
+function mapStatus(status: BybitFeedStatus, networkOnline: boolean | null): WsStatus {
+  if (status === "idle") return "connecting";
+  if (status === "connected") return "connected";
+
+  // "Offline" should mean the device cannot reach the network. A Bybit socket
+  // failure while the network is reachable is a reconnecting feed, not offline.
+  if (networkOnline === false) return "disconnected";
+  if (status === "disconnected" || status === "error") return "reconnecting";
+  return status;
 }
 
 class LiveMarketBridge {
@@ -53,8 +64,8 @@ class LiveMarketBridge {
   private currentSymbol = "";
 
   constructor() {
-    this.client.onState((status, latencyMs) => {
-      this.notifyState({ wsStatus: mapStatus(status), latencyMs });
+    this.client.onState((status, latencyMs, networkOnline) => {
+      this.notifyState({ wsStatus: mapStatus(status, networkOnline), latencyMs });
     });
 
     this.client.onTick((tick) => {
@@ -106,12 +117,15 @@ class LiveMarketBridge {
     // Live updates are supplied directly by Bybit's public ticker stream.
   }
 
-  getSnapshot(): { wsStatus: WsStatus; latencyMs: number | null } {
+  getSnapshot(): FeedSnapshot {
     const snapshot = this.client.getSnapshot();
-    return { wsStatus: mapStatus(snapshot.status), latencyMs: snapshot.latencyMs };
+    return {
+      wsStatus: mapStatus(snapshot.status, snapshot.networkOnline),
+      latencyMs: snapshot.latencyMs,
+    };
   }
 
-  private notifyState(snapshot: { wsStatus: WsStatus; latencyMs: number | null }): void {
+  private notifyState(snapshot: FeedSnapshot): void {
     for (const listener of this.stateListeners) {
       try { listener(snapshot); } catch { /* isolate UI listeners */ }
     }
