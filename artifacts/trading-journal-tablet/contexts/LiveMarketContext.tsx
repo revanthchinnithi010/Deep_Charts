@@ -1,8 +1,7 @@
-import { AppState, type AppStateStatus } from "react-native";
 import { useEffect, useState } from "react";
-import { DeltaWsClient } from "@/lib/broker-ws/DeltaWsClient";
 import { useChartStore } from "@/store/chartStore";
 import { getSymbolTick, useTickStore, type TickState } from "@/store/tickStore";
+import { BybitLiveMarket, type BybitFeedStatus } from "@/lib/bybitLiveMarket";
 
 export type WsStatus =
   | "connecting"
@@ -42,46 +41,35 @@ interface LiveMarketContextValue {
 type StateListener = (snapshot: { wsStatus: WsStatus; latencyMs: number | null }) => void;
 type MessageHandler = (msg: unknown) => void;
 
+function mapStatus(status: BybitFeedStatus): WsStatus {
+  return status === "idle" ? "disconnected" : status;
+}
+
 class LiveMarketBridge {
-  private readonly client = new DeltaWsClient();
+  private readonly client = new BybitLiveMarket();
   private readonly stateListeners = new Set<StateListener>();
   private readonly messageHandlers = new Set<MessageHandler>();
   private started = false;
   private currentSymbol = "";
-  private wsStatus: WsStatus = "disconnected";
-  private latencyMs: number | null = null;
-  private appState: AppStateStatus = AppState.currentState;
-  private lastTickAt = 0;
 
   constructor() {
-    this.client.onEvent((event) => {
-      if (event.kind === "status") {
-        this.wsStatus = event.status as WsStatus;
-        this.notifyState();
-        return;
-      }
+    this.client.onState((status, latencyMs) => {
+      this.notifyState({ wsStatus: mapStatus(status), latencyMs });
+    });
 
-      if (event.kind === "latency") {
-        this.latencyMs = event.latencyMs;
-        this.notifyState();
-        return;
-      }
-
-      if (event.kind === "tick") {
-        this.lastTickAt = Date.now();
-        this.updateTickStore(event.symbol, event.price, event.bid, event.ask);
-        const message = {
-          type: "tick",
-          broker: "delta",
-          symbol: event.symbol,
-          price: event.price,
-          bid: event.bid,
-          ask: event.ask,
-          timestamp: event.ts,
-        };
-        for (const handler of this.messageHandlers) {
-          try { handler(message); } catch (error) { console.error("[LiveMarketBridge] message handler error", error); }
-        }
+    this.client.onTick((tick) => {
+      this.updateTickStore(this.currentSymbol, tick.price, tick.bid, tick.ask);
+      const message = {
+        type: "tick",
+        broker: "bybit",
+        symbol: this.currentSymbol,
+        price: tick.price,
+        bid: tick.bid,
+        ask: tick.ask,
+        timestamp: tick.timestamp,
+      };
+      for (const handler of this.messageHandlers) {
+        try { handler(message); } catch (error) { console.error("[LiveMarketBridge] message handler error", error); }
       }
     });
   }
@@ -93,67 +81,44 @@ class LiveMarketBridge {
 
     useChartStore.subscribe((state) => {
       if (state.symbol === this.currentSymbol) return;
-      const previous = this.currentSymbol;
       this.currentSymbol = state.symbol;
-      if (previous) this.client.unsubscribeSymbol(previous);
-      if (this.currentSymbol) this.client.subscribeSymbol(this.currentSymbol);
+      this.client.setSymbol(this.currentSymbol);
     });
 
-    AppState.addEventListener("change", (next) => {
-      const previous = this.appState;
-      this.appState = next;
-
-      if (previous !== "active" && next === "active") {
-        this.client.connect();
-        if (this.currentSymbol) this.client.subscribeSymbol(this.currentSymbol);
-      } else if (previous === "active" && next === "background") {
-        this.client.disconnect();
-      }
-    });
-
-    setInterval(() => {
-      if (this.appState !== "active" || !this.currentSymbol) return;
-      if (this.wsStatus !== "connected") return;
-      if (this.lastTickAt !== 0 && Date.now() - this.lastTickAt > 45_000) {
-        this.client.subscribeSymbol(this.currentSymbol);
-      }
-    }, 15_000);
-
-    this.client.subscribeSymbol(this.currentSymbol);
-    this.client.connect();
+    this.client.start(this.currentSymbol);
   }
 
   subscribeState(listener: StateListener): () => void {
+    this.ensureStarted();
     this.stateListeners.add(listener);
     return () => this.stateListeners.delete(listener);
   }
 
   subscribeMessages(handler: MessageHandler): () => void {
+    this.ensureStarted();
     this.messageHandlers.add(handler);
     return () => this.messageHandlers.delete(handler);
   }
 
-  sendMessage(msg: object): void {
+  sendMessage(_msg: object): void {
     this.ensureStarted();
-    // The Skia chart's legacy bridge message is not needed with the direct
-    // ticker connection; the live tick stream is already subscribed by symbol.
-    if ((msg as { type?: string }).type === "subscribe_candles") return;
-    this.client.send(msg);
+    // Historical candles continue through the existing REST/cache path.
+    // Live updates are supplied directly by Bybit's public ticker stream.
   }
 
   getSnapshot(): { wsStatus: WsStatus; latencyMs: number | null } {
-    return { wsStatus: this.wsStatus, latencyMs: this.latencyMs };
+    const snapshot = this.client.getSnapshot();
+    return { wsStatus: mapStatus(snapshot.status), latencyMs: snapshot.latencyMs };
   }
 
-  private notifyState(): void {
-    const snapshot = this.getSnapshot();
+  private notifyState(snapshot: { wsStatus: WsStatus; latencyMs: number | null }): void {
     for (const listener of this.stateListeners) {
-      try { listener(snapshot); } catch { /* ignore listener errors */ }
+      try { listener(snapshot); } catch { /* isolate UI listeners */ }
     }
   }
 
-  private updateTickStore(symbol: string, price: number, bid?: number, ask?: number): void {
-    const previous = getSymbolTick(symbol);
+  private updateTickStore(displaySymbol: string, price: number, bid?: number, ask?: number): void {
+    const previous = getSymbolTick(displaySymbol);
     const openPrice = previous?.openPrice && previous.openPrice > 0 ? previous.openPrice : price;
     const change = price - openPrice;
     const changePct = openPrice > 0 ? (change / openPrice) * 100 : 0;
@@ -176,8 +141,8 @@ class LiveMarketBridge {
       spread: bid !== undefined && ask !== undefined ? Math.max(0, ask - bid) : undefined,
     };
 
-    useTickStore.getState()._setTick(symbol, next);
-    if (symbol === useChartStore.getState().symbol) {
+    useTickStore.getState()._setTick(displaySymbol, next);
+    if (displaySymbol === useChartStore.getState().symbol) {
       useChartStore.getState().setLivePrice(price);
       useChartStore.getState().setLiveOpen(openPrice);
     }
