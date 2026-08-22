@@ -25,7 +25,6 @@ const MAX_BACKOFF_MS = 30_000;
 
 function normalizeSymbol(symbol: string): string {
   const s = symbol.trim().toUpperCase();
-  // The app's display/catalog symbol is FARTCOINUSD; Bybit's linear perpetual is FARTCOINUSDT.
   if (s === "FARTCOINUSD") return "FARTCOINUSDT";
   return s;
 }
@@ -33,8 +32,6 @@ function normalizeSymbol(symbol: string): string {
 export class BybitLiveMarket {
   private ws: WebSocket | null = null;
   private destroyed = false;
-  // React Native can briefly report null for currentState during cold launch.
-  // Treat that as active so the first start() cannot silently become a no-op.
   private active = AppState.currentState !== "background" && AppState.currentState !== "inactive";
   private currentSymbol = "";
   private reconnectTimer: ReturnType<typeof setTimeout> | null = null;
@@ -60,13 +57,13 @@ export class BybitLiveMarket {
       this.active = next !== "background" && next !== "inactive";
 
       if (!wasActive && this.active) {
-        // Never trust a socket that survived a long Android background period.
-        // Start a completely fresh connection and subscription instead.
         this.reconnectAttempt = 0;
         this.lastMessageAt = 0;
         this.lastTickAt = 0;
         this.recoveryInProgress = false;
-        this.probeNetwork().finally(() => this.connect(true));
+        this.probeNetwork().then((online) => {
+          if (online && !this.destroyed && this.active) this.connect(true);
+        });
       } else if (wasActive && !this.active) {
         this.cancelReconnect();
         this.stopHeartbeat();
@@ -80,7 +77,6 @@ export class BybitLiveMarket {
     this.currentSymbol = normalizeSymbol(symbol);
     if (!this.currentSymbol || this.destroyed) return;
     if (!this.active) {
-      // If launch happened while AppState was still resolving, retry shortly.
       setTimeout(() => {
         if (!this.destroyed && this.currentSymbol && this.active) this.start(this.currentSymbol);
       }, 250);
@@ -88,7 +84,9 @@ export class BybitLiveMarket {
     }
     this.startWatchdog();
     this.startNetworkProbe();
-    this.probeNetwork().finally(() => this.connect(true));
+    this.probeNetwork().then((online) => {
+      if (online && !this.destroyed && this.active) this.connect(true);
+    });
   }
 
   setSymbol(symbol: string): void {
@@ -176,8 +174,6 @@ export class BybitLiveMarket {
 
     ws.onerror = () => {
       if (this.ws !== ws || generation !== this.generation) return;
-      // A socket error does not prove that the device is offline.
-      // The network probe decides that separately.
       this.setStatus("reconnecting");
     };
 
@@ -288,13 +284,12 @@ export class BybitLiveMarket {
         return;
       }
 
-      // Crypto is 24/7. If no ticker has arrived for a full minute, recover
-      // the socket instead of leaving the UI permanently connected-but-stale.
       if (this.lastTickAt > 0 && now - this.lastTickAt > STALE_AFTER_MS && !this.recoveryInProgress) {
         this.recoveryInProgress = true;
         this.setStatus("reconnecting");
-        this.probeNetwork().finally(() => {
-          if (!this.destroyed && this.active) this.connect(true);
+        this.probeNetwork().then((online) => {
+          if (online && !this.destroyed && this.active) this.connect(true);
+          else this.recoveryInProgress = false;
         });
       }
     }, WATCHDOG_INTERVAL_MS);
@@ -312,12 +307,11 @@ export class BybitLiveMarket {
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), NETWORK_PROBE_TIMEOUT_MS);
     try {
-      const response = await fetch(BYBIT_TIME_URL, {
+      await fetch(BYBIT_TIME_URL, {
         method: "GET",
         cache: "no-store",
         signal: controller.signal,
       });
-      // Any HTTP response means the device has network reachability.
       this.networkOnline = true;
       if ((this.status === "disconnected" || this.status === "error") && this.active) {
         this.scheduleReconnect();
@@ -340,8 +334,8 @@ export class BybitLiveMarket {
     this.setStatus(this.networkOnline === false ? "disconnected" : "reconnecting");
     this.reconnectTimer = setTimeout(() => {
       this.reconnectTimer = null;
-      this.probeNetwork().finally(() => {
-        if (this.networkOnline !== false) this.connect(true);
+      this.probeNetwork().then((online) => {
+        if (online) this.connect(true);
       });
     }, delay);
   }
