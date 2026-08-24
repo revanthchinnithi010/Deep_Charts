@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import type { Drawing, ToolType, DrawingStyle } from "@/types/drawing";
-import { DEFAULT_STYLE } from "@/types/drawing";
+import { DEFAULT_STYLE, pointsNeeded, isFreehand } from "@/types/drawing";
 
 const MAX_HISTORY    = 50;
 const DELETED_LS_KEY = "tv_deleted_drawing_ids";
@@ -37,44 +37,64 @@ function persistDeletedId(id: number) {
 }
 
 /**
- * Desktop/tablet DrawingOverlay shows its full-span crosshair on pointermove.
- * Mobile additionally seeds it immediately from a React effect.  Landscape
- * tablets can use the desktop layout while still being touch-first, so trigger
- * one synthetic pointermove after a draw tool is selected. This keeps the
- * desktop favorite bar and mobile drawing tools visually/functionally aligned.
+ * Seed the TradingView-style drawing crosshair immediately after selecting a
+ * 2-point drawing tool. The DrawingOverlay intentionally hides its crosshair
+ * when activeTool changes and normally reveals it from pointermove. That works
+ * on mobile because mobile has a dedicated React effect, but the desktop /
+ * landscape layout has no initial pointermove. We therefore reveal the actual
+ * crosshair SVG lines directly after React has committed the new tool.
  */
 function seedDrawingCrosshairAfterToolSelect(tool: ToolType): void {
-  if (tool === "cursor" || typeof window === "undefined") return;
+  if (
+    tool === "cursor" ||
+    tool === "eraser" ||
+    typeof window === "undefined" ||
+    pointsNeeded(tool) !== 2 ||
+    isFreehand(tool)
+  ) return;
 
+  // Wait until the active tool has rendered and DrawingOverlay's reset effect
+  // has finished hiding the previous crosshair state.
   requestAnimationFrame(() => {
     requestAnimationFrame(() => {
       try {
-        const candidates = Array.from(document.querySelectorAll<HTMLElement>("body *"))
-          .filter(el => {
-            const style = window.getComputedStyle(el);
-            if (style.cursor !== "crosshair" || style.pointerEvents !== "all") return false;
-            const rect = el.getBoundingClientRect();
-            return rect.width >= 200 && rect.height >= 150;
-          });
+        const lines = Array.from(document.querySelectorAll<SVGLineElement>("svg line"));
 
-        const overlay = candidates[candidates.length - 1];
-        if (!overlay) return;
+        // These two lines are the dedicated DrawingOverlay crosshair lines.
+        // Their initial SVG attributes are intentionally unique:
+        // horizontal: 0 → 100% at y=0
+        // vertical:   x=0 at 0 → 100%
+        const hLine = lines.find(line =>
+          line.getAttribute("x1") === "0" &&
+          line.getAttribute("x2") === "100%" &&
+          line.getAttribute("y1") === "0" &&
+          line.getAttribute("y2") === "0"
+        );
+        const vLine = lines.find(line =>
+          line.getAttribute("x1") === "0" &&
+          line.getAttribute("x2") === "0" &&
+          line.getAttribute("y1") === "0" &&
+          line.getAttribute("y2") === "100%"
+        );
 
-        const rect = overlay.getBoundingClientRect();
-        const clientX = rect.left + rect.width / 2;
-        const clientY = rect.top + rect.height * 0.4;
+        if (!hLine || !vLine) return;
 
-        overlay.dispatchEvent(new PointerEvent("pointermove", {
-          bubbles: true,
-          cancelable: true,
-          clientX,
-          clientY,
-          pointerId: 1,
-          pointerType: "mouse",
-          buttons: 0,
-        }));
+        const svg = hLine.closest("svg");
+        const rect = svg?.getBoundingClientRect();
+        if (!rect || rect.width <= 0 || rect.height <= 0) return;
+
+        const cx = rect.width / 2;
+        const cy = rect.height * 0.4;
+
+        hLine.setAttribute("y1", String(cy));
+        hLine.setAttribute("y2", String(cy));
+        hLine.style.display = "";
+
+        vLine.setAttribute("x1", String(cx));
+        vLine.setAttribute("x2", String(cx));
+        vLine.style.display = "";
       } catch {
-        // Ignore browsers that do not expose PointerEvent/getComputedStyle here.
+        // Ignore browsers where SVG/DOM APIs are unavailable during startup.
       }
     });
   });
