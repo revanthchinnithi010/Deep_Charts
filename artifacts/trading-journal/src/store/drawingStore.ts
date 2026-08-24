@@ -36,6 +36,50 @@ function persistDeletedId(id: number) {
   } catch { /* ignore */ }
 }
 
+/**
+ * Desktop/tablet DrawingOverlay shows its full-span crosshair on pointermove.
+ * Mobile additionally seeds it immediately from a React effect.  Landscape
+ * tablets can use the desktop layout while still being touch-first, so trigger
+ * one synthetic pointermove after a draw tool is selected. This keeps the
+ * desktop favorite bar and mobile drawing tools visually/functionally aligned.
+ */
+function seedDrawingCrosshairAfterToolSelect(tool: ToolType): void {
+  if (tool === "cursor" || typeof window === "undefined") return;
+
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      try {
+        const candidates = Array.from(document.querySelectorAll<HTMLElement>("body *"))
+          .filter(el => {
+            const style = window.getComputedStyle(el);
+            if (style.cursor !== "crosshair" || style.pointerEvents !== "all") return false;
+            const rect = el.getBoundingClientRect();
+            return rect.width >= 200 && rect.height >= 150;
+          });
+
+        const overlay = candidates[candidates.length - 1];
+        if (!overlay) return;
+
+        const rect = overlay.getBoundingClientRect();
+        const clientX = rect.left + rect.width / 2;
+        const clientY = rect.top + rect.height * 0.4;
+
+        overlay.dispatchEvent(new PointerEvent("pointermove", {
+          bubbles: true,
+          cancelable: true,
+          clientX,
+          clientY,
+          pointerId: 1,
+          pointerType: "mouse",
+          buttons: 0,
+        }));
+      } catch {
+        // Ignore browsers that do not expose PointerEvent/getComputedStyle here.
+      }
+    });
+  });
+}
+
 interface DrawingStore {
   activeTool:    ToolType;
   setActiveTool: (tool: ToolType) => void;
@@ -91,6 +135,7 @@ export const useDrawingStore = create<DrawingStore>((set, get) => ({
       isDrawing: false,
       ...(savedStyle ? { activeStyle: savedStyle } : {}),
     });
+    seedDrawingCrosshairAfterToolSelect(tool);
   },
 
   stayInDraw:    false,
